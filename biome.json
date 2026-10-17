@@ -1,0 +1,29 @@
+{
+  "vcs": {
+    "enabled": false
+  },
+  "files": {
+    "includes": [
+      "bin/**",
+      "src/**",
+      "sim/**",
+      "tests/**",
+      "examples/**",
+      "experiments/**",
+      "*.json",
+      "!node_modules",
+      "!experiments/data",
+      "!experiments/out"
+    ]
+  },
+  "formatter": {
+    "indentStyle": "space",
+    "lineEnding": "lf",
+    "lineWidth": 100
+  },
+  "linter": {
+    "rules": {
+      "preset": "recommended"
+    }
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "name": "ratchet",
+  "private": true,
+  "type": "module",
+  "version": "0.0.1",
+  "description": "A decision engine that compounds cheap, calibrated machine judgments into reliable automated decisions. Name provisional.",
+  "packageManager": "bun@1.3.9",
+  "bin": {
+    "ratchet": "bin/ratchet.ts"
+  },
+  "scripts": {
+    "check": "bun run check:types && bun run lint && bun run test",
+    "check:types": "tsc -p tsconfig.json --noEmit",
+    "lint": "biome check .",
+    "format": "biome format --write .",
+    "test": "vitest run",
+    "sim": "bun sim/main.ts",
+    "demo": "bun examples/tool-gate.ts",
+    "quickstart": "bun examples/quickstart.ts",
+    "live": "bun experiments/live/main.ts",
+    "ratchet": "bun bin/ratchet.ts"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.5.7",
+    "@types/bun": "1.3.14",
+    "typescript": "5.9.3",
+    "vitest": "4.1.10"
+  }
+}
