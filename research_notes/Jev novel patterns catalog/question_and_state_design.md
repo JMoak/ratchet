@@ -2,7 +2,7 @@
 
 Scope: the craft of getting more accuracy, coverage or value per request out of TypeSafe's Jev (noul / choice / score / box over one `state` and a map of typed questions). This extends, and does not repeat, `research_notes/Compounding decisions with Jev/jev_deployments_and_patterns.md` (deployments, 11 high-level patterns, failure modes, calibration studies) and `jev_product_and_api.md` (API shapes, confidence formulas, limits, SDKs). Where a fact from those notes is needed for context it is referenced by name only.
 
-Capture date for every URL below: 2026-10-16, except the official docs pages marked "(local copy fetched 2026-10-15)", which were saved by the earlier researcher in `C:\Users\moakj\AppData\Local\Temp\claude\C--src\004b9828-a037-4bad-91b7-f3cfffd42c9c\scratchpad\typesafe_docs\`.
+Capture date for every URL below: 2026-10-16, except the official docs pages marked "(local copy fetched 2026-10-15)", which were saved by the earlier researcher in a local cache (not included in this repository).
 
 Status tags: **[official]** TypeSafe docs/blog or a vendor describing its own integration; **[independent-measured]** third party with code or a stated method and numbers; **[anecdote]** post or video without method. Official cookbooks were run on `jev-1.12` in Aug 2026 (before the window) but were the live, canonical description of each technique during the window; their run dates are given.
 

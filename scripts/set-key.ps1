@@ -4,8 +4,8 @@
   The key is never printed; only a masked form and its length are shown.
 
 .EXAMPLE
-  powershell -ExecutionPolicy Bypass -File C:\src\ratchet\scripts\set-key.ps1
-  powershell -ExecutionPolicy Bypass -File C:\src\ratchet\scripts\set-key.ps1 -Name OPENROUTER_API_KEY,TYPESAFE_API_KEY
+  powershell -ExecutionPolicy Bypass -File scripts\set-key.ps1
+  powershell -ExecutionPolicy Bypass -File scripts\set-key.ps1 -Name OPENROUTER_API_KEY,TYPESAFE_API_KEY
 #>
 param(
   [string[]]$Name = @("OPENROUTER_API_KEY"),

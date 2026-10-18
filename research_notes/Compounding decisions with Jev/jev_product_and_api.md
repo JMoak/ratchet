@@ -1,6 +1,6 @@
 # TypeSafe AI "Jev" (System One Model): product and API engineering notes
 
-All facts captured 2026-10-15 unless a different capture date is stated. "Official" means TypeSafe's own docs, blog, legal pages or console; everything else is marked third-party. Raw copies of the official docs pages used here (fetched 2026-10-15 from `https://docs.typesafe.ai/<page>.md`) are in `C:\Users\moakj\AppData\Local\Temp\claude\C--src\004b9828-a037-4bad-91b7-f3cfffd42c9c\scratchpad\typesafe_docs\`.
+All facts captured 2026-10-15 unless a different capture date is stated. "Official" means TypeSafe's own docs, blog, legal pages or console; everything else is marked third-party. Raw copies of the official docs pages used here (fetched 2026-10-15 from `https://docs.typesafe.ai/<page>.md`) are in a local cache (not included in this repository).
 
 Documentation index (official, lists every docs page): https://docs.typesafe.ai/llms.txt
 

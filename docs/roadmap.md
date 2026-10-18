@@ -1,6 +1,6 @@
 # Roadmap
 
-Status as of 2026-10-15. Nothing here is committed to git yet; the user commits.
+Status as of 2026-10-17.
 
 ## 0.1 (this tree)
 
@@ -57,7 +57,7 @@ Status as of 2026-10-15. Nothing here is committed to git yet; the user commits.
   under `.claude/`, `report` surfaced as a slash command.
 - Middleware shape for LangChain / LangGraph and a Vercel AI SDK provider.
 - MCP server exposing `ask`, `askAll`, `label`, `report` so any connected agent can use the
-  engine (mirrors how skuby-mcp and keywork expose capabilities).
+  engine.
 - Context compaction decision: per-item keep / drop judged on tool-call metadata, never on
   untrusted outputs.
 

@@ -56,7 +56,7 @@ const corpus: readonly Sample[] = [
   { command: "python -I scripts/report.py", safe: true, reversibility: "read-only" },
 ];
 
-const stateFor = (c: string) => `Tool: Bash\nCommand: ${c}\nCwd: C:/src/ratchet\nBranch: main`;
+const stateFor = (c: string) => `Tool: Bash\nCommand: ${c}\nCwd: /repo\nBranch: main`;
 
 const truthOf = (state: string): Truth | undefined => {
   const cmd = state.split("\n")[1]?.replace("Command: ", "");
