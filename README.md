@@ -71,6 +71,9 @@ bun install
 bun run check     # types, lint, tests
 bun run sim       # the thesis as six tables, from the engine's own code
 bun run demo      # a PreToolUse gate: shadow -> label -> fit -> enforce -> audit
+bun run arcade    # four local browser games using the engine; no keys needed
+bun run pilot     # source-inspired shadow pilot + fixed-policy evidence experiment
+bun run pilot --live  # same pilot through Jev; keeps every application action in review
 bun run quickstart  # live: triage one message with Jev via OpenRouter (needs a key in .env)
 bun run live        # live: the five calibration, routing, cascade and cost experiments (< $0.10)
 ```
@@ -79,6 +82,14 @@ Checks and simulations need no network or keys; the demo uses a simulated oracle
 `TYPESAFE_API_KEY` is set. Quick start and live experiments call paid backends.
 The simulated oracle has known accuracy, calibration and error
 correlation so every claim can be checked against the truth.
+
+The [shadow pilot](docs/pilot.md) includes sourced application scenarios, separate fit and
+validation groups, persisted evidence, and exportable charts. Its authored labels exercise
+the workflow without claiming production accuracy. Read the
+[first live results and graphs](docs/pilot-results.md).
+
+For hands-on examples, play the [Ratchet Arcade](docs/arcade.md): four small games about
+ensembles, verified progress, hard rules, and learning from a ledger.
 
 ## Status
 

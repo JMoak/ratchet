@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Signal Orchard · Ratchet Arcade</title>
+  <link rel="stylesheet" href="/common.css">
+  <style>
+    :root{--orchard:#267354;--leaf:#dce9cb}
+    .orchard-layout{display:grid;grid-template-columns:280px 1fr;gap:22px;align-items:start}
+    .controls{display:grid;gap:18px}.controls label{display:grid;gap:7px;font-weight:650}
+    .controls .toggle{display:flex;align-items:start;font-size:.9rem}.toggle input{margin-top:4px}
+    input[type=range]{accent-color:var(--orchard);width:100%}select,input[type=number]{font:inherit;padding:10px;border:1px solid #c8d3c5;border-radius:9px;background:#fffdf7}
+    .trees{display:grid;grid-template-columns:repeat(3,1fr);gap:13px}
+    .tree{display:block;width:100%;background:#f2f6e8;border:1px solid #c9dbba;border-radius:16px;padding:18px 9px;cursor:pointer;color:#162e35;transition:transform .15s,background .15s}
+    .tree:hover:not(:disabled){transform:translateY(-4px);background:#e4efd4}.tree:focus-visible{outline:3px solid #267354;outline-offset:3px}
+    .tree:disabled{cursor:wait;opacity:.6}.tree strong,.tree small{display:block}.tree small{margin-top:5px}
+    .tree svg{width:100%;height:125px;display:block}.tree strong{font-size:1.1rem}
+    .orchard-status{min-height:44px;margin:16px 0 0}.orchard-plots{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+    .scouts{display:flex;gap:8px;align-items:flex-end;min-height:105px}.scout{flex:1;text-align:center;font-size:.8rem}
+    .scout-bar{width:100%;background:#7bac70;border-radius:8px 8px 0 0;min-height:2px}.scout span{display:block;margin-top:6px}
+    .plot-svg{display:block;width:100%;height:auto}.plot-svg text{font-family:inherit;fill:#52616a;font-size:11px}
+    .season{display:flex;gap:5px;margin:15px 0}.day{height:9px;flex:1;border-radius:5px;background:#e3e8df}.day.picked{background:#267354}.day.review{background:#c6a963}.day.spoiled{background:#b56551}
+    .explain{font-size:.85rem;line-height:1.55;color:#53636c}.turn-log{list-style:none;padding:0;margin:0;display:grid;gap:8px}
+    .turn-log li{display:flex;justify-content:space-between;gap:16px;padding:10px 0;border-bottom:1px solid #e5e8df;font-size:.9rem}
+    .orchard-actions{display:flex;flex-wrap:wrap;gap:9px}.orchard-section{margin-top:22px}
+    @media(max-width:800px){.orchard-layout{grid-template-columns:1fr}.controls{grid-template-columns:1fr 1fr}.controls .toggle,.controls .explain{grid-column:1/-1}.orchard-plots{grid-template-columns:1fr}}
+    @media(max-width:480px){.controls{grid-template-columns:1fr}.trees{gap:7px}.tree{padding:12px 5px}.tree svg{height:90px}.tree small{font-size:.7rem}}
+  </style>
+</head>
+<body>
+<main class="page">
+  <nav class="topbar" aria-label="Main"><a href="/">← Ratchet Arcade</a><span class="badge">Compounding</span></nav>
+  <header class="hero"><p class="eyebrow">A little uncertainty, a growing harvest</p><h1>Signal Orchard</h1><p>Five scouts. Three trees. Twelve days. Choose a tree and let the engine decide whether its fruit belongs in your basket.</p></header>
+  <div class="orchard-layout">
+    <section class="panel" aria-labelledby="settings-title">
+      <h2 id="settings-title">Your field kit</h2>
+      <form id="settings" class="controls">
+        <label>Fruit<select name="fruit"><option value="apple">Apples</option><option value="pear">Pears</option><option value="plum">Plums</option></select></label>
+        <label>Scout team<select name="strategy"><option value="ensemble">Five scouts · pooled evidence</option><option value="solo">One scout · one opinion</option></select></label>
+        <label for="correlation">Assumed correlation <output id="correlation-value">0.50</output><input id="correlation" name="correlation" type="range" min="0" max="1" step=".05" value=".5"></label>
+        <label for="threshold">Harvest threshold <output id="threshold-value">90%</output><input id="threshold" name="threshold" type="range" min=".5" max="1" step=".01" value=".9"></label>
+        <label>Season seed<input name="seed" type="number" min="0" max="1000000" step="1" value="712"></label>
+        <label class="toggle"><input name="automate" type="checkbox"><span>Let the engine fill my toy basket</span></label>
+        <p class="explain">Starts in shadow: recommendations are recorded, fruit stays put. Enabling the basket permits reversible game actions only. Settings replay this season from the start.</p>
+      </form>
+    </section>
+    <div>
+      <section class="panel board" aria-labelledby="orchard-title">
+        <div class="topbar"><h2 id="orchard-title">Pick your next tree</h2><span id="day" class="badge">Day 1 / 12</span></div>
+        <div id="trees" class="trees"></div>
+        <div id="season" class="season" role="img" aria-label="Season progress"></div>
+        <p id="status" class="orchard-status notice" role="status" aria-live="polite">Preparing the orchard…</p>
+        <div class="metrics">
+          <div class="metric"><strong id="score">0</strong><span>basket points</span></div>
+          <div class="metric"><strong id="harvested">0</strong><span>ripe fruit</span></div>
+          <div class="metric"><strong id="effective">1.67</strong><span>effective scouts</span></div>
+        </div>
+        <p class="explain">Ripe harvest +3 · unripe harvest −4 · review 0. No fruit is taken in shadow. Clues are imperfect; truth is revealed after each choice.</p>
+        <div class="orchard-actions"><button id="reset" class="button secondary" type="button">Replay season</button><button id="new" class="button secondary" type="button">New season</button></div>
+      </section>
+      <section class="orchard-plots orchard-section" aria-label="Evidence plots">
+        <div class="panel"><h2>The scouts' signals</h2><div id="scouts" class="scouts"><p class="muted">Choose a tree to meet the scouts.</p></div><p class="explain">Each bar is one simulated scout's P(ripe). Scouts sometimes share the same mistaken impression.</p></div>
+        <div class="panel"><h2>Same votes, less certainty</h2><div id="curve" class="chart"><p class="muted">Your first decision draws the curve.</p></div><p class="explain">Horizontal: assumed correlation, 0–1. Vertical: pooled P(ripe). The dashed line is your harvest threshold. The slider discounts evidence; it does not measure actual error correlation.</p></div>
+      </section>
+      <section class="panel orchard-section"><h2>The season so far</h2><ul id="history" class="turn-log"><li class="muted">A fresh start. The trees are waiting.</li></ul></section>
+    </div>
+  </div>
+  <section class="panel orchard-section"><div class="topbar"><h2>Inside the engine</h2><button id="download" class="button secondary" type="button">Download ledger</button></div><p class="explain">A real Engine and harvest Gate pool seeded mock votes and record every turn in a MemoryLedger. All labels come from the toy world, not a model or real fruit measurements. Resetting or replaying creates a new ledger; nothing is sent to an external service.</p><div id="ledger"></div></section>
+  <p id="error" class="error" role="alert"></p>
+</main>
+<script type="module">
+import {downloadLedger, escapeHtml,request,showLedger} from '/common.js';
+
+const $=id=>document.getElementById(id), form=$('settings');
+let choices=[], result=null, busy=false;
+const percent=p=>`${Math.round(p*100)}%`;
+function input(){
+  const data=new FormData(form);
+  return {choices:[...choices],fruit:data.get('fruit'),strategy:data.get('strategy'),correlation:Number(data.get('correlation')),threshold:Number(data.get('threshold')),seed:Number(data.get('seed')),automate:data.has('automate')};
+}
+function treePicture(color){
+  return `<svg viewBox="0 0 150 140" aria-hidden="true"><ellipse cx="75" cy="130" rx="51" ry="7" fill="#d4dfbf"/><path d="M69 124V72h12v52" fill="#99714e"/><path d="M75 92 53 69M76 81l24-24" stroke="#99714e" stroke-width="8" fill="none"/><circle cx="76" cy="43" r="36" fill="#80a871"/><circle cx="46" cy="66" r="30" fill="#709c66"/><circle cx="104" cy="68" r="31" fill="#87ae74"/><circle cx="62" cy="50" r="7" fill="${color}"/><circle cx="96" cy="65" r="7" fill="${color}"/><circle cx="47" cy="78" r="7" fill="${color}"/><circle cx="78" cy="83" r="7" fill="${color}"/></svg>`;
+}
+function render(){
+  const last=result.history.at(-1),color={apple:'#ce735d',pear:'#d0b35c',plum:'#8b719e'}[result.fruit];
+  $('day').textContent=result.done?'Season complete':`Day ${result.turn+1} / 12`;
+  $('orchard-title').textContent=result.done?'The orchard is resting':'Pick your next tree';
+  $('trees').innerHTML=result.trees.map(t=>`<button type="button" class="tree" data-tree="${t.tree}" aria-label="Choose ${escapeHtml(t.name)} tree, ${escapeHtml(t.clue)}">${treePicture(color)}<strong>${escapeHtml(t.name)}</strong><small>${escapeHtml(t.clue)}</small></button>`).join('');
+  $('season').innerHTML=Array.from({length:12},(_,i)=>{const turn=result.history[i];return `<span class="day ${turn?(turn.actual==='act'?(turn.truth?'picked':'spoiled'):'review'):''}" title="Day ${i+1}${turn?`: ${turn.actual}`:''}"></span>`}).join('');
+  $('score').textContent=result.score;$('harvested').textContent=result.harvested;$('effective').textContent=result.effectiveScouts.toFixed(2);
+  $('status').textContent=last?`${last.tree}: ${last.truth?'ripe':'not ripe'}. P(ripe) ${percent(last.probability)} → ${last.suggested==='act'?'harvest suggested':'review suggested'}. ${result.mode==='shadow'?'Shadow kept the basket unchanged.':last.actual==='act'?`Basket ${last.points>0?'+':''}${last.points} points.`:'Fruit stayed on the tree.'}`:'Choose a tree. Scouts will judge it before the toy world reveals the truth.';
+  $('history').innerHTML=result.history.length?result.history.toReversed().map(t=>`<li><span>Day ${t.turn} · ${escapeHtml(t.tree)} · ${t.truth?'ripe':'unripe'}</span><span>${percent(t.probability)} · ${t.actual==='act'?'harvested':'held'} · ${t.score} pts</span></li>`).join(''):'<li class="muted">A fresh start. The trees are waiting.</li>';
+  if(last){
+    $('scouts').innerHTML=last.votes.map((p,i)=>`<div class="scout"><div class="scout-bar" style="height:${Math.round(p*90)}px"></div><span>${percent(p)}</span><span>Scout ${i+1}</span></div>`).join('');
+    const points=result.curve.map(p=>`${30+p.correlation*250},${125-p.probability*100}`).join(' '), y=125-result.threshold*100;
+    $('curve').innerHTML=`<svg class="plot-svg" viewBox="0 0 310 165" role="img" aria-label="Pooled probability moves toward neutral as assumed correlation grows; exact values recorded in ledger"><line x1="30" y1="25" x2="30" y2="125" stroke="#cbd4cb"/><line x1="30" y1="125" x2="280" y2="125" stroke="#cbd4cb"/><line x1="30" y1="${y}" x2="280" y2="${y}" stroke="#b08d48" stroke-dasharray="5 4"/><polyline points="${points}" fill="none" stroke="#267354" stroke-width="3"/><circle cx="${30+result.correlation*250}" cy="${125-last.probability*100}" r="5" fill="#267354"/><text x="3" y="29">1.0</text><text x="3" y="79">0.5</text><text x="12" y="128">0</text><text x="27" y="145">0</text><text x="146" y="145">0.5</text><text x="276" y="145">1</text><text x="98" y="162">Assumed correlation</text></svg>`;
+  }else{$('scouts').innerHTML='<p class="muted">Choose a tree to meet the scouts.</p>';$('curve').innerHTML='<p class="muted">Your first decision draws the curve.</p>';}
+  showLedger($('ledger'),result.ledger);
+}
+async function refresh(){
+  if(busy)return;
+  const payload=input();
+  busy=true;$('error').textContent='';
+  document.querySelectorAll('button,input,select').forEach(el=>{el.disabled=true;});
+  try{result=await request('orchard',payload);render();}catch(error){$('error').textContent=error.message;throw error;}
+  finally{busy=false;document.querySelectorAll('button,input,select').forEach(el=>{el.disabled=false;});}
+}
+form.addEventListener('submit',event=>event.preventDefault());
+form.addEventListener('input',()=>{$('correlation-value').textContent=Number(form.elements.correlation.value).toFixed(2);$('threshold-value').textContent=percent(Number(form.elements.threshold.value));});
+form.addEventListener('change',()=>refresh().catch(()=>{}));
+$('trees').addEventListener('click',async event=>{const tree=event.target.closest('[data-tree]');if(!tree||busy)return;choices.push(Number(tree.dataset.tree));try{await refresh();}catch{choices.pop();}});
+$('reset').addEventListener('click',()=>{choices=[];refresh().catch(()=>{});});
+$('new').addEventListener('click',()=>{choices=[];form.elements.seed.value=(Number(form.elements.seed.value)+1)%1000001;refresh().catch(()=>{});});
+$('download').addEventListener('click',()=>{if(result)downloadLedger(result.ledger.rows);});
+refresh().catch(()=>{});
+</script>
+</body>
+</html>

@@ -44,6 +44,8 @@ bin/ratchet.ts        The CLI entry point
 sim/                  The thesis as runnable tables (bun run sim -> docs/sim-results.md)
 examples/tool-gate.ts PreToolUse gate: shadow -> label -> fit -> enforce -> audit, as registered gates
 examples/quickstart.ts Live triage of one message through Jev via OpenRouter
+examples/arcade/      Four offline browser games; loopback Bun server, Engine/Gate and MemoryLedger
+experiments/pilot/    Sourced shadow fixtures, frozen-policy evidence experiment, static chart report
 scripts/set-key.ps1   Hidden-input prompt that writes API keys to the gitignored .env
 tests/                Vitest; statistical tests are seeded and tolerance-bounded
 ```
@@ -337,6 +339,13 @@ locate(chunks, question, { none, id })                     // the pure builder: 
 - **digest helpers**: state the comparison in words, band the number, make the date relative.
 
 The full map of community patterns to these pieces is `docs/idea-catalog.md`.
+
+The standalone [shadow pilot](pilot.md) exercises both tool gates and output verification
+through the real engine and JSONL ledger. It fits on one set of scenario families, saves a
+candidate manifest, then measures it on separate validation and challenge groups. Its
+authored fixtures never enable enforcement. A separate seeded IID experiment compares
+point-estimate promotion with exact fixed-time validation and repeated inspection. These
+remain experiment code until representative application evidence warrants a public API.
 
 ## Rollout
 

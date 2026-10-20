@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bridge Builder · Ratchet Arcade</title>
+  <link rel="stylesheet" href="/common.css">
+  <style>
+    .bridge-board { background: #e6f0f4; border-radius: 24px; overflow: hidden; }
+    .bridge-board svg { width: 100%; height: auto; display: block; }
+    .materials { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin: 20px 0; }
+    .material { display: block; background: white; border: 2px solid #d6dfe4; border-radius: 16px; padding: 15px 8px; color: #172d43; cursor: pointer; font: inherit; text-align: center; }
+    .material:hover, .material:focus-visible { border-color: #2a6cac; outline: 2px solid #2a6cac; outline-offset: 3px; }
+    .material strong, .material small { display: block; }
+    .material span { display: block; font-size: 28px; margin-bottom: 7px; }
+    .material small { margin-top: 6px; font-size: 12px; }
+    .material:disabled { opacity: .45; cursor: default; }
+    .attempts { padding: 0; list-style: none; max-height: 240px; overflow: auto; }
+    .attempts li { padding: 12px 0; border-bottom: 1px solid #dfe5e8; }
+    .attempts small { display: block; margin-top: 5px; }
+    .settings { display: flex; flex-wrap: wrap; align-items: center; gap: 18px; margin: 18px 0; }
+    .settings input[type=number] { width: 88px; }
+    #message { min-height: 48px; }
+    @media (max-width: 650px) { .materials { grid-template-columns: repeat(2, 1fr); } }
+    @media (prefers-reduced-motion: no-preference) { .bridge-piece { animation: settle .4s ease-out; } @keyframes settle { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } } }
+  </style>
+</head>
+<body>
+<main class="page">
+  <nav class="topbar" aria-label="Arcade navigation"><a href="/">← Ratchet Arcade</a><span class="badge">02 / Verify, then commit</span></nav>
+  <header class="hero">
+    <p class="eyebrow">BRIDGE BUILDER</p>
+    <h1>One sound step<br>at a time.</h1>
+    <p>Build five spans across the river. Propose a piece, let the engineer judge it, and keep the progress that survives the load test.</p>
+  </header>
+  <section class="panel" aria-labelledby="build-title">
+    <h2 id="build-title">Your crossing</h2>
+    <div class="settings">
+      <label><input id="automate" type="checkbox"> Allow reversible sandbox placements</label>
+      <label><input id="fail" type="checkbox"> Engineer offline</label>
+      <label for="seed">World seed <input id="seed" type="number" value="42" min="0" max="4294967295" step="1"></label>
+      <button class="button secondary" id="reset" type="button">New crossing</button>
+    </div>
+    <p class="notice" id="mode-note">Shadow mode: the engineer makes recommendations, but no pieces are placed. Enable sandbox placements to play.</p>
+    <div class="bridge-board" id="bridge"></div>
+    <div class="metrics">
+      <div class="metric"><strong id="spans">0 / 5</strong><small>Spans built</small></div>
+      <div class="metric"><strong id="score">0</strong><small>Efficiency points</small></div>
+      <div class="metric"><strong id="collapses">0</strong><small>Failed load tests</small></div>
+    </div>
+    <p id="message" role="status" aria-live="polite">Choose a piece below. Each span shows the load it needs to carry.</p>
+    <div class="materials">
+      <button class="material" data-piece="plank" type="button"><span aria-hidden="true">▰</span><strong>Timber plank</strong><small>Holds 2 · costs 1</small></button>
+      <button class="material" data-piece="truss" type="button"><span aria-hidden="true">△</span><strong>Steel truss</strong><small>Holds 4 · costs 2</small></button>
+      <button class="material" data-piece="stone" type="button"><span aria-hidden="true">∩</span><strong>Stone arch</strong><small>Holds 6 · costs 3</small></button>
+      <button class="material" data-piece="glass" type="button"><span aria-hidden="true">◇</span><strong>Glass ribbon</strong><small>Holds 1 · costs 1</small></button>
+      <button class="material" data-piece="floating" type="button"><span aria-hidden="true">≈</span><strong>Floating deck</strong><small>Holds 9 · no anchor</small></button>
+    </div>
+    <p class="muted">A successful placement earns 5 points minus its material cost. The engineer is simulated and imperfect. A bad placement can collapse; your previous spans remain. A missing anchor is always refused by code.</p>
+  </section>
+  <div class="grid">
+    <section class="panel"><h2>Construction log</h2><ol class="attempts" id="history"><li class="muted">Your first proposal starts the story.</li></ol></section>
+    <section class="panel"><p class="eyebrow">THE IDEA UNDER THE GAME</p><h2>Keep verified progress.</h2><p>Each proposal goes through a real Ratchet gate. Only an actual <strong>act</strong> places a piece. Review and refusal leave the crossing unchanged.</p><p>The load test supplies a label after the judgment. Future decisions see the built bridge and the next load, never previous confidence scores.</p><p class="muted">This is a small simulated world, not a structural engineering model or a production accuracy claim. A real load rule this simple belongs in deterministic code; here it gives us known truth for teaching an imperfect verifier.</p></section>
+  </div>
+  <section class="panel"><div class="topbar"><h2>The actual ledger</h2><button class="button secondary" id="download" type="button" disabled>Download JSONL</button></div><div id="ledger"><p class="muted">Every proposal will appear here, including shadow observations, refusals, and failures.</p></div></section>
+</main>
+<script type="module">
+  import { downloadLedger, escapeHtml, request, showLedger } from "/common.js";
+
+  const $ = (id) => document.getElementById(id);
+  let attempts = [], latest, busy = false;
+  const colors = { plank: "#b9854f", truss: "#2c6d9f", stone: "#637988", glass: "#91d5de" };
+  function board(result) {
+    const built = result?.built ?? [], loads = result?.loads ?? [2, 4, 3, 6, 2];
+    let drawing = '<rect width="760" height="260" fill="#e6f0f4"/><path d="M0 188 Q190 160 380 188 T760 188 V260 H0Z" fill="#a5cede"/><path d="M0 218 Q190 193 380 218 T760 218" fill="none" stroke="#76acc3" stroke-width="3"/><path d="M0 140H80V260H0ZM680 140H760V260H680Z" fill="#839989"/><path d="M0 140H80M680 140H760" stroke="#496f60" stroke-width="8"/>';
+    loads.forEach((load, i) => {
+      const x = 80 + i * 120, name = built[i];
+      drawing += `<text x="${x + 60}" y="62" text-anchor="middle" fill="#365773" font-family="system-ui" font-size="13">LOAD ${load}</text>`;
+      if (name) {
+        drawing += `<g class="bridge-piece"><rect x="${x + 2}" y="133" width="116" height="13" rx="4" fill="${colors[name] ?? "#637988"}"/>`;
+        if (name === "truss") drawing += `<path d="M${x+4} 132L${x+31} 94L${x+60} 132L${x+89} 94L${x+116} 132M${x+31} 94H${x+89}" fill="none" stroke="#2c6d9f" stroke-width="5"/>`;
+        if (name === "stone") drawing += `<path d="M${x+8} 179Q${x+60} 119 ${x+112} 179" fill="none" stroke="#637988" stroke-width="13"/>`;
+        drawing += '</g>';
+      } else drawing += `<path d="M${x+8} 140H${x+112}" stroke="#8ca9b7" stroke-width="3" stroke-dasharray="5 7"/><text x="${x+60}" y="112" text-anchor="middle" fill="#7893a2" font-family="system-ui" font-size="15">${i+1}</text>`;
+    });
+    drawing += `<text x="${built.length === 5 ? 696 : 20}" y="121" font-size="27" aria-hidden="true">⚑</text>`;
+    $("bridge").innerHTML = `<svg viewBox="0 0 760 260" role="img" aria-label="${built.length} of 5 spans built. Remaining loads: ${loads.slice(built.length).join(', ') || 'crossing complete'}">${drawing}</svg>`;
+  }
+  function lock(value) {
+    busy = value;
+    document.querySelectorAll("button[data-piece]").forEach((b) => { b.disabled = value || latest?.complete || attempts.length >= 30; });
+    for (const id of ["reset", "automate", "fail", "seed"]) $(id).disabled = value;
+  }
+  async function update(piece) {
+    if (busy) return;
+    if (piece) attempts.push(piece);
+    lock(true);
+    try {
+      latest = await request("bridge", { attempts, seed: Number($("seed").value), automate: $("automate").checked, failJudge: $("fail").checked });
+      board(latest);
+      $("spans").textContent = `${latest.built.length} / 5`;
+      $("score").textContent = latest.score;
+      $("collapses").textContent = latest.collapses;
+      $("mode-note").textContent = latest.mode === "shadow" ? "Shadow mode: recommendations are recorded; no pieces are placed." : "Sandbox placements enabled. Only the gate’s actual act places a reversible toy piece.";
+      const last = latest.history.at(-1);
+      $("message").textContent = latest.complete ? "Crossing complete! Your flag made it over the river. Try a new seed or use fewer expensive arches." : last ? `${last.result}. ${last.failedOpen ? "No judgment was available; review is the default." : `Suggested: ${last.suggested}. Actual: ${last.actual}.`} ${attempts.length >= 30 ? "Thirty proposals reached: start a new crossing." : ""}` : "Choose a piece. Aim for the lightest material that carries the next load.";
+      $("history").innerHTML = latest.history.length ? [...latest.history].reverse().map((row) => `<li><strong>Span ${row.span} · ${escapeHtml(latest.materials[row.material].name)}</strong><small>${escapeHtml(row.result)} · load ${row.load}, capacity ${row.capacity}</small></li>`).join("") : '<li class="muted">Your first proposal starts the story.</li>';
+      showLedger($("ledger"), latest.ledger);
+      $("download").disabled = !latest.ledger.rows.length;
+    } catch (error) {
+      if (piece) attempts.pop();
+      $("message").textContent = error.message;
+    } finally { lock(false); }
+  }
+  document.querySelectorAll("[data-piece]").forEach((button) => { button.addEventListener("click", () => update(button.dataset.piece)); });
+  function reset() { attempts = []; latest = undefined; update(); }
+  for (const id of ["automate", "fail", "seed"]) $(id).addEventListener("change", reset);
+  $("reset").addEventListener("click", reset);
+  $("download").addEventListener("click", () => { if (latest) downloadLedger(latest.ledger.rows); });
+  board();
+  update();
+</script>
+</body>
+</html>

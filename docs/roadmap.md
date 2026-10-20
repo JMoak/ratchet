@@ -17,6 +17,11 @@ counterexamples; these changes add no new primitive.
 
 The next milestone is evidence that earns enforcement, ahead of more adapters or middleware:
 
+The first offline/live harness and statistical comparison are now implemented in
+`experiments/pilot/` (`bun run pilot`, [guide](pilot.md)). Its 54 authored fixtures are
+regression evidence, not the representative independent labels still needed below.
+The [first live run and matched-budget evidence graphs](pilot-results.md) are recorded.
+
 1. Separate representative shadow validation from audits of already-allowed actions.
    Audit-only labels cannot justify expanding automation below the current bar. Record
    how labels were selected; shadow mode alone does not make selectively supplied labels
@@ -45,6 +50,15 @@ engine's exclusion of floor/bypass placeholders; avoid stale evidence across pol
 changes and demotion/re-promotion; decide whether audits should default on as the vision
 intends (currently opt-in); and distinguish a recorded-spend cutoff from a guaranteed
 prepaid budget. Do not add a general monitoring framework to solve these one at a time.
+
+## Proposed application: subject relevance
+
+The [subject-relevance proposal](design/subject-relevance.md) explores source-grounded
+subject maps, goal-specific evidence selection, and explicit project/person preferences.
+Start with a bounded corpus experiment and a local research workbench built on Ratchet.
+Keep ingestion, maps, profiles, and UI outside the engine; extract another project only
+after the application demonstrates value. This is a planned experiment, not a replacement
+for the tool-gate pilot or a new production guarantee.
 
 ## 0.1 (this tree)
 

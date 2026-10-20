@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Parcel Patrol · Ratchet Arcade</title>
+  <link rel="stylesheet" href="/common.css">
+  <style>
+    :root{--ink:#172d43;--orange:#df642d;--paper:#fffaf0;--line:#e4d6bf}
+    body{background:#f7f0e3;color:var(--ink)}
+    .parcel-layout{display:grid;grid-template-columns:1.35fr 1fr;gap:24px;align-items:start}
+    .parcel-stage{background:#eddfc7;position:relative;overflow:hidden;padding:36px 24px 20px;min-height:270px;text-align:center;border-radius:18px}
+    .parcel-stage:before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(135deg,transparent 0 22px,#fff2 23px 24px);pointer-events:none}
+    .carton{position:relative;display:grid;place-content:center;gap:6px;width:220px;min-height:150px;margin:0 auto 25px;background:#d69d60;border:3px solid #885c36;border-radius:8px;box-shadow:9px 12px 0 #aa805033;transform:rotate(-3deg)}
+    .carton:before{content:"";position:absolute;inset:0 88px;background:#f4d8a4a6;border-inline:1px dashed #986e48}
+    .parcel-label{position:relative;margin:30px 12px 14px;padding:14px 10px;background:var(--paper);border-radius:3px;box-shadow:0 2px 0 #885c3640}
+    .parcel-label strong{display:block;font-size:1.2rem}.parcel-label small{display:block;margin-top:6px}
+    .belt{position:relative;height:22px;border-block:3px solid var(--ink);background:repeating-linear-gradient(90deg,#456070 0 18px,#213a4e 18px 23px);border-radius:20px}
+    .dispatch-stamp{position:absolute;right:10px;top:15px;border:3px solid var(--orange);color:#a84119;transform:rotate(12deg);padding:5px;font-weight:800;font-size:.78rem;background:#fff7}
+    .lane-row{display:flex;gap:8px;margin-top:16px;justify-content:space-around;font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em}
+    .lane-row span{padding:7px 12px;border-radius:20px}.lane-row .landed{background:var(--ink);color:white}
+    .manifest{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:20px 0}
+    .manifest div{padding:12px;background:#f5efe3;border-radius:9px}.manifest dt{font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px}.manifest dd{margin:0;font-weight:700}
+    .sender-note{width:100%;box-sizing:border-box;min-height:82px;background:#fff7d5;border:1px solid #d9bf68;border-radius:8px;padding:12px;color:var(--ink);font:inherit;resize:vertical}
+    .trust-tag{font-size:.72rem;text-transform:uppercase;letter-spacing:.09em;font-weight:800;color:#526679}
+    .action-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:20px 0 10px;border:0;padding:0;min-width:0}.action-row button{min-height:56px}
+    .action-row kbd{font:inherit;font-size:.7rem;opacity:.7;padding-left:6px}
+    .rules{padding-left:20px;line-height:1.65}.rules strong{color:#9e3915}
+    .control{display:block;margin:16px 0}.control input[type=range]{width:100%;accent-color:var(--orange)}
+    .toggle{display:flex;gap:10px;align-items:start;margin:15px 0;line-height:1.4}.toggle input{margin-top:4px;accent-color:var(--orange)}
+    .result-card{margin-top:16px;padding:18px;background:#e9f1e8;border-left:5px solid #477552;border-radius:10px}
+    .result-card.miss{background:#fce8de;border-color:#b64e25}.result-card p{margin:8px 0}.result-card h2{margin:0;font-size:1.25rem}
+    .result-detail{font-size:.85rem;line-height:1.5}.score-strip{display:flex;gap:12px;flex-wrap:wrap;margin:24px 0}.score-strip .metric{min-width:110px}
+    .score-strip strong{display:block;font-size:1.8rem}.score-strip span{font-size:.8rem}
+    .hashes{font-family:monospace;font-size:.72rem;word-break:break-all;line-height:1.7}
+    details summary{cursor:pointer;font-weight:700;padding:10px 0}pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:.8rem}
+    .parcel-footer{display:flex;gap:12px;flex-wrap:wrap;align-items:center;justify-content:space-between;margin:24px 0}
+    button:focus-visible,input:focus-visible,textarea:focus-visible,summary:focus-visible{outline:3px solid var(--orange);outline-offset:3px}
+    button:disabled{opacity:.55;cursor:wait}
+    @media(max-width:760px){.parcel-layout{grid-template-columns:1fr}.hero h1{font-size:2.5rem}.parcel-stage{min-height:230px;padding-top:25px}.carton{width:200px}.action-row kbd{display:none}}
+    @media(prefers-reduced-motion:no-preference){.carton{transition:transform .25s}.carton.routed{transform:rotate(3deg) translateY(-6px)}}
+  </style>
+</head>
+<body>
+  <main class="page">
+    <nav class="topbar" aria-label="Arcade navigation"><a href="/">← Ratchet Arcade</a><span class="badge">03 / Parcel Patrol</span></nav>
+    <header class="hero">
+      <p class="eyebrow">A tiny dispatch desk. A very opinionated scanner.</p>
+      <h1>Parcel Patrol</h1>
+      <p>Keep the imaginary delivery belt moving. Catch tricky parcels. Learn when a judgment earns an action.</p>
+    </header>
+    <section class="score-strip" aria-label="Game score">
+      <div class="metric"><strong id="score">0</strong><span>dispatch points</span></div>
+      <div class="metric"><strong id="streak">0</strong><span>perfect streak</span></div>
+      <div class="metric"><strong id="count">1 / 8</strong><span>parcel this shift</span></div>
+      <div class="metric"><strong id="mode-label">Shadow</strong><span>current mode</span></div>
+    </section>
+    <div class="parcel-layout">
+      <section class="panel" aria-labelledby="parcel-heading">
+        <div class="parcel-stage" aria-hidden="true">
+          <div class="carton" id="carton"><span class="dispatch-stamp" id="stamp">INCOMING</span>
+            <div class="parcel-label"><strong id="box-name">Loading parcel…</strong><small id="box-id">PARCEL PATROL</small></div>
+          </div>
+          <div class="belt"></div><div class="lane-row"><span data-lane="ship">Ship</span><span data-lane="inspect">Inspect</span><span data-lane="hold">Hold</span></div>
+        </div>
+        <h2 id="parcel-heading">Your next parcel</h2>
+        <span class="trust-tag">Trusted manifest · supplied by the game</span>
+        <dl class="manifest" id="manifest"></dl>
+        <p id="scanner" class="muted"></p>
+        <label for="note" class="trust-tag">Untrusted sender note · try editing it</label>
+        <textarea class="sender-note" id="note" maxlength="500" aria-describedby="note-help"></textarea>
+        <p class="muted" id="note-help">A note can fool this scripted scanner. It cannot rewrite the trusted manifest or remove a code-owned floor.</p>
+        <fieldset class="action-row" aria-label="Choose a route">
+          <button class="button" id="ship" data-choice="ship" type="button" disabled>Ship <kbd>1</kbd></button>
+          <button class="button secondary" id="inspect" data-choice="inspect" type="button" disabled>Inspect <kbd>2</kbd></button>
+          <button class="button secondary" id="hold" data-choice="hold" type="button" disabled>Hold <kbd>3</kbd></button>
+        </fieldset>
+        <p class="muted" id="mode-help">Shadow: your button routes the parcel. The engine records its suggestion beside your choice.</p>
+        <div id="result" aria-live="polite"></div>
+        <button class="button" id="next" type="button" hidden>Next parcel →</button>
+        <p class="error" id="error" role="alert" hidden></p>
+      </section>
+      <aside class="panel" aria-labelledby="policy-heading">
+        <p class="eyebrow">The model proposes. Code decides.</p>
+        <h2 id="policy-heading">Run your dispatch desk</h2>
+        <label class="control" for="threshold">Ship threshold <strong id="threshold-value">85%</strong>
+          <input id="threshold" type="range" min="50" max="99" value="85" step="1">
+        </label>
+        <p class="muted">Above this bar: suggest ship. Below it: inspect. Higher bars can save errors and add review work.</p>
+        <label class="toggle"><input id="automate" type="checkbox"><span><strong>Let the gate route toy parcels</strong><br>Enforce mode follows the final ruling. Your button becomes a comparison choice.</span></label>
+        <label class="toggle"><input id="failure" type="checkbox"><span><strong>Disconnect the toy scanner</strong><br>An oracle failure recommends inspection. A hard floor can settle a parcel without a call.</span></label>
+        <hr>
+        <h3>Three rules the note cannot change</h3>
+        <ul class="rules">
+          <li><strong>Stop stamp → hold.</strong></li>
+          <li><strong>Over 8 kg → inspect.</strong></li>
+          <li><strong>Unverified address → inspect.</strong></li>
+        </ul>
+        <div class="notice">All routing is imaginary and reversible. This offline simulator illustrates behavior; its probabilities are authored game values, not measured reliability.</div>
+        <h3>How to score</h3>
+        <p class="muted">Best route: +12 for ship/hold, +8 for inspect. A safe detour: +2. Shipping an unready parcel: −15. Streaks reward the best route. Points always follow the <strong>actual</strong> route.</p>
+        <details><summary>Peek at the evidence boundary</summary><div class="hashes" id="hashes"></div><pre id="state"></pre><p class="muted">Editing the note changes the full hash, but not the trusted hash. Markers record provenance; they do not make a model immune to misleading text.</p></details>
+      </aside>
+    </div>
+    <section class="panel" style="margin-top:24px" aria-labelledby="ledger-heading">
+      <div class="parcel-footer"><h2 id="ledger-heading">Your dispatch ledger</h2><button class="button secondary" id="download" type="button" disabled>Download ledger</button></div>
+      <div id="ledger"><p class="muted">Make a move to record the suggestion, actual action, and world label.</p></div>
+    </section>
+    <footer class="parcel-footer"><p class="muted">Eight parcels per shift. Keyboard: 1 / 2 / 3 to choose, N for next.</p><button class="button secondary" id="restart" type="button">New shift</button></footer>
+  </main>
+  <script type="module">
+    import { downloadLedger, escapeHtml, request, showLedger } from "/common.js";
+
+    const $ = (id) => document.getElementById(id);
+    const buttons = [...document.querySelectorAll("[data-choice]")];
+    let seed = 17, round = 0, score = 0, streak = 0, busy = false, finished = false;
+    let history = {rows: [], decisions: []};
+    function settings() {
+      return {seed, round, threshold: Number($("threshold").value) / 100,
+        automate: $("automate").checked, failure: $("failure").checked};
+    }
+    function controls() {
+      for (const button of buttons) button.disabled = busy || finished;
+      for (const id of ["threshold", "automate", "failure", "note"]) $(id).disabled = busy || finished;
+      $("next").disabled = busy;
+      $("restart").disabled = busy;
+      $("threshold-value").textContent = `${$("threshold").value}%`;
+      $("mode-label").textContent = $("automate").checked ? "Enforce" : "Shadow";
+      $("mode-help").textContent = $("automate").checked
+        ? "Enforce: the gate routes this toy parcel. Your button records what you would have chosen."
+        : "Shadow: your button routes the parcel. The engine records its suggestion beside your choice.";
+    }
+    function evidence(result) {
+      $("state").textContent = result.state.text;
+      $("hashes").textContent = `Full hash: ${result.state.hash}\nTrusted hash: ${result.state.trustedHash}`;
+    }
+    async function preview() {
+      busy = true; finished = false; controls(); $("error").hidden = true;
+      $("result").innerHTML = ""; $("next").hidden = true;
+      $("carton").classList.remove("routed");
+      document.querySelectorAll("[data-lane]").forEach(el => { el.classList.remove("landed"); });
+      try {
+        const result = await request("parcels", settings());
+        const p = result.parcel;
+        $("box-name").textContent = p.name; $("box-id").textContent = p.id;
+        $("parcel-heading").textContent = p.name; $("stamp").textContent = p.blocked ? "STOP STAMP" : "INCOMING";
+        $("manifest").innerHTML = [
+          ["Destination", p.destination], ["Belt weight", `${p.weight} kg / 8 kg limit`],
+          ["Address", p.addressVerified ? "Verified" : "Needs verification"], ["Release", p.blocked ? "Stop stamp" : "No stop stamp"]
+        ].map(([label,value]) => `<div><dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value)}</dd></div>`).join("");
+        $("scanner").textContent = `Scanner clue: ${p.scanner}`;
+        $("note").value = p.senderNote; $("count").textContent = `${round + 1} / 8`; evidence(result);
+      } catch (error) {
+        $("error").textContent = error.message; $("error").hidden = false; finished = true;
+      } finally { busy = false; controls(); }
+    }
+    async function dispatch(choice) {
+      if (busy || finished) return;
+      busy = true; controls(); $("error").hidden = true;
+      try {
+        const result = await request("parcels", {...settings(), choice, senderNote: $("note").value});
+        const o = result.outcome;
+        score += o.points; streak = o.perfect ? streak + 1 : 0; finished = true;
+        $("score").textContent = score; $("streak").textContent = streak;
+        $("carton").classList.add("routed");
+        document.querySelector(`[data-lane="${o.actual}"]`).classList.add("landed");
+        $("stamp").textContent = o.actual.toUpperCase();
+        const signal = !o.oracleCalled ? "A hard floor settled this parcel. No oracle call."
+          : o.failedOpen ? "The scanner failed. The engine recommended review."
+          : `Toy oracle readiness: ${Math.round(o.probability * 100)}%.`;
+        const authority = result.mode === "shadow" ? "Your manual route" : "Automated toy route";
+        $("result").innerHTML = `<div class="result-card ${o.safe ? "" : "miss"}"><h2>${o.perfect ? "Right on route!" : o.safe ? "Safe detour." : "Belt mishap!"} ${o.points > 0 ? "+" : ""}${o.points}</h2><p>${escapeHtml(o.explanation)}</p><p class="result-detail"><strong>${authority}: ${o.actual}.</strong> You chose ${o.player}; the gate suggested ${o.suggested}. ${escapeHtml(signal)}</p></div>`;
+        history.rows.push(...result.ledger.rows); history.decisions.push(...result.ledger.decisions);
+        showLedger($("ledger"), history); $("download").disabled = false; evidence(result);
+        if (round < 7) { $("next").hidden = false; }
+        else $("result").insertAdjacentHTML("beforeend", `<p class="notice">Shift complete! ${score} points. Start a new shift and try a different threshold or automation mode.</p>`);
+      } catch (error) { $("error").textContent = error.message; $("error").hidden = false; }
+      finally { busy = false; controls(); if (finished && round < 7) $("next").focus(); }
+    }
+    buttons.forEach(button => { button.addEventListener("click", () => dispatch(button.dataset.choice)); });
+    for (const id of ["threshold", "automate"]) $(id).addEventListener("input", controls);
+    $("next").addEventListener("click", async () => { round++; await preview(); $("ship").focus(); });
+    $("restart").addEventListener("click", () => {
+      seed = seed % 9999 + 1; round = 0; score = 0; streak = 0; history = {rows: [], decisions: []};
+      $("score").textContent = "0"; $("streak").textContent = "0"; $("download").disabled = true;
+      $("ledger").innerHTML = '<p class="muted">Fresh shift. Your next move starts the ledger.</p>'; preview();
+    });
+    $("download").addEventListener("click", () => downloadLedger(history.rows));
+    document.addEventListener("keydown", event => {
+      if (event.ctrlKey || event.metaKey || event.altKey || event.repeat || /INPUT|TEXTAREA|SELECT|BUTTON/.test(event.target.tagName)) return;
+      const choice = {"1":"ship","2":"inspect","3":"hold"}[event.key];
+      if (choice) { event.preventDefault(); dispatch(choice); }
+      if (event.key.toLowerCase() === "n" && finished && round < 7 && !busy) $("next").click();
+    });
+    preview();
+  </script>
+</body>
+</html>
