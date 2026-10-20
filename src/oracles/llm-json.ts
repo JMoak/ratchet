@@ -152,17 +152,27 @@ export class LlmJsonOracle implements Oracle {
     const content = body.choices?.[0]?.message?.content;
     if (!content) throw new Error(`${this.id}: empty completion`);
     const parsed = JSON.parse(content) as { answers?: Answer[] };
-    const byId = new Map((parsed.answers ?? []).map((a) => [a.id, a.probabilities]));
+    if (!Array.isArray(parsed?.answers) || parsed.answers.length !== questions.length) {
+      throw new Error(`${this.id}: expected one answer per question`);
+    }
+    const byId = new Map(parsed.answers.map((a) => [a.id, a.probabilities]));
+    if (byId.size !== questions.length) throw new Error(`${this.id}: duplicate answer ids`);
     const latencyMs = performance.now() - started;
     const cost = this.costOf(body);
     const at = nowIso();
     return questions.map((q) => {
       const probs = byId.get(q.id);
       const labels = labelsFor(q);
-      if (!probs || probs.length !== labels.length) {
+      if (
+        !Array.isArray(probs) ||
+        probs.length !== labels.length ||
+        probs.some((p) => !Number.isFinite(p) || p < 0 || p > 1) ||
+        Math.abs(probs.reduce((sum, p) => sum + p, 0) - 1) >= 1e-3
+      ) {
         throw new Error(`${this.id}: malformed answer for ${q.id}`);
       }
-      const p = normalize(probs.map((x) => (Number.isFinite(x) && x >= 0 ? x : 0)));
+      // Only correct rounding error; repairing invalid mass can turn garbage into certainty.
+      const p = normalize(probs);
       const verdict = this.verdictFor(q, p);
       validateVerdict(q, verdict);
       return {

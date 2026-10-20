@@ -258,9 +258,9 @@ export function scoredFromLedger(
 }
 
 /**
- * Rows whose presence in the labelled set did not depend on the oracle's confidence:
- * shadow rows (nothing acted) and blind audits (acts diverted to review at random).
- * Fitting thresholds on anything else lets the engine grade its own homework.
+ * Historical fit-source classification: shadow rows and blind audits. Audits are random
+ * only within the acted population; they cannot validate a lower bar. Shadow labels must
+ * also be collected representatively. This predicate alone does not establish that.
  */
 export const isUnselected = (r: DecisionRecord): boolean =>
   r.mode === "shadow" || r.tags.includes("audit");
@@ -306,6 +306,50 @@ export function scoredWithTruth(
       },
     ];
   });
+}
+
+/**
+ * Which side of a judge question meant "go" when this row was ruled, read from the row's own
+ * `go` (the policy stores the probability it acted on). Undefined when the row cannot tell:
+ * not a judge, failed open, or an exact 0.5.
+ */
+export function recordedGoIsYes(r: DecisionRecord): boolean | undefined {
+  if (r.verdict.kind !== "judge" || r.failedOpen) return undefined;
+  const p = r.verdict.pYes;
+  if (Math.abs(p - 0.5) < 1e-9) return undefined;
+  if (Math.abs(r.go - p) < 1e-9) return true;
+  if (Math.abs(r.go - (1 - p)) < 1e-9) return false;
+  return undefined;
+}
+
+/** The polarity most rows of a gate were ruled with; "yes is go" when no row says. */
+export function inferGoIsYes(rows: readonly DecisionRecord[]): {
+  readonly goIsYes: boolean;
+  readonly evidence: number;
+} {
+  let yes = 0;
+  let no = 0;
+  for (const r of rows) {
+    const g = recordedGoIsYes(r);
+    if (g === true) yes++;
+    else if (g === false) no++;
+  }
+  return { goIsYes: yes >= no, evidence: yes + no };
+}
+
+/**
+ * On a labelled row, would acting have been right? For pick and rate questions acting means
+ * taking the leading answer, so it is the recorded `correct`. For judge questions acting means
+ * taking the go side, which is the truth when it is recorded and otherwise follows from
+ * whether the go side was the leading answer.
+ */
+export function actWasRight(r: DecisionRecord, goIsYes: boolean): boolean | undefined {
+  const o = r.outcome;
+  if (!o) return undefined;
+  if (r.verdict.kind !== "judge") return o.correct;
+  if (typeof o.truth === "boolean") return o.truth === goIsYes;
+  const goLeads = r.verdict.pYes >= 0.5 === goIsYes;
+  return goLeads ? o.correct : !o.correct;
 }
 
 /** Phi coefficient between two members' correctness on the same items: the error correlation to feed PoolOptions. */
@@ -378,8 +422,16 @@ export function fitIsotonic(items: readonly Scored[], minSupport = 30): Calibrat
   const sorted = items.slice().sort((a, b) => a.confidence - b.confidence);
   type Block = { lo: number; hi: number; sum: number; n: number };
   const blocks: Block[] = [];
-  for (const s of sorted) {
-    blocks.push({ lo: s.confidence, hi: s.confidence, sum: s.correct ? 1 : 0, n: 1 });
+  for (let i = 0; i < sorted.length; ) {
+    const s = sorted[i] as Scored;
+    const block: Block = { lo: s.confidence, hi: s.confidence, sum: 0, n: 0 };
+    // Equal inputs must share one fitted value before enforcing monotonicity (weighted PAV).
+    do {
+      block.sum += sorted[i]?.correct ? 1 : 0;
+      block.n++;
+      i++;
+    } while (i < sorted.length && sorted[i]?.confidence === s.confidence);
+    blocks.push(block);
     while (blocks.length >= 2) {
       const b = blocks[blocks.length - 1] as Block;
       const a = blocks[blocks.length - 2] as Block;
@@ -432,7 +484,7 @@ function meanCost(
   let total = 0;
   for (const s of items) {
     if (s.confidence >= threshold) total += s.correct ? 0 : costWrongAct;
-    else total += costWrongHold;
+    else if (s.correct) total += costWrongHold;
   }
   return total / items.length;
 }

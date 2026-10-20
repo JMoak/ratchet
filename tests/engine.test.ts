@@ -2,7 +2,7 @@ import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { asStateLike, Engine } from "../src/engine.ts";
+import { asStateLike, Engine, type StrategySpec } from "../src/engine.ts";
 import { forQuestion, refuseIf } from "../src/floors.ts";
 import { hashState, JsonlLedger, MemoryLedger } from "../src/ledger/ledger.ts";
 import { SimOracle, type Truth } from "../src/oracles/sim.ts";
@@ -129,6 +129,112 @@ describe("Engine", () => {
     });
     expect(s.decision.strategy).toBe("sequential");
     expect(s.decision.members.length).toBeGreaterThanOrEqual(1);
+  });
+});
+
+describe("Engine strategy safety", () => {
+  const steady: Oracle = {
+    id: "steady",
+    decide: async (_state, questions) =>
+      questions.map((q) => ({
+        verdict: { kind: "judge", questionId: q.id, pYes: 0.8, confidence: 0.8 },
+        oracle: "steady",
+        cost: 0,
+        latencyMs: 0,
+        at: "2026-10-20T00:00:00Z",
+      })),
+  };
+  const strategies: readonly {
+    name: string;
+    spec: (oracle: Oracle) => StrategySpec;
+  }[] = [
+    { name: "ensemble", spec: (oracle) => ({ ensemble: { members: [{ oracle }] } }) },
+    {
+      name: "sequential",
+      spec: (oracle) => ({
+        sequential: { members: [{ oracle }], settleAbove: 0.95, maxSamples: 2 },
+      }),
+    },
+    {
+      name: "cascade",
+      spec: (oracle) => ({ cascade: { tiers: [{ oracle, settleAbove: 0.95 }] } }),
+    },
+  ];
+
+  for (const strategy of strategies) {
+    for (const failure of ["throw", "empty", "timeout"] as const) {
+      it(`${strategy.name} records review when an explicit oracle has a ${failure} failure`, async () => {
+        const oracle: Oracle = {
+          id: "broken",
+          decide: async () => {
+            if (failure === "throw") throw new Error("backend unavailable");
+            if (failure === "empty") return [];
+            return new Promise(() => {});
+          },
+        };
+        const engine = new Engine({ oracle: steady, mode: "enforce", timeoutMs: 5 });
+        const result = await engine.ask("command", safe, {
+          policy: { actAbove: 0.5 },
+          strategy: strategy.spec(oracle),
+        });
+        expect(result.action).toBe("review");
+        expect(result.decision.failedOpen).toBe(true);
+        expect(result.decision.members.every((d) => d.failedOpen && d.error)).toBe(true);
+        expect(await engine.ledger.all()).toMatchObject([
+          { id: result.recordId, action: "review", failedOpen: true },
+        ]);
+      });
+    }
+  }
+
+  it("a cascade can recover through a healthy tier after an explicit backend fails", async () => {
+    const dead: Oracle = {
+      id: "dead",
+      decide: async () => {
+        throw new Error("backend unavailable");
+      },
+    };
+    const engine = new Engine({ oracle: steady, mode: "enforce" });
+    const result = await engine.ask("command", safe, {
+      policy: { actAbove: 0.7 },
+      strategy: {
+        cascade: {
+          tiers: [
+            { oracle: dead, settleAbove: 0.9 },
+            { oracle: steady, settleAbove: 0.9 },
+          ],
+        },
+      },
+    });
+    expect(result.action).toBe("act");
+    expect(result.decision.failedOpen).not.toBe(true);
+    expect(result.decision.members[0]?.failedOpen).toBe(true);
+    expect(result.decision.members[1]?.oracle).toBe("steady");
+    expect((await engine.ledger.all()).length).toBe(1);
+  });
+
+  it("sequential replicas use the same cautious correlation default as an ensemble", async () => {
+    const engine = new Engine({ oracle: steady, mode: "enforce" });
+    const ensemble = await engine.ask("command", safe, {
+      policy: { actAbove: 0.98 },
+      strategy: { ensemble: { k: 5 } },
+    });
+    const sequential = await engine.ask("command", safe, {
+      policy: { actAbove: 0.98 },
+      strategy: { sequential: { settleAbove: 0.98, maxSamples: 5 } },
+    });
+    expect(sequential.action).toBe("review");
+    expect(sequential.decision.members).toHaveLength(5);
+    expect(sequential.decision.verdict.confidence).toBeCloseTo(
+      ensemble.decision.verdict.confidence,
+      12,
+    );
+    const measuredIndependent = await engine.ask("command", safe, {
+      policy: { actAbove: 0.98 },
+      strategy: { sequential: { settleAbove: 0.98, maxSamples: 5, correlation: 0 } },
+    });
+    expect(measuredIndependent.action).toBe("act");
+    expect(measuredIndependent.decision.members).toHaveLength(3);
   });
 });
 

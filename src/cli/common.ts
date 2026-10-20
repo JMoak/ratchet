@@ -172,54 +172,6 @@ export const answered = (r: DecisionRecord): boolean =>
   !r.failedOpen && !isFixed(r) && !isCombined(r);
 
 // ---------------------------------------------------------------------------
-// Was acting right?
-// ---------------------------------------------------------------------------
-
-/**
- * Which side of a judge question meant "go" when this row was ruled, read from the row's own
- * `go` (the policy stores the probability it acted on). Undefined when the row cannot tell:
- * not a judge, failed open, or an exact 0.5.
- */
-export function recordedGoIsYes(r: DecisionRecord): boolean | undefined {
-  if (r.verdict.kind !== "judge" || r.failedOpen) return undefined;
-  const p = r.verdict.pYes;
-  if (Math.abs(p - 0.5) < 1e-9) return undefined;
-  if (Math.abs(r.go - p) < 1e-9) return true;
-  if (Math.abs(r.go - (1 - p)) < 1e-9) return false;
-  return undefined;
-}
-
-/** The polarity most rows of a gate were ruled with; "yes is go" when no row says. */
-export function inferGoIsYes(rows: readonly DecisionRecord[]): {
-  readonly goIsYes: boolean;
-  readonly evidence: number;
-} {
-  let yes = 0;
-  let no = 0;
-  for (const r of rows) {
-    const g = recordedGoIsYes(r);
-    if (g === true) yes++;
-    else if (g === false) no++;
-  }
-  return { goIsYes: yes >= no, evidence: yes + no };
-}
-
-/**
- * On a labelled row, would acting have been right? For pick and rate questions acting means
- * taking the leading answer, so it is the recorded `correct`. For judge questions acting means
- * taking the go side, which is the truth when it is recorded and otherwise follows from
- * whether the go side was the leading answer.
- */
-export function actWasRight(r: DecisionRecord, goIsYes: boolean): boolean | undefined {
-  const o = r.outcome;
-  if (!o) return undefined;
-  if (r.verdict.kind !== "judge") return o.correct;
-  if (typeof o.truth === "boolean") return o.truth === goIsYes;
-  const goLeads = r.verdict.pYes >= 0.5 === goIsYes;
-  return goLeads ? o.correct : !o.correct;
-}
-
-// ---------------------------------------------------------------------------
 // Operations
 // ---------------------------------------------------------------------------
 

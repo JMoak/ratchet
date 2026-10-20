@@ -1,6 +1,50 @@
 # Roadmap
 
-Status as of 2026-10-17.
+Reviewed 2026-10-20. Historical milestones below describe the existing tree.
+
+## Current priority: prove one tool gate and verifier lifecycle
+
+Keep one small library, no runtime dependencies, and the existing deterministic policy
+boundary. The first pilot is agent tool gating and output verification. Start in shadow,
+collect a representative set of independently reviewed labels, and measure mistakes and
+review saved before choosing the acceptable wrong-action rate. A risk target is not yet
+agreed; 98% in examples is illustrative, not the pilot's acceptance criterion.
+
+The implementation review hardened repeated regex floors, failure and timeout handling for
+explicit strategy backends, sequential replica correlation, malformed adapter outputs,
+rollout action scoring, isotonic ties, and cost-based fitting. Regression tests cover the
+counterexamples; these changes add no new primitive.
+
+The next milestone is evidence that earns enforcement, ahead of more adapters or middleware:
+
+1. Separate representative shadow validation from audits of already-allowed actions.
+   Audit-only labels cannot justify expanding automation below the current bar. Record
+   how labels were selected; shadow mode alone does not make selectively supplied labels
+   representative.
+2. Fit a candidate, freeze its rubric, model, combiner and policy, then validate it on
+   independent labelled traffic at a predetermined evaluation point. Report insufficient
+   evidence explicitly. Reusing a fitted sample or repeatedly checking ordinary confidence
+   bounds is not certification.
+3. First compare the current rollout heuristic with independent validation in a seeded
+   offline experiment: false promotions, automation coverage, labels needed, and drift
+   detection delay. Split related requests/sessions together; do not count retries as new
+   independent evidence.
+4. Demonstrate one complete shadow -> label -> validate -> enforce -> audit loop on a
+   frozen tool-call corpus, then add the output-verification example through the same gate
+   machinery. Keep irreversible actions under code-owned floors.
+
+The current `Rollout` uses point estimates, not statistical certification. Even 20/20
+correct acts have a one-sided exact 95% lower accuracy bound of about 86.1%; with a fixed
+policy, independent trials and one planned evaluation, a zero-error sample needs 149 acts
+to put that bound above 98%. Those assumptions must be explicit in a future acceptance API.
+Primary sources and reasoning are in the
+[learning notes](../research_notes/Jev%20novel%20patterns%20catalog/learning_and_tooling.md).
+
+Other review followups, kept separate from new features: align CLI calibration with the
+engine's exclusion of floor/bypass placeholders; avoid stale evidence across policy/model
+changes and demotion/re-promotion; decide whether audits should default on as the vision
+intends (currently opt-in); and distinguish a recorded-spend cutoff from a guaranteed
+prepaid budget. Do not add a general monitoring framework to solve these one at a time.
 
 ## 0.1 (this tree)
 

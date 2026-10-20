@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { floorFor, forQuestion, refuseIf, reviewUnless } from "../src/floors.ts";
+import { allowIf, floorFor, forQuestion, refuseIf, reviewIf, reviewUnless } from "../src/floors.ts";
 import { policyFromCosts, rule } from "../src/policy.ts";
 import { judge, pick } from "../src/questions.ts";
 import type { Decision } from "../src/types.ts";
@@ -57,5 +57,37 @@ describe("floors", () => {
     const rules = [forQuestion("other", refuseIf(/./))];
     expect(floorFor(rules, "anything", q)).toBe("act");
     expect(floorFor(rules, "anything", pick("x", ["a", "b"], { id: "other" }))).toBe("refuse");
+  });
+  it.each(["g", "y"])("pattern rules are repeatable with the %s flag", (flag) => {
+    const pattern = new RegExp("danger", flag);
+    pattern.lastIndex = 3;
+    const refuse = refuseIf(pattern);
+    const review = reviewIf(pattern);
+    const unless = reviewUnless(pattern);
+    const bypass = allowIf(pattern);
+    for (let i = 0; i < 3; i++) {
+      expect(refuse("danger", q)).toBe("refuse");
+      expect(review("danger", q)).toBe("review");
+      expect(unless("danger", q)).toBeUndefined();
+      expect(bypass("danger", q)).toBe(true);
+      expect(refuse("safe", q)).toBeUndefined();
+      expect(unless("safe", q)).toBe("review");
+      expect(bypass("safe", q)).toBe(false);
+      expect(pattern.lastIndex).toBe(3);
+    }
+  });
+  it.each(["g", "y"])("question scopes are repeatable with the %s flag", (flag) => {
+    const pattern = new RegExp("safe", flag);
+    pattern.lastIndex = 2;
+    const scoped = forQuestion(pattern, refuseIf(/./));
+    for (let i = 0; i < 3; i++) {
+      expect(scoped("anything", q)).toBe("refuse");
+      expect(scoped("anything", judge("other?", { id: "other" }))).toBeUndefined();
+      expect(pattern.lastIndex).toBe(2);
+    }
+  });
+  it("sticky patterns still require a match at the beginning", () => {
+    expect(refuseIf(/danger/y)("prefix danger", q)).toBeUndefined();
+    expect(refuseIf(/danger/g)("prefix danger", q)).toBe("refuse");
   });
 });

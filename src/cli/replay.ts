@@ -1,4 +1,4 @@
-import { isUnselected } from "../ledger/calibration.ts";
+import { actWasRight, inferGoIsYes, isUnselected, recordedGoIsYes } from "../ledger/calibration.ts";
 import type { DecisionRecord } from "../ledger/ledger.ts";
 import { type GatePolicy, rule } from "../policy.ts";
 import { type Action, CAUTION, type Decision } from "../types.ts";
@@ -12,16 +12,13 @@ import {
   requiredString,
 } from "./args.ts";
 import {
-  actWasRight,
   type CommandResult,
   findGate,
   type GateGroup,
   groupGates,
-  inferGoIsYes,
   isFixed,
   loadLedger,
   pct,
-  recordedGoIsYes,
   runCommand,
   table,
 } from "./common.ts";

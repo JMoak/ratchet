@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { Engine } from "../src/engine.ts";
 import { jev, SystemOneOracle, toWire } from "../src/oracles/systemone.ts";
 import { judge, pick, rate } from "../src/questions.ts";
 
@@ -125,6 +126,113 @@ describe("System One wire format", () => {
     const o = new SystemOneOracle({ apiKey: "k", fetch: m.fetch });
     await expect(o.decide("x", [qs[0]])).rejects.toThrow(/expected noul/);
     await expect(o.decide("x", [qs[1]])).rejects.toThrow(/no answer/);
+  });
+
+  it.each(["-0.01", "1.01", "1e999", "null", '"1"'])(
+    "fails open on an invalid noul probability: %s",
+    async (probability) => {
+      const m = mockFetch(
+        () =>
+          new Response(`{"answers":{"is_urgent":{"type":"noul","noul":${probability}}}}`, {
+            status: 200,
+          }),
+      );
+      const oracle = new SystemOneOracle({ apiKey: "k", fetch: m.fetch });
+      await expect(oracle.decide("state", [qs[0]])).rejects.toThrow(/invalid noul/);
+      const engine = new Engine({ oracle, mode: "enforce" });
+      const result = await engine.ask("state", qs[0], { policy: { actAbove: 0.5 } });
+      expect(result.action).toBe("review");
+      expect(result.decision.failedOpen).toBe(true);
+      expect((await engine.ledger.all())[0]?.failedOpen).toBe(true);
+    },
+  );
+
+  it.each([
+    ["negative mass", ["-1", "1", "1"]],
+    ["out-of-range mass", ["0", "0", "2"]],
+    ["non-finite mass", ["0", "0", "1e999"]],
+    ["null mass", ["0", "0", "null"]],
+    ["string mass", ["0", "0", '"1"']],
+    ["zero mass", ["0", "0", "0"]],
+    ["underfull mass", ["0", "0", "0.9"]],
+    ["overfull mass", ["0.9", "0.9", "0.9"]],
+  ])("fails open on %s in a choice or score", async (_name, values) => {
+    for (const question of [qs[1], qs[2]]) {
+      const keys = question.kind === "pick" ? question.options : ["0", "1", "2"];
+      const probabilities = keys.map((key, i) => `${JSON.stringify(key)}:${values[i]}`).join(",");
+      const type = question.kind === "pick" ? "choice" : "score";
+      const m = mockFetch(
+        () =>
+          new Response(
+            `{"answers":{"${question.id}":{"type":"${type}","probabilities":{${probabilities}}}}}`,
+            { status: 200 },
+          ),
+      );
+      const oracle = new SystemOneOracle({ apiKey: "k", fetch: m.fetch });
+      await expect(oracle.decide("state", [question])).rejects.toThrow(/probabilit/);
+      const engine = new Engine({ oracle, mode: "enforce" });
+      const result = await engine.ask("state", question, { policy: { actAbove: 0.3 } });
+      expect(result.action).toBe("review");
+      expect(result.decision.failedOpen).toBe(true);
+    }
+  });
+
+  it.each(["missing", "extra", "wrong", "empty"])(
+    "rejects %s probability keys in a choice or score",
+    async (invalid) => {
+      for (const question of [qs[1], qs[2]]) {
+        const keys = question.kind === "pick" ? question.options : ["0", "1", "2"];
+        const probabilities: Record<string, number> = Object.fromEntries(
+          keys.map((key) => [key, 1 / keys.length]),
+        );
+        if (invalid === "missing" || invalid === "wrong") delete probabilities[keys[0] as string];
+        if (invalid === "extra" || invalid === "wrong") probabilities.other = 0;
+        const m = mockFetch(() =>
+          Response.json({
+            answers: {
+              [question.id]: {
+                type: question.kind === "pick" ? "choice" : "score",
+                probabilities: invalid === "empty" ? {} : probabilities,
+              },
+            },
+          }),
+        );
+        const engine = new Engine({
+          oracle: new SystemOneOracle({ apiKey: "k", fetch: m.fetch }),
+          mode: "enforce",
+        });
+        const result = await engine.ask("state", question, { policy: { actAbove: 0.3 } });
+        expect(result.action).toBe("review");
+        expect(result.decision.failedOpen).toBe(true);
+      }
+    },
+  );
+
+  it.each([
+    [0.33, 0.33, 0.33],
+    [0.34, 0.34, 0.33],
+  ])("normalizes documented hundredth rounding: %s, %s, %s", async (...values) => {
+    const m = mockFetch(() =>
+      Response.json({
+        answers: {
+          department: {
+            type: "choice",
+            probabilities: Object.fromEntries(qs[1].options.map((key, i) => [key, values[i]])),
+          },
+          frustration: {
+            type: "score",
+            probabilities: Object.fromEntries(values.map((p, i) => [String(i), p])),
+          },
+        },
+      }),
+    );
+    const oracle = new SystemOneOracle({ apiKey: "k", fetch: m.fetch });
+    const decisions = await oracle.decide("state", [qs[1], qs[2]]);
+    const total = values.reduce((sum, p) => sum + p, 0);
+    for (const decision of decisions) {
+      expect(decision.failedOpen).toBeUndefined();
+      expect(decision.verdict.confidence).toBeCloseTo(Math.max(...values) / total, 12);
+    }
   });
 
   it("rejects duplicate ids in one request and requires a key", () => {

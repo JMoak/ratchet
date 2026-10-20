@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
   coverageAt,
+  fitIsotonic,
   fitThreshold,
+  fitThresholdByCost,
   riskCoverage,
   type ScoredTruth,
   scoredWithTruth,
@@ -203,5 +205,57 @@ describe("scoredWithTruth", () => {
       { confidence: 0.8, correct: true, truth: true, leanedYes: true },
     ]);
     expect(scoredWithTruth(rows, { unselectedOnly: true })).toHaveLength(2);
+  });
+});
+
+describe("isotonic confidence ties", () => {
+  it("assigns one empirical accuracy to equal confidences regardless of label order", () => {
+    const items = [
+      { confidence: 0.8, correct: false },
+      { confidence: 0.8, correct: true },
+    ];
+    const forward = fitIsotonic(items, 2);
+    const reversed = fitIsotonic(items.toReversed(), 2);
+    expect(forward?.apply(0.8)).toBe(0.5);
+    expect(reversed?.apply(0.8)).toBe(0.5);
+    expect(forward?.blocks).toEqual([{ lo: 0.8, hi: 0.8, p: 0.5, n: 2 }]);
+    expect(reversed?.blocks).toEqual(forward?.blocks);
+  });
+
+  it("pools tied groups by their support when empirical accuracy falls", () => {
+    const items = [
+      { confidence: 0.6, correct: true },
+      { confidence: 0.8, correct: false },
+      { confidence: 0.8, correct: true },
+      { confidence: 0.9, correct: true },
+    ];
+    const fitted = fitIsotonic(items, 4);
+    expect(fitted?.blocks).toEqual([
+      { lo: 0.6, hi: 0.8, p: 2 / 3, n: 3 },
+      { lo: 0.9, hi: 0.9, p: 1, n: 1 },
+    ]);
+    expect(fitIsotonic(items.toReversed(), 4)?.blocks).toEqual(fitted?.blocks);
+    expect(fitted?.apply(0.8)).toBeCloseTo(2 / 3);
+    expect(fitted?.apply(0.85)).toBeCloseTo(5 / 6);
+  });
+});
+
+describe("cost fitting", () => {
+  it("charges a wrong hold only when the held answer would have been correct", () => {
+    // Every fold has 79 correct answers out of 100. Acting costs 4 * 0.21 = 0.84;
+    // holding costs 1 * 0.79 = 0.79, so acting on everything cannot improve the Bayes bar.
+    const items = Array.from({ length: 500 }, (_, i) => ({
+      confidence: 0.79,
+      correct: Math.floor(i / 5) % 100 >= 21,
+    }));
+    expect(fitThresholdByCost(items, 4, 1)).toEqual({
+      threshold: 0.8,
+      cost: 0.79,
+      baselineCost: 0.79,
+      baselineThreshold: 0.8,
+      accepted: false,
+      coverage: 0,
+      n: 500,
+    });
   });
 });

@@ -1,8 +1,14 @@
-import { ece, isUnselected, scoredFromLedger } from "../ledger/calibration.ts";
+import {
+  actWasRight,
+  ece,
+  inferGoIsYes,
+  isUnselected,
+  recordedGoIsYes,
+  scoredFromLedger,
+} from "../ledger/calibration.ts";
 import type { DecisionRecord } from "../ledger/ledger.ts";
 import { ledgerPath, numberFlag, parseArgs, requiredNumber, requiredString } from "./args.ts";
 import {
-  actWasRight,
   answered,
   byTime,
   type CommandResult,
@@ -11,11 +17,9 @@ import {
   findGate,
   type GateGroup,
   groupGates,
-  inferGoIsYes,
   loadLedger,
   modelOf,
   pct,
-  recordedGoIsYes,
   requestIdOf,
   runCommand,
 } from "./common.ts";

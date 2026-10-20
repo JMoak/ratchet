@@ -30,7 +30,7 @@ import {
   type Outcome,
 } from "./ledger/ledger.ts";
 import { clamp, mean, type Rand, rng } from "./math.ts";
-import { failOpen } from "./oracles/oracle.ts";
+import { type FailOpenOptions, failOpen } from "./oracles/oracle.ts";
 import { type GatePolicy, goProbability, type Ruling, rule } from "./policy.ts";
 import { judgeVerdictFrom, neutralVerdict } from "./questions.ts";
 import type {
@@ -71,18 +71,18 @@ export type StrategySpec =
 export interface EngineOptions {
   /**
    * Fraction of enforce-mode "act" rulings that are blind-audited: sent to review anyway,
-   * chosen at random regardless of confidence, and tagged "audit". This is the only slice
-   * of labelled history that the oracle's own confidence did not select, so it is the slice
-   * thresholds are fitted on. It also keeps reviewers seeing easy cases, which the
+   * chosen at random within acts, and tagged "audit". This monitors the acted population;
+   * it cannot establish performance below the existing action bar. It also keeps reviewers
+   * seeing easy cases, which the
    * human-factors literature says is what keeps them able to catch the hard ones.
    * Gates may set their own rate.
    */
   readonly auditRate?: number;
   readonly seed?: number;
   /**
-   * Hard spend cap in USD for this engine instance. Once reached, the oracle is not called:
-   * every ask fails open into a neutral decision and the policy's onFailOpen action (review
-   * by default). A cap that fails closed is the difference between a bill and an incident.
+   * Spend cutoff in USD for this engine instance, based on completed, recorded requests.
+   * Once reached, new asks fail open into the policy's onFailOpen action (review by default).
+   * In-flight requests and their strategy members can exceed it; costs are known afterward.
    */
   readonly budgetUsd?: number;
   /** The default oracle. Wrapped to fail open. */
@@ -155,12 +155,12 @@ export interface QuestionReport {
   readonly accuracy?: number;
   readonly brier?: number;
   readonly ece?: number;
-  /** Labelled rows the oracle's confidence did not select (shadow rows and blind audits). */
+  /** Labelled shadow/audit rows; audits represent only the policy's acted population. */
   readonly unselected: number;
   /** Label-free estimate: mean stated confidence. Its gap from `accuracy` is miscalibration. */
   readonly expectedAccuracy?: number;
   readonly fitted?: FittedThreshold;
-  /** "unselected" is trustworthy; "all" was fitted on confidence-selected labels and may be biased. */
+  /** Fit source, not a guarantee of representative labels or independently validated accuracy. */
   readonly fittedFrom?: "unselected" | "all";
 }
 
@@ -341,6 +341,7 @@ export class Engine implements Asker {
   private readonly tags: readonly string[];
   private readonly rand: Rand;
   private readonly budgetUsd: number | undefined;
+  private readonly oracleDefaults: FailOpenOptions;
   private readonly registry = new Map<string, Gate>();
   /** Single-question gates by question id, so askAll can route a question to its gate. */
   private readonly byQuestion = new Map<string, GateContext>();
@@ -348,10 +349,8 @@ export class Engine implements Asker {
   spent = 0;
 
   constructor(opts: EngineOptions) {
-    this.oracle = failOpen(
-      opts.oracle,
-      opts.timeoutMs !== undefined ? { timeoutMs: opts.timeoutMs } : {},
-    );
+    this.oracleDefaults = opts.timeoutMs !== undefined ? { timeoutMs: opts.timeoutMs } : {};
+    this.oracle = failOpen(opts.oracle, this.oracleDefaults);
     this.ledger = opts.ledger ?? new MemoryLedger();
     this.mode = opts.mode ?? "shadow";
     this.floors = opts.floors ?? [];
@@ -423,6 +422,11 @@ export class Engine implements Asker {
     return { ...single(d), strategy: "bypass", oracle: "bypass", detail: { bypass: true } };
   }
 
+  /** Every backend in an engine request shares its failure and timeout contract. */
+  private guarded(oracle: Oracle): Oracle {
+    return oracle === this.oracle ? oracle : failOpen(oracle, this.oracleDefaults);
+  }
+
   private async decide(state: string, q: Question, spec: StrategySpec): Promise<CompoundDecision> {
     if (this.overBudget) return this.exhausted(q);
     if (spec === "single") {
@@ -436,14 +440,26 @@ export class Engine implements Asker {
       // Replicas of one oracle are not independent voters: paraphrases of one question had an
       // error correlation of 0.77 on BoolQ. Default to that unless the caller measured otherwise.
       const correlation = pool.correlation ?? (members ? 0 : 0.75);
-      return ensemble(state, q, { ...pool, correlation, members: ms });
+      return ensemble(state, q, {
+        ...pool,
+        correlation,
+        members: ms.map((m) => ({ ...m, oracle: this.guarded(m.oracle) })),
+      });
     }
-    if ("cascade" in spec) return cascade(state, q, spec.cascade);
+    if ("cascade" in spec) {
+      return cascade(state, q, {
+        ...spec.cascade,
+        tiers: spec.cascade.tiers.map((t) => ({ ...t, oracle: this.guarded(t.oracle) })),
+      });
+    }
     const { k, members, settleAbove, maxSamples, minSamples, ...pool } = spec.sequential;
     const ms = members ?? replicate(this.oracle, k ?? maxSamples);
+    // Early stopping does not make repeated answers independent (the same design effect).
+    const correlation = pool.correlation ?? (members ? 0 : 0.75);
     return sequential(state, q, {
       ...pool,
-      members: ms,
+      correlation,
+      members: ms.map((m) => ({ ...m, oracle: this.guarded(m.oracle) })),
       settleAbove,
       maxSamples,
       ...(minSamples !== undefined ? { minSamples } : {}),

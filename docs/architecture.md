@@ -110,7 +110,10 @@ interface Oracle {
 One method. Answer every question, in order, from as few underlying calls as the backend
 allows (decision models want every question that shares a state in one request). Throw on
 anything malformed; `failOpen()` turns throws and timeouts into neutral decisions flagged
-`failedOpen`. Report `model` so versions are pinned in the ledger. Report `cost` in USD per
+`failedOpen`. The engine applies this wrapper and its `timeoutMs` to explicit ensemble and
+sequential members and cascade tiers as well as its default oracle. Direct strategy calls
+take caller-provided oracles; wrap those with `failOpen()` when that behavior is needed.
+Report `model` so versions are pinned in the ledger. Report `cost` in USD per
 question (split a batched call's cost evenly). Oracles see only text: the engine passes a
 State's `text`, never the object.
 
@@ -273,8 +276,10 @@ This is the artefact nothing else on the market has; everything the engine learn
   paraphrased prompts, framed state, different oracles. Members that fail open are dropped;
   if all fail, the compound is neutral and flagged.
 - **sequential** cycles through members, pools after each, and stops when the pooled
-  confidence clears `settleAbove` or `maxSamples` is hit. With calibrated members this is a
-  symmetric SPRT.
+  confidence clears `settleAbove` or `maxSamples` is hit. Engine-created replicas default to
+  correlation 0.75, just like replicated ensembles; explicit members retain caller-specified
+  correlation (default 0). This is an SPRT-shaped stopping heuristic: calibrated scores alone
+  do not establish the likelihood-ratio assumptions or error guarantees of an SPRT.
 - **cascade** asks tiers cheapest-first and settles where confidence clears that tier's bar.
   By default the settling tier's verdict replaces earlier ones; `pool` can combine them when
   tiers are known to be calibrated and reasonably independent. Expect smaller gains than the
@@ -318,8 +323,9 @@ locate(chunks, question, { none, id })                     // the pure builder: 
 - **locateWith()**: a pick over labelled chunks, optionally with a `none` option, as the
   cheap tier of tiered reading; `chunk` is absent when it chose `none`.
 - **sequential() with settleLead**: first-to-ahead-by-k stopping alongside the confidence bar.
-- **Engine budgetUsd**: a hard spend cap; past it, asks fail open into review without calling
-  the oracle.
+- **Engine budgetUsd**: a spend cutoff based on completed, recorded requests; after it is
+  reached, new asks fail open into review. An in-flight request, its strategy members, and
+  concurrent requests can exceed it because their final cost is not known in advance.
 - **allowIf() bypass**: known-safe states answered without a call; a floor still wins.
 - **cached() leases**: `ttlMs` and `maxUses` bound how long an answer is reused.
 - **withFallback()**: a second backend (open-weight clone, local model, `RuleOracle`) when the
@@ -335,11 +341,25 @@ The full map of community patterns to these pieces is `docs/idea-catalog.md`.
 ## Rollout
 
 `new Rollout({ gate, promisedAccuracy })` (or `gate.rollout`, built from the spec) reads the
-gate's labelled decision rows: in shadow it promotes the gate when enough shadow rows exist
-and the rows the policy would have acted on meet the promise; in enforce it demotes the gate
+gate's labelled decision rows: in shadow it promotes the gate when enough shadow/audit rows exist
+and the observed correctness of the actions meets the promise; in enforce it demotes the gate
 when the blind-audited acts fall below it. It flips `gate.mode` only. `new Rollout({ engine,
 promisedAccuracy })` keeps the engine-level behaviour: every decision row, and
 `engine.mode`, which every gate without a pinned mode follows.
+
+This controller compares observed proportions; it does not certify a population accuracy
+or provide an anytime-valid statistical guarantee. A judge's correct leading answer is not
+necessarily a correct action when the policy acts against that answer. Rollout therefore
+scores the action's polarity from the recorded `go`, consistent with CLI action scoring.
+An exact 0.5 judge verdict does not record its policy's polarity unambiguously and supplies
+no positive evidence of a correct action.
+
+Audits currently default to 0 and must be enabled explicitly. They randomly sample only
+enforced acts, so they monitor that acted population; they do not establish coverage or
+accuracy below the existing action bar. The current `unselected` fit classification combines
+shadow and audit rows, which does not by itself make them representative of all traffic.
+Lowering a bar needs representative shadow labels and independent validation. The evidence
+work ahead of broader deployment is listed first in `roadmap.md`.
 
 ## CLI
 

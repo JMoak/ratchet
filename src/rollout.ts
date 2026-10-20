@@ -1,6 +1,6 @@
 import type { Engine } from "./engine.ts";
 import type { Gate } from "./gate.ts";
-import { isUnselected } from "./ledger/calibration.ts";
+import { actWasRight, isUnselected, recordedGoIsYes } from "./ledger/calibration.ts";
 import { type DecisionRecord, decisionRows, type Ledger, type Mode } from "./ledger/ledger.ts";
 
 /**
@@ -9,6 +9,7 @@ import { type DecisionRecord, decisionRows, type Ledger, type Mode } from "./led
  * the rows it would have acted on, keeps a continuous blind audit live, and demotes to shadow
  * the moment the audited error rate breaks the promise. This controller does exactly that
  * from the ledger. Call `evaluate()` on a schedule or after each batch of labels.
+ * This is an empirical safeguard, not a population-accuracy or repeated-testing guarantee.
  *
  * Per gate is the normal use: a promise is about one decision point, so the controller reads
  * only that gate's decision rows (a battery's combined rows, never its members) and flips
@@ -108,7 +109,13 @@ export class Rollout {
 
   private actedAccuracy(rows: readonly DecisionRecord[]): { acted: number; accuracy: number } {
     const acted = rows.filter((r) => r.soft === "act");
-    const right = acted.filter((r) => r.outcome?.correct).length;
+    const right = acted.filter((r) => {
+      const polarity = recordedGoIsYes(r);
+      // An exact tie cannot establish which side meant go. Other rows cannot prove it,
+      // so it stays in the acted denominator without earning correctness credit.
+      if (r.verdict.kind === "judge" && polarity === undefined) return false;
+      return actWasRight(r, polarity ?? true) === true;
+    }).length;
     return { acted: acted.length, accuracy: acted.length ? right / acted.length : 0 };
   }
 

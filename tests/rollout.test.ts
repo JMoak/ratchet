@@ -12,7 +12,7 @@ import {
   relativeTime,
 } from "../src/recipes/digest.ts";
 import { Rollout } from "../src/rollout.ts";
-import type { JudgeVerdict } from "../src/types.ts";
+import type { JudgeVerdict, Oracle } from "../src/types.ts";
 
 describe("digest helpers", () => {
   it("bands, compares, counts and renders", () => {
@@ -151,4 +151,111 @@ describe("Rollout per gate", () => {
     expect(gate.mode).toBe("shadow");
     expect(gate.rollout.history.length).toBe(3);
   });
+});
+
+describe("Rollout action accuracy", () => {
+  it("does not borrow another question's polarity to credit an ambiguous acted row", async () => {
+    const oracle: Oracle = {
+      id: "mixed-polarity",
+      decide: async (_state, questions) =>
+        questions.map((question) => {
+          const pYes = question.id === "tied" ? 0.5 : 0.8;
+          return {
+            verdict: { kind: "judge", questionId: question.id, pYes, confidence: pYes },
+            oracle: "mixed-polarity",
+            cost: 0,
+            latencyMs: 0,
+            at: new Date().toISOString(),
+          };
+        }),
+    };
+    const engine = new Engine({ oracle });
+    const tied = await engine.ask("state", judge("Act?", { id: "tied" }), {
+      policy: { actAbove: 0.5, goIsYes: true },
+    });
+    await engine.label(tied.recordId, { correct: false, truth: false });
+    const other = await engine.ask("state", judge("Hold?", { id: "opposite" }), {
+      policy: { actAbove: 0.9, goIsYes: false },
+    });
+    await engine.label(other.recordId, { correct: true, truth: true });
+
+    const rollout = new Rollout({
+      engine,
+      promisedAccuracy: 0.9,
+      minShadowRows: 2,
+      minActed: 1,
+    });
+    expect(await rollout.evaluate()).toMatchObject({
+      mode: "shadow",
+      changed: false,
+      window: { n: 2, acted: 1, accuracy: 0 },
+    });
+  });
+
+  it.each([
+    { goIsYes: true, includeTruth: true },
+    { goIsYes: true, includeTruth: false },
+    { goIsYes: false, includeTruth: true },
+    { goIsYes: false, includeTruth: false },
+  ])(
+    "judges the action when goIsYes=$goIsYes and truth is recorded=$includeTruth",
+    async ({ goIsYes, includeTruth }) => {
+      const pYes = goIsYes ? 0.2 : 0.8;
+      const oracle: Oracle = {
+        id: "certain-hold",
+        decide: async (_state, questions) =>
+          questions.map((question) => ({
+            verdict: { kind: "judge", questionId: question.id, pYes, confidence: 0.8 },
+            oracle: "certain-hold",
+            cost: 0,
+            latencyMs: 0,
+            at: new Date().toISOString(),
+          })),
+      };
+      const engine = new Engine({ oracle, auditRate: 1 });
+      const gate = engine.gate({
+        id: "cheap-act",
+        question: judge("Should we act?", { id: "act" }),
+        // A cheap wrong act can legitimately give a bar below one half.
+        policy: { actAbove: 0.1, goIsYes },
+        promisedAccuracy: 0.9,
+        rollout: { minShadowRows: 1, minAuditRows: 1, minActed: 1, window: 1 },
+      });
+      const label = async (correct: boolean) => {
+        const result = await gate.ask("state");
+        const truth = correct ? !goIsYes : goIsYes;
+        await engine.label(result.recordId, {
+          correct,
+          ...(includeTruth ? { truth } : {}),
+        });
+      };
+
+      // The leading answer is right, but acting against it is wrong: do not promote.
+      await label(true);
+      const held = await gate.rollout.evaluate();
+      expect(held).toMatchObject({
+        mode: "shadow",
+        changed: false,
+        window: { acted: 1, accuracy: 0 },
+      });
+
+      // The leading answer is wrong, and acting is right: allow promotion.
+      await label(false);
+      const promoted = await gate.rollout.evaluate();
+      expect(promoted).toMatchObject({
+        mode: "enforce",
+        changed: true,
+        window: { acted: 1, accuracy: 1 },
+      });
+
+      // Live audits use the same meaning of "right" when deciding to demote.
+      await label(true);
+      const demoted = await gate.rollout.evaluate();
+      expect(demoted).toMatchObject({
+        mode: "shadow",
+        changed: true,
+        window: { acted: 1, accuracy: 0 },
+      });
+    },
+  );
 });

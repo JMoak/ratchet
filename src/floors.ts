@@ -19,19 +19,30 @@ export function floorFor(rules: readonly FloorRule[], state: string, question: Q
   return floor;
 }
 
+/** Global and sticky patterns must not make a hard rule depend on earlier evaluations. */
+function matches(pattern: RegExp, text: string): boolean {
+  const lastIndex = pattern.lastIndex;
+  try {
+    pattern.lastIndex = 0;
+    return pattern.test(text);
+  } finally {
+    pattern.lastIndex = lastIndex;
+  }
+}
+
 /** Refuse whenever the state matches any pattern. */
 export function refuseIf(...patterns: readonly RegExp[]): FloorRule {
-  return (state) => (patterns.some((p) => p.test(state)) ? "refuse" : undefined);
+  return (state) => (patterns.some((p) => matches(p, state)) ? "refuse" : undefined);
 }
 
 /** Require review whenever the state matches any pattern. */
 export function reviewIf(...patterns: readonly RegExp[]): FloorRule {
-  return (state) => (patterns.some((p) => p.test(state)) ? "review" : undefined);
+  return (state) => (patterns.some((p) => matches(p, state)) ? "review" : undefined);
 }
 
 /** Require review unless the state matches at least one allowed pattern. */
 export function reviewUnless(...allowed: readonly RegExp[]): FloorRule {
-  return (state) => (allowed.some((p) => p.test(state)) ? undefined : "review");
+  return (state) => (allowed.some((p) => matches(p, state)) ? undefined : "review");
 }
 
 /**
@@ -48,7 +59,7 @@ export function oneWayDoor(
 /** Scope a rule to questions whose id matches. */
 export function forQuestion(id: string | RegExp, rule: FloorRule): FloorRule {
   const match =
-    typeof id === "string" ? (q: Question) => q.id === id : (q: Question) => id.test(q.id);
+    typeof id === "string" ? (q: Question) => q.id === id : (q: Question) => matches(id, q.id);
   return (state, q) => (match(q) ? rule(state, q) : undefined);
 }
 
@@ -61,7 +72,7 @@ export function forQuestion(id: string | RegExp, rule: FloorRule): FloorRule {
 export type BypassRule = (state: string, question: Question) => boolean;
 
 export function allowIf(...patterns: readonly RegExp[]): BypassRule {
-  return (state) => patterns.some((p) => p.test(state));
+  return (state) => patterns.some((p) => matches(p, state));
 }
 
 export function bypassFor(

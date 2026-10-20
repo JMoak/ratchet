@@ -279,3 +279,40 @@ Measured cost levers are batching (fixed ~261-token overhead per Jev request; 8 
 - No tool implements request coalescing or near-duplicate state detection; only exact-key caches exist.
 - jevcache's licence, language, TTL and savings arithmetic are unclear; no independent measurement.
 - No published cost model for Workers AI "neurons" for Clef beyond Akita's note of a 10k/day allowance.
+
+---
+
+## Implementation review: evidence before enforcement (2026-10-20)
+
+The current engine's point-estimate rollout and exploratory threshold fitting are useful
+controls, but neither certifies the final selected policy's accuracy.
+
+- **Independent validation.** [Learn then Test, section 3.2](https://arxiv.org/html/2110.01052)
+  treats selective accuracy as a risk-control problem and uses binomial testing with
+  correction when choosing among candidate policies. For ratchet, begin with one frozen
+  candidate, an independent validation set, and a predetermined evaluation point; avoid
+  introducing a general multiple-testing framework before that path works.
+- **Repeated inspection.** [Howard et al., confidence sequences](https://arxiv.org/abs/1810.08240)
+  distinguish time-uniform inference from fixed-time intervals. Repeated `evaluate()` calls
+  on overlapping windows do not inherit the confidence level of a one-time interval.
+  Conservative demotion can remain an explicitly empirical safeguard.
+- **Which population was labelled?** [Lakkaraju et al., selective labels](https://www.cs.cornell.edu/home/kleinber/kdd17-selective.pdf)
+  explain why outcomes observed under a selection policy cannot simply evaluate arbitrary
+  alternatives. In this engine, random audits sample existing acts only. They cannot
+  establish performance below the action threshold. Shadow labels also need a representative
+  sampling protocol; the mode field alone is insufficient.
+
+Calculated illustration: for independent Bernoulli correctness on one fixed policy, an
+all-success sample of size `n` has exact one-sided 95% lower bound `0.05 ** (1 / n)`.
+At `n = 20` that is 0.8609. Reaching 0.98 requires
+`ceil(log(0.05) / log(0.98)) = 149` all-correct acted examples. A policy with true accuracy
+0.95 produces 20/20 with probability `0.95 ** 20 = 0.3585`. These calculations do not cover
+correlated retries, threshold selection on the same labels, or repeated evaluation.
+
+Next experiment: seeded offline runs comparing current promotion with independent,
+fixed-time validation. Include accuracy just below/above the target, confidence-dependent
+errors, drift and audit-only labels; measure false promotion, automation coverage, labels
+needed, false demotion and detection delay. Then validate the protocol on one frozen
+tool-call corpus split by request/session. No paid model calls are needed for the initial
+statistical experiment. The pilot's risk tolerance is deliberately undecided until a
+representative shadow run characterizes mistakes and review savings.

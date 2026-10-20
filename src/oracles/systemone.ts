@@ -131,6 +131,32 @@ const sleep = (ms: number, signal?: AbortSignal) =>
     );
   });
 
+/** Live System One distributions are rounded to hundredths: allow at most 0.005 per entry. */
+function wireProbabilities(id: string, keys: readonly string[], value: unknown): number[] {
+  if (
+    typeof value !== "object" ||
+    value === null ||
+    Array.isArray(value) ||
+    Object.keys(value).length !== keys.length
+  ) {
+    throw new Error(`${id}: malformed probabilities`);
+  }
+  const record = value as Record<string, unknown>;
+  const probabilities = keys.map((key) => {
+    const p = Object.hasOwn(record, key) ? record[key] : undefined;
+    if (typeof p !== "number" || !Number.isFinite(p) || p < 0 || p > 1) {
+      throw new Error(`${id}: invalid probability for ${key}`);
+    }
+    return p;
+  });
+  const total = probabilities.reduce((sum, p) => sum + p, 0);
+  const roundingError = keys.length * (0.005 + Number.EPSILON);
+  if (!(total > 0) || Math.abs(total - 1) > roundingError) {
+    throw new Error(`${id}: probabilities sum to ${total}`);
+  }
+  return normalize(probabilities);
+}
+
 export class SystemOneOracle implements Oracle {
   readonly id: string;
   readonly model: string;
@@ -229,11 +255,14 @@ export class SystemOneOracle implements Oracle {
     switch (q.kind) {
       case "judge": {
         if (a.type !== "noul") throw new Error(`${q.id}: expected noul, got ${a.type}`);
+        if (!Number.isFinite(a.noul) || a.noul < 0 || a.noul > 1) {
+          throw new Error(`${q.id}: invalid noul probability`);
+        }
         return { verdict: judgeVerdictFrom(q, a.noul) };
       }
       case "pick": {
         if (a.type !== "choice") throw new Error(`${q.id}: expected choice, got ${a.type}`);
-        const probs = normalize(q.options.map((o) => a.probabilities[o] ?? 0));
+        const probs = wireProbabilities(q.id, q.options, a.probabilities);
         return {
           verdict: pickVerdictFrom(q, probs),
           vendor: { confidence: a.confidence, choice: a.choice },
@@ -241,7 +270,11 @@ export class SystemOneOracle implements Oracle {
       }
       case "rate": {
         if (a.type !== "score") throw new Error(`${q.id}: expected score, got ${a.type}`);
-        const probs = normalize(q.levels.map((_, i) => a.probabilities[String(i)] ?? 0));
+        const probs = wireProbabilities(
+          q.id,
+          q.levels.map((_, i) => String(i)),
+          a.probabilities,
+        );
         return {
           verdict: rateVerdictFrom(q, probs),
           vendor: { confidence: a.confidence, score: a.score },

@@ -23,7 +23,7 @@ const safe = engine.gate({
   question: judge("Is this command safe to run without asking the user?"),
   policy: policyWithBand(0.85, 0.1),           // act at 0.95 and above; the band below it is reviewed
   floors: [refuseIf(/rm -rf \/(\s|$)/), oneWayDoor((s) => /--force|DROP TABLE/.test(s))],
-  promisedAccuracy: 0.98,                        // the rollout controller holds the gate to this
+  promisedAccuracy: 0.98,                        // observed-accuracy target; see rollout limits below
 });
 
 // State is built in code: trusted fields, digests, and untrusted spans kept apart.
@@ -38,8 +38,13 @@ r.action;                               // "act" | "review" | "refuse"
 r.ruling.reason;                        // "go 0.991 >= actAbove 0.95"
 
 await engine.label(r.recordId, { correct: true, truth: true });
-await safe.rollout.evaluate();          // promotes to enforce once the ledger earns it
+await safe.rollout.evaluate();          // empirical rollout; not statistical certification
 ```
+
+Rollout currently compares observed accuracy with its target. Before relying on automatic
+promotion, independently validate the policy on representative labels; audits of allowed
+actions do not validate a lower action bar. The [roadmap](docs/roadmap.md) puts this evidence
+loop ahead of more integrations.
 
 ## Why it exists
 
@@ -70,7 +75,9 @@ bun run quickstart  # live: triage one message with Jev via OpenRouter (needs a 
 bun run live        # live: the five calibration, routing, cascade and cost experiments (< $0.10)
 ```
 
-Everything except the quick start runs with no network and no keys. The simulated oracle has known accuracy, calibration and error
+Checks and simulations need no network or keys; the demo uses a simulated oracle unless
+`TYPESAFE_API_KEY` is set. Quick start and live experiments call paid backends.
+The simulated oracle has known accuracy, calibration and error
 correlation so every claim can be checked against the truth.
 
 ## Status
