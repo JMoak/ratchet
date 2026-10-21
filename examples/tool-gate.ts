@@ -99,7 +99,13 @@ async function main() {
     policy,
     floors,
     promisedAccuracy: 0.98,
+    evidenceVersion: process.env.TYPESAFE_API_KEY ? "tool-demo-jev-v1" : "tool-demo-sim-v1",
+    ...(process.env.TYPESAFE_API_KEY
+      ? { rollout: { evidence: { version: "tool-demo-jev-v1", model: "jev-1.13.0" } } }
+      : {}),
   });
+  // Initialize the ledger boundary before collecting labels. Persist its checkpoint in production.
+  await safeGate.rollout.evaluate();
   engine.gate({
     id: "bash.reversibility",
     question: reversibility,
@@ -114,6 +120,7 @@ async function main() {
       const state = stateFor(s.command);
       const [r] = await engine.askAll(state, [isSafe, reversibility], (q) => ({
         policy: q.id === "safe" ? policy : { actAbove: 0.6 },
+        evidenceVersion: process.env.TYPESAFE_API_KEY ? "tool-demo-jev-v1" : "tool-demo-sim-v1",
         baseline: "review",
       }));
       // Step 2: label. Here from the corpus; in production from what reviewers decided.

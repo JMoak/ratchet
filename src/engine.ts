@@ -19,6 +19,7 @@ import {
 import {
   type DecisionRecord,
   decisionRows,
+  hashQuestion,
   hashState,
   inheritOutcome,
   isMemberOf,
@@ -28,10 +29,11 @@ import {
   newRecordId,
   newRequestId,
   type Outcome,
+  settledWithoutAnswer,
 } from "./ledger/ledger.ts";
 import { clamp, mean, type Rand, rng } from "./math.ts";
 import { type FailOpenOptions, failOpen } from "./oracles/oracle.ts";
-import { type GatePolicy, goProbability, type Ruling, rule } from "./policy.ts";
+import { type GatePolicy, goProbability, hashPolicy, type Ruling, rule } from "./policy.ts";
 import { judgeVerdictFrom, neutralVerdict } from "./questions.ts";
 import type {
   Action,
@@ -105,6 +107,8 @@ export interface EngineOptions {
 
 export interface AskOptions {
   readonly policy: GatePolicy;
+  /** Caller-owned configuration version required for rollout evidence. */
+  readonly evidenceVersion?: string;
   readonly strategy?: StrategySpec;
   /** In shadow mode, what the application is doing anyway. Recorded for agreement. Default review. */
   readonly baseline?: Action;
@@ -237,8 +241,6 @@ export function wasAnswered(r: AskResult): boolean {
   return r.decision.failedOpen !== true && r.decision.strategy !== "floored";
 }
 
-const hashQuestion = (q: Question): string => hashState(JSON.stringify(q));
-
 interface Settled {
   readonly mode: Mode;
   /** The ruling's action, floors applied: what the engine recommends. */
@@ -276,19 +278,16 @@ class AdhocGate implements GateContext {
   }
 }
 
-/** Rows no answer was bought for: a floor fixed the action, or a bypass skipped the call. */
-const settledWithoutAnswer = (r: DecisionRecord): boolean =>
-  r.strategy === "floored" || r.strategy === "bypass";
-
 function summarize(rows: readonly DecisionRecord[], opts: ReportOptions): QuestionReport {
   const target = opts.targetAccuracy ?? 0.95;
   const minSupport = opts.minSupport ?? 20;
   const graded = rows.filter((r) => !settledWithoutAnswer(r));
   const s = scoredFromLedger(graded);
   const unselected = scoredFromLedger(graded, { unselectedOnly: true });
-  const fromUnselected = fitThreshold(unselected, target, minSupport);
-  const fitted = fromUnselected ?? fitThreshold(s, target, minSupport);
-  const fittedFrom = fromUnselected ? "unselected" : fitted ? "all" : undefined;
+  // Selected successes cannot overturn sufficient negative shadow evidence (selection bias).
+  const useUnselected = unselected.length >= minSupport;
+  const fitted = fitThreshold(useUnselected ? unselected : s, target, minSupport);
+  const fittedFrom = fitted ? (useUnselected ? "unselected" : "all") : undefined;
   const expected = expectedAccuracy(graded);
   return {
     n: rows.length,
@@ -529,6 +528,7 @@ export class Engine implements Asker {
     d: CompoundDecision,
     go: number,
     s: Settled,
+    opts: AskOptions,
     combined = false,
   ): DecisionRecord {
     return {
@@ -541,6 +541,8 @@ export class Engine implements Asker {
       kind: q.kind,
       prompt: q.prompt,
       questionHash,
+      policyHash: hashPolicy(opts.policy),
+      ...(opts.evidenceVersion !== undefined ? { evidenceVersion: opts.evidenceVersion } : {}),
       stateHash: state.hash,
       trustedHash: state.trustedHash,
       untrusted: [...state.untrusted],
@@ -581,10 +583,11 @@ export class Engine implements Asker {
   async runLanes(input: StateInput, lanes: readonly Lane[]): Promise<AskResult[]> {
     const state = asStateLike(input);
     const requestId = newRequestId();
-    const planned: Planned[] = lanes.map((lane) => ({
-      lane,
-      ...this.preempt(state, lane.gate, lane.question, lane.opts.policy),
-    }));
+    const planned: Planned[] = lanes.map((original) => {
+      // Capture the effective policy before an asynchronous oracle can outlive a config edit.
+      const lane = { ...original, opts: { ...original.opts, policy: { ...original.opts.policy } } };
+      return { lane, ...this.preempt(state, lane.gate, lane.question, lane.opts.policy) };
+    });
     const open = planned.filter((p) => p.decision === undefined);
     const batched = open.filter((p) => (p.lane.opts.strategy ?? "single") === "single");
     const others = open.filter((p) => (p.lane.opts.strategy ?? "single") !== "single");
@@ -625,6 +628,7 @@ export class Engine implements Asker {
         decision,
         ruling.go,
         s,
+        opts,
       );
       await this.append(rec);
       out.push({
@@ -653,6 +657,7 @@ export class Engine implements Asker {
     plan: BatteryPlan,
     opts: AskOptions,
   ): Promise<AskResult<JudgeVerdict>> {
+    opts = { ...opts, policy: { ...opts.policy } };
     const state = asStateLike(input);
     const requestId = newRequestId();
     const pre = this.preempt(state, gate, plan.question, opts.policy);
@@ -682,6 +687,7 @@ export class Engine implements Asker {
           d,
           goProbability(d.verdict, goIsYes),
           s,
+          opts,
         ),
       );
     }
@@ -694,6 +700,7 @@ export class Engine implements Asker {
       decision,
       ruling.go,
       s,
+      opts,
       true,
     );
     await this.append(rec);

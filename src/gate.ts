@@ -12,7 +12,7 @@ import type {
   StrategySpec,
 } from "./engine.ts";
 import type { BypassRule, FloorRule } from "./floors.ts";
-import { hashState, type Mode } from "./ledger/ledger.ts";
+import { hashQuestion, hashState, type Mode } from "./ledger/ledger.ts";
 import { clamp } from "./math.ts";
 import type { GatePolicy } from "./policy.ts";
 import { Rollout, type RolloutSettings } from "./rollout.ts";
@@ -59,6 +59,8 @@ export interface GateSpec<Q extends GateQuestion = GateQuestion> {
   /** For batteries: how members become one judge verdict. Default "logodds" at correlation 0. */
   readonly combine?: Combiner;
   readonly policy: GatePolicy;
+  /** Bump when model/configuration, strategy, opaque rules or state semantics change. */
+  readonly evidenceVersion?: string;
   /** Added to the engine's floors for this gate. */
   readonly floors?: readonly FloorRule[];
   /** Added to the engine's bypasses for this gate. */
@@ -99,6 +101,8 @@ export interface Gate<V extends Verdict = Verdict> extends Asker {
   readonly engine: Engine;
   /** True when the gate's question is a battery. */
   readonly isBattery: boolean;
+  /** Rubric identity used by this gate's own decision rows (combined identity for batteries). */
+  readonly questionHash: string;
   /** The gate's own mode, or the engine's when the gate never set one. Assigning pins it. */
   mode: Mode;
   readonly auditRate: number;
@@ -235,6 +239,10 @@ export class GateImpl<V extends Verdict = Verdict> implements Gate<V>, GateConte
     return this.pinnedMode ?? this.engine.mode;
   }
 
+  get questionHash(): string {
+    return this.battery?.questionHash ?? hashQuestion(this.ownQuestion as Question);
+  }
+
   set mode(m: Mode) {
     this.pinnedMode = m;
   }
@@ -257,6 +265,9 @@ export class GateImpl<V extends Verdict = Verdict> implements Gate<V>, GateConte
   private optionsFor(opts: GateAskOptions): AskOptions {
     return {
       policy: this.spec.policy,
+      ...(this.spec.evidenceVersion !== undefined
+        ? { evidenceVersion: this.spec.evidenceVersion }
+        : {}),
       ...(this.spec.strategy !== undefined ? { strategy: this.spec.strategy } : {}),
       ...(opts.baseline !== undefined ? { baseline: opts.baseline } : {}),
       ...(opts.tags !== undefined ? { tags: opts.tags } : {}),

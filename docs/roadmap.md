@@ -45,20 +45,46 @@ to put that bound above 98%. Those assumptions must be explicit in a future acce
 Primary sources and reasoning are in the
 [learning notes](../research_notes/Jev%20novel%20patterns%20catalog/learning_and_tooling.md).
 
-Other review followups, kept separate from new features: align CLI calibration with the
-engine's exclusion of floor/bypass placeholders; avoid stale evidence across policy/model
-changes and demotion/re-promotion; decide whether audits should default on as the vision
+The evidence boundary is now shared across calibration, CLI reports/checks, and rollout:
+code-only floor/bypass rows remain operational records but cannot improve model metrics,
+earn promotion, or hide failed model audits. Answered rows with a caution floor still
+contribute real oracle evidence. Regression fixtures reproduce both false promotion and
+masked drift from a large correct allowlist.
+Threshold fitting also keeps sufficient unselected evidence even when no threshold meets
+the target; confidence-selected successes cannot turn that failed fit into a passing one.
+
+Rollout now binds evidence to rubric, effective policy, caller-owned configuration version
+and an optional exact model pin. Ledger-order phase boundaries prevent old successes or
+late labels from immediately re-promoting a demoted gate. Fresh controllers warm up in
+shadow; caller-persisted checkpoints resume only with a matching scope and ledger anchor.
+These are evidence bookkeeping safeguards, not certification or automatic persistence.
+The [lifecycle guide](rollout.md) includes migration and the versioning responsibilities.
+
+Other review followups, kept separate from new features: decide whether audits should default on as the vision
 intends (currently opt-in); and distinguish a recorded-spend cutoff from a guaranteed
 prepaid budget. Do not add a general monitoring framework to solve these one at a time.
 
-## Proposed application: subject relevance
+## Companion applications: Relly and Pebble
 
 The [subject-relevance proposal](design/subject-relevance.md) explores source-grounded
 subject maps, goal-specific evidence selection, and explicit project/person preferences.
-Start with a bounded corpus experiment and a local research workbench built on Ratchet.
-Keep ingestion, maps, profiles, and UI outside the engine; extract another project only
-after the application demonstrates value. This is a planned experiment, not a replacement
-for the tool-gate pilot or a new production guarantee.
+At the user's direction, the local research workbench now lives in `C:/src/relly`.
+It reuses established retrieval and optional reranking before Ratchet's usefulness gate.
+The lexical baseline stays active while complementary packs remain experimental drafts.
+The first independent SciFact evaluation found that mechanical query-facet diversification
+reduced nDCG@10 from 0.6134 to 0.5637; facet coverage is not evidence of improved relevance.
+The next measurement is a recorded established reranker on the frozen candidate pool,
+then separately labelled passage usefulness and critical omissions. See Relly's
+`docs/evaluation.md` for the protocol, provenance, complete results and limits.
+
+`C:/src/pebble` implements the [virtual-pet design](../research_notes/virtual-pet.md):
+one room, six finite intentions, code-owned consequences, seeded personality and optional
+model judgments in shadow. Its offline behavior is explicitly scripted. Interaction
+completion, persistence and observed behavior diversity are the current quality criteria.
+
+Both applications use sibling Ratchet sources during local development. Ingestion, UI,
+pet simulation and application persistence stay outside this engine. These experiments
+do not replace the tool-gate pilot or establish a production accuracy guarantee.
 
 ## 0.1 (this tree)
 

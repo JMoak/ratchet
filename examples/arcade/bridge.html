@@ -25,51 +25,39 @@
     @media (prefers-reduced-motion: no-preference) { .bridge-piece { animation: settle .4s ease-out; } @keyframes settle { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } } }
   </style>
 </head>
-<body>
-<main class="page">
-  <nav class="topbar" aria-label="Arcade navigation"><a href="/">← Ratchet Arcade</a><span class="badge">02 / Verify, then commit</span></nav>
-  <header class="hero">
-    <p class="eyebrow">BRIDGE BUILDER</p>
-    <h1>One sound step<br>at a time.</h1>
-    <p>Build five spans across the river. Propose a piece, let the engineer judge it, and keep the progress that survives the load test.</p>
-  </header>
-  <section class="panel" aria-labelledby="build-title">
-    <h2 id="build-title">Your crossing</h2>
-    <div class="settings">
-      <label><input id="automate" type="checkbox"> Allow reversible sandbox placements</label>
-      <label><input id="fail" type="checkbox"> Engineer offline</label>
-      <label for="seed">World seed <input id="seed" type="number" value="42" min="0" max="4294967295" step="1"></label>
-      <button class="button secondary" id="reset" type="button">New crossing</button>
-    </div>
-    <p class="notice" id="mode-note">Shadow mode: the engineer makes recommendations, but no pieces are placed. Enable sandbox placements to play.</p>
-    <div class="bridge-board" id="bridge"></div>
-    <div class="metrics">
-      <div class="metric"><strong id="spans">0 / 5</strong><small>Spans built</small></div>
-      <div class="metric"><strong id="score">0</strong><small>Efficiency points</small></div>
-      <div class="metric"><strong id="collapses">0</strong><small>Failed load tests</small></div>
-    </div>
-    <p id="message" role="status" aria-live="polite">Choose a piece below. Each span shows the load it needs to carry.</p>
-    <div class="materials">
-      <button class="material" data-piece="plank" type="button"><span aria-hidden="true">▰</span><strong>Timber plank</strong><small>Holds 2 · costs 1</small></button>
-      <button class="material" data-piece="truss" type="button"><span aria-hidden="true">△</span><strong>Steel truss</strong><small>Holds 4 · costs 2</small></button>
-      <button class="material" data-piece="stone" type="button"><span aria-hidden="true">∩</span><strong>Stone arch</strong><small>Holds 6 · costs 3</small></button>
-      <button class="material" data-piece="glass" type="button"><span aria-hidden="true">◇</span><strong>Glass ribbon</strong><small>Holds 1 · costs 1</small></button>
-      <button class="material" data-piece="floating" type="button"><span aria-hidden="true">≈</span><strong>Floating deck</strong><small>Holds 9 · no anchor</small></button>
-    </div>
-    <p class="muted">A successful placement earns 5 points minus its material cost. The engineer is simulated and imperfect. A bad placement can collapse; your previous spans remain. A missing anchor is always refused by code.</p>
-  </section>
-  <div class="grid">
-    <section class="panel"><h2>Construction log</h2><ol class="attempts" id="history"><li class="muted">Your first proposal starts the story.</li></ol></section>
-    <section class="panel"><p class="eyebrow">THE IDEA UNDER THE GAME</p><h2>Keep verified progress.</h2><p>Each proposal goes through a real Ratchet gate. Only an actual <strong>act</strong> places a piece. Review and refusal leave the crossing unchanged.</p><p>The load test supplies a label after the judgment. Future decisions see the built bridge and the next load, never previous confidence scores.</p><p class="muted">This is a small simulated world, not a structural engineering model or a production accuracy claim. A real load rule this simple belongs in deterministic code; here it gives us known truth for teaching an imperfect verifier.</p></section>
-  </div>
-  <section class="panel"><div class="topbar"><h2>The actual ledger</h2><button class="button secondary" id="download" type="button" disabled>Download JSONL</button></div><div id="ledger"><p class="muted">Every proposal will appear here, including shadow observations, refusals, and failures.</p></div></section>
-</main>
-<script type="module">
-  import { downloadLedger, escapeHtml, request, showLedger } from "/common.js";
+<body><main class="page">
+<nav class="topbar"><a href="/">← Ratchet Arcade</a><span class="badge">02 · Plan → verify → build</span></nav>
+<header class="hero"><p class="eyebrow">A robot, a river, a fourteen-minute shift</p><h1>Bridge Builder</h1><p>Get Bolt across five spans before the materials run out. Build by hand or let the agent choose and verify its next piece.</p></header>
+<section class="panel"><h2>Your crossing</h2><div class="settings"><label><input id="fail" type="checkbox"> Engineer offline</label><label>Seed <input id="seed" type="number" min="0" max="4294967295" value="0"></label><button type="button" id="reset" class="button secondary">New crossing</button><button type="button" id="replay" class="button secondary">Replay seed</button></div>
+<p id="mode-note" class="notice">Play lets the agent build in this reversible toy world. Pause any time to take over.</p><div id="bridge" class="bridge-board"></div>
+<div class="metrics"><div class="metric"><strong id="spans">0 / 5</strong><span>spans built</span></div><div class="metric"><strong id="supplies">14</strong><span>supplies left</span></div><div class="metric"><strong id="score">0</strong><span>efficiency points</span></div><div class="metric"><strong id="collapses">0</strong><span>failed load tests</span></div><div class="metric"><strong id="clock">14</strong><span>crew minutes left</span></div></div>
+<p id="message" class="notice" role="status" aria-live="polite">Loading the crossing…</p>
+<div class="settings"><button type="button" id="run" class="button">Play crossing</button><button type="button" id="agent" class="button secondary">Step</button><button type="button" id="stop" class="button secondary" disabled>Pause</button><button type="button" id="takeover" class="button secondary" disabled>Take over</button></div>
+<h3>Build a piece yourself</h3><div class="materials"><button type="button" class="material" data-piece="plank"><span>▰</span><strong>Timber plank</strong><small>Load 2 · cost 1</small></button><button type="button" class="material" data-piece="truss"><span>△</span><strong>Steel truss</strong><small>Load 4 · cost 2</small></button><button type="button" class="material" data-piece="stone"><span>∩</span><strong>Stone arch</strong><small>Load 6 · cost 3</small></button><button type="button" class="material" data-piece="glass"><span>◇</span><strong>Glass ribbon</strong><small>Load 1 · cost 1</small></button><button type="button" class="material" data-piece="floating"><span>≈</span><strong>Floating deck</strong><small>Load 9 · no anchor</small></button></div>
+<p class="muted">Manual clicks place your chosen piece and run the world's load test. Strong enough: +5 points minus cost. Too weak: supplies spent, piece falls, earlier spans stay. Missing anchors are always blocked. A held placement stays held. The crew can inspect its load capacity, spending one minute and giving the next turn new physical evidence. The supply boat brings 2 supplies and a truss on turn 4.</p></section>
+<div class="grid"><section class="panel"><h2>Construction log</h2><ol id="history" class="attempts"></ol></section><section class="panel"><h2>Bolt's brain</h2><p id="source"></p><p>Only built spans and current load enter the next judgment. The latest score and old verdicts never become evidence. Complete five standing spans before the fourteen-minute shift ends. Every new seed changes loads, costs, capacities and stock. Replay keeps the same world.</p><p class="muted">The toy load rules supply known outcomes. Real structural limits this simple belong in code.</p></section></div>
+<details class="panel"><summary>Open the real decision ledger</summary><button type="button" id="download" class="button secondary">Download JSONL</button><div id="ledger"></div></details><p id="error" class="error" role="alert"></p>
+</main><script type="module">
+import {
+  downloadLedger, escapeHtml, newWorldSeed, request, setModelControlLocked,setupModelControl, setupPlayback, showLedger,
+} from '/common.js';
 
-  const $ = (id) => document.getElementById(id);
-  let attempts = [], latest, busy = false;
-  const colors = { plank: "#b9854f", truss: "#2c6d9f", stone: "#637988", glass: "#91d5de" };
+const $ = id => document.getElementById(id);
+let commands = [];
+let latest = null;
+let busy = false;
+let running = false;
+let automate = false;
+let generation = 0;
+let runToken = 0;
+let timer = null;
+const playback = setupPlayback({
+  board: $('bridge'), controls: $('run').parentElement, pause, isRunning: () => running,
+});
+$('seed').closest('.settings').classList.add('game-settings');
+$('mode-note').classList.add('game-settings');
+const colors = { plank: '#b9854f', truss: '#2c6d9f', stone: '#637988', glass: '#91d5de' };
+$('seed').value = newWorldSeed();
   function board(result) {
     const built = result?.built ?? [], loads = result?.loads ?? [2, 4, 3, 6, 2];
     let drawing = '<rect width="760" height="260" fill="#e6f0f4"/><path d="M0 188 Q190 160 380 188 T760 188 V260 H0Z" fill="#a5cede"/><path d="M0 218 Q190 193 380 218 T760 218" fill="none" stroke="#76acc3" stroke-width="3"/><path d="M0 140H80V260H0ZM680 140H760V260H680Z" fill="#839989"/><path d="M0 140H80M680 140H760" stroke="#496f60" stroke-width="8"/>';
@@ -83,42 +71,131 @@
         drawing += '</g>';
       } else drawing += `<path d="M${x+8} 140H${x+112}" stroke="#8ca9b7" stroke-width="3" stroke-dasharray="5 7"/><text x="${x+60}" y="112" text-anchor="middle" fill="#7893a2" font-family="system-ui" font-size="15">${i+1}</text>`;
     });
-    drawing += `<text x="${built.length === 5 ? 696 : 20}" y="121" font-size="27" aria-hidden="true">⚑</text>`;
+    drawing += `<text x="${built.length === 5 ? 696 : 20 + built.length * 120}" y="121" font-size="27" aria-hidden="true">🤖</text>`;
     $("bridge").innerHTML = `<svg viewBox="0 0 760 260" role="img" aria-label="${built.length} of 5 spans built. Remaining loads: ${loads.slice(built.length).join(', ') || 'crossing complete'}">${drawing}</svg>`;
   }
-  function lock(value) {
-    busy = value;
-    document.querySelectorAll("button[data-piece]").forEach((b) => { b.disabled = value || latest?.complete || attempts.length >= 30; });
-    for (const id of ["reset", "automate", "fail", "seed"]) $(id).disabled = value;
+
+function lock() {
+  playback.sync({ running, busy, done: latest?.done });
+  setModelControlLocked(busy || running);
+  document.querySelectorAll('[data-piece]').forEach(button => {
+    const piece = latest?.materials[button.dataset.piece];
+    button.disabled = busy || running || latest?.done || (piece && (piece.cost > latest.supplies || !piece.stock));
+  });
+  for (const id of ['fail', 'seed']) $(id).disabled = busy || running;
+  for (const id of ['reset', 'replay']) $(id).disabled = busy;
+  for (const id of ['agent', 'run']) $(id).disabled = busy || running || !latest || latest.done;
+  for (const id of ['stop', 'takeover']) $(id).disabled = !running;
+}
+
+function render() {
+  board(latest);
+  $('spans').textContent = `${latest.built.length} / 5`;
+  $('supplies').textContent = latest.supplies;
+  $('score').textContent = latest.score;
+  $('collapses').textContent = latest.collapses;
+  $('clock').textContent = latest.minutesLeft;
+  $('mode-note').textContent = automate
+    ? 'Agent play enabled for this reversible crossing. Pause to take over, or Step one turn.'
+    : 'Play or Step enables agent actions in this reversible toy world. Manual building is ready.';
+  const last = latest.history.at(-1);
+  $('message').textContent = latest.complete
+    ? `Crossing complete! Bolt reached the far bank with ${latest.supplies} supplies left.`
+    : latest.done
+      ? `Crossing failed: ${latest.endReason}`
+      : `${last?.result ?? 'Bolt is on the near bank.'} Next span needs load ${latest.loads[latest.built.length]}. ${latest.minutesLeft} minutes remain.`;
+  if (latest.turns === 4 && latest.events.length) $('message').textContent += ` ${latest.events[0]}`;
+  $('source').textContent = latest.judgeSource === 'live'
+    ? 'A live oracle chooses from observed loads, costs and stock, then judges the proposal. Physical inspections supply new evidence.'
+    : 'Offline builder reads loads, costs and stock. Its toy engineer is cautious about an exact load match until the crew completes a physical inspection.';
+  document.querySelectorAll('[data-piece]').forEach(button => {
+    const piece = latest.materials[button.dataset.piece];
+    button.querySelector('small').textContent = `Load ${piece.capacity} · cost ${piece.cost} · ${piece.stock} left${piece.anchored ? '' : ' · no anchor'}`;
+  });
+  $('history').innerHTML = latest.history.slice().reverse().map(row => `
+    <li><strong>Span ${row.span} · ${escapeHtml(row.material === 'wait' ? 'Crew waiting' : latest.materials[row.material].name)}</strong>
+    <small>${escapeHtml(row.result)}${row.material === 'wait' ? '' : ` · load ${row.load}, capacity ${row.capacity}`}</small></li>
+  `).join('') || '<li>No turns yet.</li>';
+  showLedger($('ledger'), latest.ledger);
+  lock();
+}
+
+async function update(command) {
+  if (busy) return false;
+  const token = generation;
+  if (command !== undefined) commands.push(command);
+  busy = true;
+  lock();
+  $('error').textContent = '';
+  try {
+    const next = await request('bridge', {
+      commands, seed: Number($('seed').value), automate, failJudge: $('fail').checked,
+    });
+    if (token !== generation) return false;
+    latest = next;
+    render();
+    return true;
+  } catch (error) {
+    if (token === generation) {
+      if (command !== undefined) commands.pop();
+      $('error').textContent = error.message;
+    }
+    return false;
+  } finally {
+    busy = false;
+    lock();
   }
-  async function update(piece) {
-    if (busy) return;
-    if (piece) attempts.push(piece);
-    lock(true);
-    try {
-      latest = await request("bridge", { attempts, seed: Number($("seed").value), automate: $("automate").checked, failJudge: $("fail").checked });
-      board(latest);
-      $("spans").textContent = `${latest.built.length} / 5`;
-      $("score").textContent = latest.score;
-      $("collapses").textContent = latest.collapses;
-      $("mode-note").textContent = latest.mode === "shadow" ? "Shadow mode: recommendations are recorded; no pieces are placed." : "Sandbox placements enabled. Only the gate’s actual act places a reversible toy piece.";
-      const last = latest.history.at(-1);
-      $("message").textContent = latest.complete ? "Crossing complete! Your flag made it over the river. Try a new seed or use fewer expensive arches." : last ? `${last.result}. ${last.failedOpen ? "No judgment was available; review is the default." : `Suggested: ${last.suggested}. Actual: ${last.actual}.`} ${attempts.length >= 30 ? "Thirty proposals reached: start a new crossing." : ""}` : "Choose a piece. Aim for the lightest material that carries the next load.";
-      $("history").innerHTML = latest.history.length ? [...latest.history].reverse().map((row) => `<li><strong>Span ${row.span} · ${escapeHtml(latest.materials[row.material].name)}</strong><small>${escapeHtml(row.result)} · load ${row.load}, capacity ${row.capacity}</small></li>`).join("") : '<li class="muted">Your first proposal starts the story.</li>';
-      showLedger($("ledger"), latest.ledger);
-      $("download").disabled = !latest.ledger.rows.length;
-    } catch (error) {
-      if (piece) attempts.pop();
-      $("message").textContent = error.message;
-    } finally { lock(false); }
+}
+
+function pause() {
+  running = false;
+  runToken++;
+  clearTimeout(timer);
+  timer = null;
+  lock();
+}
+
+async function tick(token) {
+  timer = null;
+  if (!running || token !== runToken) return;
+  const advanced = await update('agent');
+  if (!running || token !== runToken) return;
+  if (!advanced || latest.done) {
+    pause();
+    return;
   }
-  document.querySelectorAll("[data-piece]").forEach((button) => { button.addEventListener("click", () => update(button.dataset.piece)); });
-  function reset() { attempts = []; latest = undefined; update(); }
-  for (const id of ["automate", "fail", "seed"]) $(id).addEventListener("change", reset);
-  $("reset").addEventListener("click", reset);
-  $("download").addEventListener("click", () => { if (latest) downloadLedger(latest.ledger.rows); });
-  board();
-  update();
-</script>
-</body>
-</html>
+  timer = setTimeout(() => tick(token), playback.delay());
+}
+
+async function reset(fresh = false) {
+  pause();
+  generation++;
+  if (fresh) $('seed').value = newWorldSeed(Number($('seed').value));
+  commands = [];
+  latest = null;
+  automate = false;
+  await update();
+}
+
+document.querySelectorAll('[data-piece]').forEach(button => {
+  button.onclick = () => update({ material: button.dataset.piece, manual: true });
+});
+$('agent').onclick = () => { automate = true; update('agent'); };
+$('run').onclick = () => {
+  playback.started();
+  automate = true;
+  running = true;
+  const token = ++runToken;
+  lock();
+  tick(token);
+};
+$('stop').onclick = pause;
+$('takeover').onclick = () => { pause(); $('message').textContent = 'You have the controls. Choose a material below when the current turn finishes.'; };
+$('reset').onclick = () => reset(true);
+$('replay').onclick = () => reset();
+for (const id of ['fail', 'seed']) $(id).onchange = () => reset();
+$('download').onclick = () => latest && downloadLedger(latest.ledger.rows);
+setupModelControl(() => reset());
+board();
+update();
+</script></body></html>

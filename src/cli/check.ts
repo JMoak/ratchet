@@ -17,6 +17,7 @@ import {
   findGate,
   type GateGroup,
   groupGates,
+  isFixed,
   loadLedger,
   modelOf,
   pct,
@@ -33,6 +34,9 @@ The CI gate. Looks at the most recent --window rows of one gate and fails when:
   - ECE is above --max-ece, with at least --min-rows labelled rows (unselected rows
     when there are enough, else all labelled rows);
   - a model other than --model answered any row in the window.
+
+Floor and allowlist rows decided without an oracle call do not count toward accuracy,
+calibration, or minimum evidence. They remain in the operational window row count.
 
   --gate <id>        The gate to check. Required.
   --promise <p>      Accuracy promised on acted rows, e.g. 0.98. Required.
@@ -104,7 +108,7 @@ export function checkGate(groups: readonly GateGroup[], opts: CheckOptions): Che
   // Accuracy on the rows the policy acted on, among rows its confidence did not select.
   const fallback = inferGoIsYes(group.rows).goIsYes;
   const acted = recent.filter(
-    (r) => r.outcome && !r.failedOpen && isUnselected(r) && r.soft === "act",
+    (r) => r.outcome && !r.failedOpen && !isFixed(r) && isUnselected(r) && r.soft === "act",
   );
   const audit = acted.filter((r) => r.tags.includes("audit")).length;
   const shadow = acted.length - audit;

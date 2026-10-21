@@ -40,6 +40,8 @@ export interface GateSpec {
   /** For batteries: how members become one judge verdict. Default "logodds". */
   readonly combine?: PoolMethod | LogisticModel | ((verdicts: readonly JudgeVerdict[]) => JudgeVerdict);
   readonly policy: GatePolicy;
+  /** Caller-owned model/configuration, strategy, opaque rules and state semantics version. */
+  readonly evidenceVersion?: string;
   readonly floors?: readonly FloorRule[];
   readonly bypass?: readonly BypassRule[];
   readonly strategy?: StrategySpec;
@@ -79,6 +81,9 @@ Semantics:
   outcome for calibration of each member, which is what makes learned combiners fittable.
 - `combine` as a `LogisticModel` uses `poolLearned`; as a `PoolMethod` uses `pool`.
 - Gate-level `mode` and `auditRate` override engine defaults; `Rollout` operates per gate.
+- Rollout now requires a versioned evidence scope and an initial evaluation before collecting
+  labels. Policy/rubric hashes and ledger-order phase boundaries prevent stale reuse;
+  restart uses a caller-persisted checkpoint. See [lifecycle and migration](../rollout.md).
 - `engine.askAll(state, questions, ...)` remains for several different questions about one
   state in one request; internally each question maps to its gate (or an anonymous one).
 

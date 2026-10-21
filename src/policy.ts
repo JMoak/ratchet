@@ -1,3 +1,4 @@
+import { hashState } from "./ledger/ledger.ts";
 import { round, thresholdFromCosts } from "./math.ts";
 import { type Action, type Decision, moreCautious, type Verdict } from "./types.ts";
 
@@ -15,6 +16,21 @@ export interface GatePolicy {
   readonly goIsYes?: boolean;
   /** Action when the oracle failed open. Default review. */
   readonly onFailOpen?: Action;
+}
+
+/** Hash only effective policy fields; opaque rules and strategies need a caller version. */
+export function hashPolicy(policy: GatePolicy): string {
+  // JSON turns every nonfinite number into null; keep even those distinct from "unset".
+  const number = (value: number): number | string =>
+    Number.isFinite(value) ? value : String(value);
+  return hashState(
+    JSON.stringify({
+      actAbove: number(policy.actAbove),
+      refuseBelow: policy.refuseBelow === undefined ? null : number(policy.refuseBelow),
+      goIsYes: policy.goIsYes ?? true,
+      onFailOpen: policy.onFailOpen ?? "review",
+    }),
+  );
 }
 
 export interface Ruling {

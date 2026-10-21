@@ -1,10 +1,13 @@
 import { readFile } from "node:fs/promises";
+import type { Oracle } from "../../src/index.ts";
 import { play as bridge } from "./bridge.ts";
+import { configuredLiveRuntime, type LiveRuntime } from "./live.ts";
 import { play as orchard } from "./orchard.ts";
 import { play as parcels } from "./parcels.ts";
+import { objectInput } from "./shared.ts";
 import { play as treasure } from "./treasure.ts";
 
-const games: Record<string, (input: unknown) => Promise<unknown>> = {
+const games: Record<string, (input: unknown, liveOracle?: Oracle) => Promise<unknown>> = {
   orchard,
   bridge,
   parcels,
@@ -51,7 +54,7 @@ async function body(req: Request): Promise<unknown> {
 }
 
 /** A loopback-only teaching server; explicit routes keep workspace files private. */
-export async function handleRequest(req: Request): Promise<Response> {
+export async function handleRequest(req: Request, live?: LiveRuntime): Promise<Response> {
   const url = new URL(req.url);
   if (!["127.0.0.1", "localhost"].includes(url.hostname)) {
     return json({ error: "Use the local arcade address." }, 403);
@@ -60,6 +63,9 @@ export async function handleRequest(req: Request): Promise<Response> {
   if (origin !== null && origin !== url.origin) {
     return json({ error: "Cross-origin requests are not accepted." }, 403);
   }
+  if (url.pathname === "/api/capabilities" && req.method === "GET") {
+    return json(live?.status() ?? { liveAvailable: false });
+  }
   if (url.pathname.startsWith("/api/")) {
     if (req.method !== "POST") return json({ error: "Use POST." }, 405);
     const play = games[url.pathname.slice(5)];
@@ -67,7 +73,18 @@ export async function handleRequest(req: Request): Promise<Response> {
       return json({ error: "Unknown game." }, 404);
     }
     try {
-      return json(await play(await body(req)));
+      const input = objectInput(await body(req));
+      if (input.model !== undefined && input.model !== "offline" && input.model !== "live") {
+        throw new Error("model must be offline or live.");
+      }
+      if (input.model === "live" && !live?.status().liveAvailable) {
+        throw new Error("Live play is disabled. Start with ARCADE_LIVE=1 and a server key.");
+      }
+      const result = await play(input, input.model === "live" ? live?.round() : undefined);
+      return json({
+        ...objectInput(result),
+        backend: { kind: input.model === "live" ? "live" : "offline", ...live?.status() },
+      });
     } catch (error) {
       return json(
         { error: error instanceof Error ? error.message : "The round could not run." },
@@ -96,7 +113,17 @@ if (import.meta.main) {
   if (!Number.isInteger(port) || port < 1024 || port > 65535) {
     throw new Error("ARCADE_PORT must be an integer from 1024 to 65535.");
   }
-  const server = Bun.serve({ hostname: "127.0.0.1", port, fetch: handleRequest });
+  const live = configuredLiveRuntime();
+  const server = Bun.serve({
+    hostname: "127.0.0.1",
+    port,
+    fetch: (req) => handleRequest(req, live),
+  });
   console.log(`Ratchet Arcade: ${server.url}`);
-  console.log("Four offline games. No keys, model calls, or external actions. Ctrl+C to stop.");
+  console.log(
+    live.status().liveAvailable
+      ? "Live model available (opt in per page). 100 distinct requests; $0.10 reported-spend cutoff."
+      : "Offline play. To enable live model choices, set ARCADE_LIVE=1 with a server API key.",
+  );
+  console.log("Only reversible game actions. Ctrl+C to stop.");
 }

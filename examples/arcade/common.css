@@ -117,8 +117,59 @@ label {
   font-weight: 750;
   color: var(--green);
 }
+.model-control {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 20px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line);
+}
+.model-control label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 650;
+}
 .hero {
   padding: 44px 0 30px;
+}
+.playback-bar {
+  position: sticky;
+  top: 8px;
+  z-index: 5;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 18px;
+  padding: 12px;
+  margin: 12px 0 18px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--card);
+  box-shadow: 0 4px 14px #203c4510;
+  scroll-margin-top: 8px;
+}
+.playback-bar .playback-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+}
+.playback-options,
+.playback-options label {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+.playback-note {
+  flex-basis: 100%;
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
 }
 h1 {
   font-size: clamp(34px, 5vw, 64px);
@@ -258,6 +309,32 @@ footer {
 svg {
   max-width: 100%;
 }
+.focus-play .hero,
+.focus-play .game-settings,
+.focus-play .orchard-layout > aside,
+.focus-play .survey-layout > aside {
+  display: none;
+}
+.focus-play .orchard-layout,
+.focus-play .survey-layout {
+  grid-template-columns: 1fr;
+}
+.focus-play .bridge-board svg {
+  max-height: 260px;
+}
+.focus-play .map .site {
+  min-height: 96px;
+  padding: 8px;
+}
+.focus-play .metrics {
+  margin: 12px 0;
+}
+.focus-play .metric {
+  padding: 10px 14px;
+}
+.focus-play .metric strong {
+  font-size: 25px;
+}
 @media (max-width: 600px) {
   .page {
     width: calc(100% - 28px);
@@ -273,6 +350,10 @@ svg {
   }
   .controls {
     align-items: stretch;
+  }
+  .playback-bar {
+    /* Keep a wrapped toolbar from covering most of a small game board. */
+    position: static;
   }
 }
 @media (prefers-reduced-motion: reduce) {

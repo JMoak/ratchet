@@ -126,6 +126,7 @@ export {
 export {
   type DecisionRecord,
   decisionRows,
+  hashQuestion,
   hashState,
   inheritOutcome,
   isMemberOf,
@@ -172,6 +173,7 @@ export {
 export {
   type GatePolicy,
   goProbability,
+  hashPolicy,
   policyFromCosts,
   policyWithBand,
   type Ruling,
@@ -224,6 +226,8 @@ export {
 export { type Speculated, type SpeculateOptions, speculate } from "./recipes/speculate.ts";
 export {
   Rollout,
+  type RolloutCheckpoint,
+  type RolloutEvidence,
   type RolloutOptions,
   type RolloutSettings,
   type RolloutStatus,

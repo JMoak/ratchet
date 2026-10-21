@@ -6,193 +6,264 @@
   <title>Parcel Patrol · Ratchet Arcade</title>
   <link rel="stylesheet" href="/common.css">
   <style>
-    :root{--ink:#172d43;--orange:#df642d;--paper:#fffaf0;--line:#e4d6bf}
-    body{background:#f7f0e3;color:var(--ink)}
-    .parcel-layout{display:grid;grid-template-columns:1.35fr 1fr;gap:24px;align-items:start}
-    .parcel-stage{background:#eddfc7;position:relative;overflow:hidden;padding:36px 24px 20px;min-height:270px;text-align:center;border-radius:18px}
-    .parcel-stage:before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(135deg,transparent 0 22px,#fff2 23px 24px);pointer-events:none}
-    .carton{position:relative;display:grid;place-content:center;gap:6px;width:220px;min-height:150px;margin:0 auto 25px;background:#d69d60;border:3px solid #885c36;border-radius:8px;box-shadow:9px 12px 0 #aa805033;transform:rotate(-3deg)}
-    .carton:before{content:"";position:absolute;inset:0 88px;background:#f4d8a4a6;border-inline:1px dashed #986e48}
-    .parcel-label{position:relative;margin:30px 12px 14px;padding:14px 10px;background:var(--paper);border-radius:3px;box-shadow:0 2px 0 #885c3640}
-    .parcel-label strong{display:block;font-size:1.2rem}.parcel-label small{display:block;margin-top:6px}
-    .belt{position:relative;height:22px;border-block:3px solid var(--ink);background:repeating-linear-gradient(90deg,#456070 0 18px,#213a4e 18px 23px);border-radius:20px}
-    .dispatch-stamp{position:absolute;right:10px;top:15px;border:3px solid var(--orange);color:#a84119;transform:rotate(12deg);padding:5px;font-weight:800;font-size:.78rem;background:#fff7}
-    .lane-row{display:flex;gap:8px;margin-top:16px;justify-content:space-around;font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em}
-    .lane-row span{padding:7px 12px;border-radius:20px}.lane-row .landed{background:var(--ink);color:white}
-    .manifest{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:20px 0}
-    .manifest div{padding:12px;background:#f5efe3;border-radius:9px}.manifest dt{font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px}.manifest dd{margin:0;font-weight:700}
-    .sender-note{width:100%;box-sizing:border-box;min-height:82px;background:#fff7d5;border:1px solid #d9bf68;border-radius:8px;padding:12px;color:var(--ink);font:inherit;resize:vertical}
-    .trust-tag{font-size:.72rem;text-transform:uppercase;letter-spacing:.09em;font-weight:800;color:#526679}
-    .action-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:20px 0 10px;border:0;padding:0;min-width:0}.action-row button{min-height:56px}
-    .action-row kbd{font:inherit;font-size:.7rem;opacity:.7;padding-left:6px}
-    .rules{padding-left:20px;line-height:1.65}.rules strong{color:#9e3915}
-    .control{display:block;margin:16px 0}.control input[type=range]{width:100%;accent-color:var(--orange)}
-    .toggle{display:flex;gap:10px;align-items:start;margin:15px 0;line-height:1.4}.toggle input{margin-top:4px;accent-color:var(--orange)}
-    .result-card{margin-top:16px;padding:18px;background:#e9f1e8;border-left:5px solid #477552;border-radius:10px}
-    .result-card.miss{background:#fce8de;border-color:#b64e25}.result-card p{margin:8px 0}.result-card h2{margin:0;font-size:1.25rem}
-    .result-detail{font-size:.85rem;line-height:1.5}.score-strip{display:flex;gap:12px;flex-wrap:wrap;margin:24px 0}.score-strip .metric{min-width:110px}
-    .score-strip strong{display:block;font-size:1.8rem}.score-strip span{font-size:.8rem}
-    .hashes{font-family:monospace;font-size:.72rem;word-break:break-all;line-height:1.7}
-    details summary{cursor:pointer;font-weight:700;padding:10px 0}pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:.8rem}
-    .parcel-footer{display:flex;gap:12px;flex-wrap:wrap;align-items:center;justify-content:space-between;margin:24px 0}
-    button:focus-visible,input:focus-visible,textarea:focus-visible,summary:focus-visible{outline:3px solid var(--orange);outline-offset:3px}
-    button:disabled{opacity:.55;cursor:wait}
-    @media(max-width:760px){.parcel-layout{grid-template-columns:1fr}.hero h1{font-size:2.5rem}.parcel-stage{min-height:230px;padding-top:25px}.carton{width:200px}.action-row kbd{display:none}}
-    @media(prefers-reduced-motion:no-preference){.carton{transition:transform .25s}.carton.routed{transform:rotate(3deg) translateY(-6px)}}
+    body { background: #f7f0e3; }
+    .shift-world { background: #e4edf1; padding: 24px; border-radius: 18px; overflow: hidden; }
+    .conveyor { height: 130px; display: flex; align-items: center; gap: 24px; border-bottom: 16px dashed #71919d; margin-bottom: 24px; }
+    .parcel-box { background: #d7ad71; border: 3px solid #a97b49; padding: 18px; width: 190px; border-radius: 8px; }
+    .shift-lanes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .shift-lane { padding: 16px; border: 2px dashed #9cb3bb; border-radius: 12px; text-align: center; }
+    .shift-lane.active { background: #e4f3cb; border: 3px solid #658447; }
+    .queue { display: flex; gap: 8px; margin: 18px 0; flex-wrap: wrap; }
+    .queue span { padding: 9px; background: #e8e1d4; border-radius: 6px; }
+    .queue .finished { background: #afc8a1; }
+    .parcel-manifest { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .parcel-manifest div { padding: 8px; background: #f4f5ef; }
+    .parcel-actions { display: flex; gap: 10px; flex-wrap: wrap; margin: 16px 0; }
+    .robot { font-size: 42px; }
+    .shift-layout { display: grid; grid-template-columns: 1.3fr 1fr; gap: 20px; }
+    #note { width: 100%; min-height: 80px; font: inherit; }
+    #seed { width: 100px; }
+    .sender { padding: 14px; border: 2px dashed #d5b288; border-radius: 10px; }
+    .shift-settings { display: flex; gap: 18px; flex-wrap: wrap; align-items: center; }
+    @media (max-width: 780px) {
+      .shift-layout { grid-template-columns: 1fr; }
+      .shift-lanes { gap: 5px; }
+      .shift-lane { padding: 10px 4px; }
+    }
+    @media (prefers-reduced-motion: no-preference) {
+      .parcel-box { transition: transform .5s; }
+    }
   </style>
 </head>
-<body>
-  <main class="page">
-    <nav class="topbar" aria-label="Arcade navigation"><a href="/">← Ratchet Arcade</a><span class="badge">03 / Parcel Patrol</span></nav>
-    <header class="hero">
-      <p class="eyebrow">A tiny dispatch desk. A very opinionated scanner.</p>
-      <h1>Parcel Patrol</h1>
-      <p>Keep the imaginary delivery belt moving. Catch tricky parcels. Learn when a judgment earns an action.</p>
-    </header>
-    <section class="score-strip" aria-label="Game score">
-      <div class="metric"><strong id="score">0</strong><span>dispatch points</span></div>
-      <div class="metric"><strong id="streak">0</strong><span>perfect streak</span></div>
-      <div class="metric"><strong id="count">1 / 8</strong><span>parcel this shift</span></div>
-      <div class="metric"><strong id="mode-label">Shadow</strong><span>current mode</span></div>
-    </section>
-    <div class="parcel-layout">
-      <section class="panel" aria-labelledby="parcel-heading">
-        <div class="parcel-stage" aria-hidden="true">
-          <div class="carton" id="carton"><span class="dispatch-stamp" id="stamp">INCOMING</span>
-            <div class="parcel-label"><strong id="box-name">Loading parcel…</strong><small id="box-id">PARCEL PATROL</small></div>
-          </div>
-          <div class="belt"></div><div class="lane-row"><span data-lane="ship">Ship</span><span data-lane="inspect">Inspect</span><span data-lane="hold">Hold</span></div>
-        </div>
-        <h2 id="parcel-heading">Your next parcel</h2>
-        <span class="trust-tag">Trusted manifest · supplied by the game</span>
-        <dl class="manifest" id="manifest"></dl>
-        <p id="scanner" class="muted"></p>
-        <label for="note" class="trust-tag">Untrusted sender note · try editing it</label>
-        <textarea class="sender-note" id="note" maxlength="500" aria-describedby="note-help"></textarea>
-        <p class="muted" id="note-help">A note can fool this scripted scanner. It cannot rewrite the trusted manifest or remove a code-owned floor.</p>
-        <fieldset class="action-row" aria-label="Choose a route">
-          <button class="button" id="ship" data-choice="ship" type="button" disabled>Ship <kbd>1</kbd></button>
-          <button class="button secondary" id="inspect" data-choice="inspect" type="button" disabled>Inspect <kbd>2</kbd></button>
-          <button class="button secondary" id="hold" data-choice="hold" type="button" disabled>Hold <kbd>3</kbd></button>
-        </fieldset>
-        <p class="muted" id="mode-help">Shadow: your button routes the parcel. The engine records its suggestion beside your choice.</p>
-        <div id="result" aria-live="polite"></div>
-        <button class="button" id="next" type="button" hidden>Next parcel →</button>
-        <p class="error" id="error" role="alert" hidden></p>
-      </section>
-      <aside class="panel" aria-labelledby="policy-heading">
-        <p class="eyebrow">The model proposes. Code decides.</p>
-        <h2 id="policy-heading">Run your dispatch desk</h2>
-        <label class="control" for="threshold">Ship threshold <strong id="threshold-value">85%</strong>
-          <input id="threshold" type="range" min="50" max="99" value="85" step="1">
-        </label>
-        <p class="muted">Above this bar: suggest ship. Below it: inspect. Higher bars can save errors and add review work.</p>
-        <label class="toggle"><input id="automate" type="checkbox"><span><strong>Let the gate route toy parcels</strong><br>Enforce mode follows the final ruling. Your button becomes a comparison choice.</span></label>
-        <label class="toggle"><input id="failure" type="checkbox"><span><strong>Disconnect the toy scanner</strong><br>An oracle failure recommends inspection. A hard floor can settle a parcel without a call.</span></label>
-        <hr>
-        <h3>Three rules the note cannot change</h3>
-        <ul class="rules">
-          <li><strong>Stop stamp → hold.</strong></li>
-          <li><strong>Over 8 kg → inspect.</strong></li>
-          <li><strong>Unverified address → inspect.</strong></li>
-        </ul>
-        <div class="notice">All routing is imaginary and reversible. This offline simulator illustrates behavior; its probabilities are authored game values, not measured reliability.</div>
-        <h3>How to score</h3>
-        <p class="muted">Best route: +12 for ship/hold, +8 for inspect. A safe detour: +2. Shipping an unready parcel: −15. Streaks reward the best route. Points always follow the <strong>actual</strong> route.</p>
-        <details><summary>Peek at the evidence boundary</summary><div class="hashes" id="hashes"></div><pre id="state"></pre><p class="muted">Editing the note changes the full hash, but not the trusted hash. Markers record provenance; they do not make a model immune to misleading text.</p></details>
-      </aside>
-    </div>
-    <section class="panel" style="margin-top:24px" aria-labelledby="ledger-heading">
-      <div class="parcel-footer"><h2 id="ledger-heading">Your dispatch ledger</h2><button class="button secondary" id="download" type="button" disabled>Download ledger</button></div>
-      <div id="ledger"><p class="muted">Make a move to record the suggestion, actual action, and world label.</p></div>
-    </section>
-    <footer class="parcel-footer"><p class="muted">Eight parcels per shift. Keyboard: 1 / 2 / 3 to choose, N for next.</p><button class="button secondary" id="restart" type="button">New shift</button></footer>
-  </main>
-  <script type="module">
-    import { downloadLedger, escapeHtml, request, showLedger } from "/common.js";
+<body><main class="page">
+<nav class="topbar"><a href="/">← Ratchet Arcade</a><span class="badge">03 · Read → route → deliver</span></nav>
+<header class="hero"><p class="eyebrow">Eight parcels. One very curious robot.</p><h1>Parcel Patrol</h1><p>Help Dot finish a delivery shift with 60 points. Route each parcel yourself or give the agent the conveyor. Watch the manifests: a persuasive sender cannot erase a stop stamp.</p></header>
+<section class="panel"><div class="shift-settings"><label>Seed <input id="seed" type="number" min="0" max="4294967295"></label><label><input id="failure" type="checkbox"> Scanner disconnected</label><label>Shipping threshold <input id="threshold" type="range" min=".5" max=".99" value=".85" step=".01"><output id="bar">85%</output></label><button type="button" id="restart" class="button secondary">New shift</button><button type="button" id="replay" class="button secondary">Replay seed</button></div><p class="muted">Play or Step enables agent routing in this reversible toy shift. Pause to take over. Each seed changes the manifest, arrival order and packing events; Replay repeats it.</p></section>
+<div class="shift-layout"><section class="panel"><div class="topbar"><h2>Dot's conveyor</h2><span id="count" class="badge">1 / 8</span></div><div class="shift-world"><div class="conveyor"><span class="robot">🤖</span><div class="parcel-box" id="carton"><strong id="box-name">Incoming parcel</strong><small id="box-id" style="display:block"></small></div></div><div class="shift-lanes"><div class="shift-lane" data-lane="ship">🚚<br><strong>Delivery</strong><small style="display:block">1 minute</small></div><div class="shift-lane" data-lane="inspect">🔎<br><strong>Inspection</strong><small style="display:block">2 minutes</small></div><div class="shift-lane" data-lane="hold">🛑<br><strong>Hold rack</strong><small style="display:block">1 minute</small></div></div></div><div id="queue" class="queue"></div>
+<div class="metrics"><div class="metric"><strong id="score">0 / 60</strong><span>points</span></div><div class="metric"><strong id="time">14</strong><span>minutes left</span></div><div class="metric"><strong id="care">3</strong><span>belt integrity</span></div></div>
+<p id="status" class="notice" role="status" aria-live="polite">Preparing the shift…</p><div class="parcel-actions"><button type="button" id="run" class="button">Play shift</button><button type="button" id="agent" class="button secondary">Step</button><button type="button" id="stop" class="button secondary" disabled>Pause</button><button type="button" id="takeover" class="button secondary" disabled>Take over</button><button type="button" id="next" class="button secondary" hidden>Next parcel</button></div><h3>Your manual route</h3><div class="parcel-actions"><button type="button" data-choice="ship" class="button">1 · Ship</button><button type="button" data-choice="inspect" class="button secondary">2 · Inspect</button><button type="button" data-choice="hold" class="button secondary">3 · Hold</button></div><p class="muted">Correct shipping or holding +12, needed inspection +8. A safe detour +2. Unsafe shipping −15 and one integrity. Finish eight parcels before time or integrity runs out. Review keeps shipping held and sends the parcel to the inspection lane; the conveyor continues. Manifest floors also apply to manual routes.</p></section>
+<section class="panel"><h2 id="parcel-heading">Manifest</h2><div id="manifest" class="parcel-manifest"></div><p id="scanner"></p><div class="sender"><label for="note"><strong>Sender note · untrusted text</strong></label><textarea id="note" maxlength="500"></textarea><p class="muted">Try a convincing instruction. The offline toy judge can be fooled; code-owned stamps and limits still win.</p></div><div id="result"></div><p id="source" class="muted"></p></section></div>
+<details class="panel"><summary>Open the oracle's state and real ledger</summary><pre id="state" style="white-space:pre-wrap"></pre><button type="button" id="download" class="button secondary">Download JSONL</button><div id="ledger"></div></details><p id="error" class="error" role="alert"></p>
+</main><script type="module">
+import {
+  downloadLedger, escapeHtml, newWorldSeed, request, setModelControlLocked,setupModelControl, setupPlayback, showLedger,
+} from '/common.js';
 
-    const $ = (id) => document.getElementById(id);
-    const buttons = [...document.querySelectorAll("[data-choice]")];
-    let seed = 17, round = 0, score = 0, streak = 0, busy = false, finished = false;
-    let history = {rows: [], decisions: []};
-    function settings() {
-      return {seed, round, threshold: Number($("threshold").value) / 100,
-        automate: $("automate").checked, failure: $("failure").checked};
-    }
-    function controls() {
-      for (const button of buttons) button.disabled = busy || finished;
-      for (const id of ["threshold", "automate", "failure", "note"]) $(id).disabled = busy || finished;
-      $("next").disabled = busy;
-      $("restart").disabled = busy;
-      $("threshold-value").textContent = `${$("threshold").value}%`;
-      $("mode-label").textContent = $("automate").checked ? "Enforce" : "Shadow";
-      $("mode-help").textContent = $("automate").checked
-        ? "Enforce: the gate routes this toy parcel. Your button records what you would have chosen."
-        : "Shadow: your button routes the parcel. The engine records its suggestion beside your choice.";
-    }
-    function evidence(result) {
-      $("state").textContent = result.state.text;
-      $("hashes").textContent = `Full hash: ${result.state.hash}\nTrusted hash: ${result.state.trustedHash}`;
-    }
-    async function preview() {
-      busy = true; finished = false; controls(); $("error").hidden = true;
-      $("result").innerHTML = ""; $("next").hidden = true;
-      $("carton").classList.remove("routed");
-      document.querySelectorAll("[data-lane]").forEach(el => { el.classList.remove("landed"); });
-      try {
-        const result = await request("parcels", settings());
-        const p = result.parcel;
-        $("box-name").textContent = p.name; $("box-id").textContent = p.id;
-        $("parcel-heading").textContent = p.name; $("stamp").textContent = p.blocked ? "STOP STAMP" : "INCOMING";
-        $("manifest").innerHTML = [
-          ["Destination", p.destination], ["Belt weight", `${p.weight} kg / 8 kg limit`],
-          ["Address", p.addressVerified ? "Verified" : "Needs verification"], ["Release", p.blocked ? "Stop stamp" : "No stop stamp"]
-        ].map(([label,value]) => `<div><dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value)}</dd></div>`).join("");
-        $("scanner").textContent = `Scanner clue: ${p.scanner}`;
-        $("note").value = p.senderNote; $("count").textContent = `${round + 1} / 8`; evidence(result);
-      } catch (error) {
-        $("error").textContent = error.message; $("error").hidden = false; finished = true;
-      } finally { busy = false; controls(); }
-    }
-    async function dispatch(choice) {
-      if (busy || finished) return;
-      busy = true; controls(); $("error").hidden = true;
-      try {
-        const result = await request("parcels", {...settings(), choice, senderNote: $("note").value});
-        const o = result.outcome;
-        score += o.points; streak = o.perfect ? streak + 1 : 0; finished = true;
-        $("score").textContent = score; $("streak").textContent = streak;
-        $("carton").classList.add("routed");
-        document.querySelector(`[data-lane="${o.actual}"]`).classList.add("landed");
-        $("stamp").textContent = o.actual.toUpperCase();
-        const signal = !o.oracleCalled ? "A hard floor settled this parcel. No oracle call."
-          : o.failedOpen ? "The scanner failed. The engine recommended review."
-          : `Toy oracle readiness: ${Math.round(o.probability * 100)}%.`;
-        const authority = result.mode === "shadow" ? "Your manual route" : "Automated toy route";
-        $("result").innerHTML = `<div class="result-card ${o.safe ? "" : "miss"}"><h2>${o.perfect ? "Right on route!" : o.safe ? "Safe detour." : "Belt mishap!"} ${o.points > 0 ? "+" : ""}${o.points}</h2><p>${escapeHtml(o.explanation)}</p><p class="result-detail"><strong>${authority}: ${o.actual}.</strong> You chose ${o.player}; the gate suggested ${o.suggested}. ${escapeHtml(signal)}</p></div>`;
-        history.rows.push(...result.ledger.rows); history.decisions.push(...result.ledger.decisions);
-        showLedger($("ledger"), history); $("download").disabled = false; evidence(result);
-        if (round < 7) { $("next").hidden = false; }
-        else $("result").insertAdjacentHTML("beforeend", `<p class="notice">Shift complete! ${score} points. Start a new shift and try a different threshold or automation mode.</p>`);
-      } catch (error) { $("error").textContent = error.message; $("error").hidden = false; }
-      finally { busy = false; controls(); if (finished && round < 7) $("next").focus(); }
-    }
-    buttons.forEach(button => { button.addEventListener("click", () => dispatch(button.dataset.choice)); });
-    for (const id of ["threshold", "automate"]) $(id).addEventListener("input", controls);
-    $("next").addEventListener("click", async () => { round++; await preview(); $("ship").focus(); });
-    $("restart").addEventListener("click", () => {
-      seed = seed % 9999 + 1; round = 0; score = 0; streak = 0; history = {rows: [], decisions: []};
-      $("score").textContent = "0"; $("streak").textContent = "0"; $("download").disabled = true;
-      $("ledger").innerHTML = '<p class="muted">Fresh shift. Your next move starts the ledger.</p>'; preview();
+const $ = id => document.getElementById(id);
+let seed = newWorldSeed();
+let round = 0;
+let score = 0;
+let time = 14;
+let care = 3;
+let finished = false;
+let ready = false;
+let busy = false;
+let running = false;
+let automate = false;
+let generation = 0;
+let runToken = 0;
+let timer = null;
+const playback = setupPlayback({
+  board: document.querySelector('.shift-world'), controls: $('run').parentElement,
+  pause, isRunning: () => running,
+});
+$('seed').closest('.panel').classList.add('game-settings');
+let history = { rows: [], decisions: [] };
+$('seed').value = seed;
+const resolved = () => round + (finished ? 1 : 0);
+const done = () => resolved() >= 8 || time <= 0 || care <= 0;
+
+function input() {
+  return { seed, round, threshold: Number($('threshold').value), automate, failure: $('failure').checked };
+}
+
+function lock() {
+  playback.sync({ running, busy, done: done() });
+  setModelControlLocked(busy || running);
+  for (const id of ['failure', 'threshold', 'seed']) $(id).disabled = busy || running;
+  for (const id of ['restart', 'replay']) $(id).disabled = busy;
+  $('note').disabled = busy || finished || running;
+  document.querySelectorAll('[data-choice]').forEach(button => {
+    button.disabled = busy || running || !ready || finished || done();
+  });
+  $('agent').disabled = busy || running || !ready || done();
+  $('run').disabled = busy || running || !ready || done();
+  for (const id of ['stop', 'takeover']) $(id).disabled = !running;
+  $('next').disabled = busy || running;
+  $('next').hidden = !finished || done();
+}
+
+function metrics() {
+  $('score').textContent = `${score} / 60`;
+  $('time').textContent = Math.max(0, time);
+  $('care').textContent = care;
+  $('count').textContent = done() ? `${resolved()} / 8 routed` : `${round + 1} / 8`;
+  $('queue').innerHTML = Array.from({ length: 8 }, (_, index) => `
+    <span class="${index < resolved() ? 'finished' : ''}" aria-label="Parcel ${index + 1}">${index < resolved() ? '✓' : '📦'}</span>
+  `).join('');
+}
+
+function finishMessage() {
+  if (resolved() === 8 && score >= 60 && care > 0 && time >= 0) return `Shift won! All eight parcels routed · ${score} points · ${time} minutes left.`;
+  if (care <= 0) return `Shift failed: the belt lost its integrity after ${resolved()} parcels.`;
+  if (time <= 0 && (resolved() < 8 || time < 0)) return `Shift failed: time ran out after ${resolved()} of 8 parcels · ${score} points.`;
+  return `Shift finished with ${score} points; the delivery goal was 60. Replay to try different routes.`;
+}
+
+async function preview() {
+  if (done()) { metrics(); lock(); return false; }
+  const token = generation;
+  busy = true;
+  ready = false;
+  lock();
+  $('error').textContent = '';
+  try {
+    const result = await request('parcels', input());
+    if (token !== generation) return false;
+    const parcel = result.parcel;
+    $('box-name').textContent = parcel.name;
+    $('box-id').textContent = parcel.id;
+    $('parcel-heading').textContent = parcel.name;
+    $('manifest').innerHTML = [
+      ['Destination', parcel.destination], ['Weight', `${parcel.weight} kg · belt limit 8`],
+      ['Address', parcel.addressVerified ? 'Verified' : 'Needs verification'],
+      ['Stamp', parcel.blocked ? 'STOP · do not ship' : 'No stop stamp'],
+    ].map(([label, value]) => `<div><strong>${escapeHtml(label)}</strong><br>${escapeHtml(value)}</div>`).join('');
+    $('scanner').textContent = `Arrival: ${parcel.arrivalEvent} Scanner: ${parcel.scanner}`;
+    $('note').value = parcel.senderNote;
+    $('state').textContent = result.state.text;
+    $('source').textContent = result.judgeSource === 'live'
+      ? 'A live oracle judges the observed packing. Code enforces the manifest limits and routes review to inspection.'
+      : 'Offline toy judge reacts to observed packing and can be fooled by sender notes. Rain, depot repacking and changed addresses affect the actual parcels.';
+    $('result').innerHTML = '';
+    $('status').textContent = `Parcel ${round + 1} arrived. ${parcel.arrivalEvent}`;
+    $('carton').style.transform = 'none';
+    document.querySelectorAll('[data-lane]').forEach(element => {
+      element.classList.remove('active');
     });
-    $("download").addEventListener("click", () => downloadLedger(history.rows));
-    document.addEventListener("keydown", event => {
-      if (event.ctrlKey || event.metaKey || event.altKey || event.repeat || /INPUT|TEXTAREA|SELECT|BUTTON/.test(event.target.tagName)) return;
-      const choice = {"1":"ship","2":"inspect","3":"hold"}[event.key];
-      if (choice) { event.preventDefault(); dispatch(choice); }
-      if (event.key.toLowerCase() === "n" && finished && round < 7 && !busy) $("next").click();
+    ready = true;
+    metrics();
+    return true;
+  } catch (error) {
+    if (token === generation) $('error').textContent = error.message;
+    return false;
+  } finally {
+    busy = false;
+    lock();
+  }
+}
+
+async function dispatch(choice) {
+  if (busy || !ready || finished || done()) return false;
+  const token = generation;
+  busy = true;
+  lock();
+  $('error').textContent = '';
+  try {
+    const result = await request('parcels', {
+      ...input(), ...(choice ? { choice, manual: true } : { agent: true }), senderNote: $('note').value,
     });
-    preview();
-  </script>
-</body>
-</html>
+    if (token !== generation) return false;
+    const outcome = result.outcome;
+    history.rows.push(...result.ledger.rows);
+    history.decisions.push(...result.ledger.decisions);
+    showLedger($('ledger'), history);
+    $('state').textContent = result.state.text;
+    if (outcome.pending) {
+      $('status').textContent = `Shadow suggestion: ${outcome.suggested}. No parcel moved.`;
+      return false;
+    }
+    score += outcome.points;
+    time -= outcome.actual === 'inspect' ? 2 : 1;
+    if (!outcome.safe) care--;
+    finished = true;
+    document.querySelector(`[data-lane="${outcome.actual}"]`).classList.add('active');
+    $('carton').style.transform = `translateX(${outcome.actual === 'ship' ? -30 : outcome.actual === 'inspect' ? 20 : 65}px) translateY(20px)`;
+    $('status').textContent = outcome.actual === 'inspect'
+      ? `Shipping held. ${choice ? 'You' : 'Dot'} sent the parcel to inspection; 2 minutes used.`
+      : `${choice ? 'You' : 'Dot'} routed ${outcome.actual}. ${outcome.points > 0 ? '+' : ''}${outcome.points} points.`;
+    $('result').innerHTML = `<h3>${outcome.perfect ? 'Good route!' : outcome.safe ? 'Safe detour.' : 'Belt mishap!'}</h3>
+      <p>${escapeHtml(outcome.explanation)}</p><p>${outcome.failedOpen
+        ? 'The scanner failed. Shipping remained held; the inspection lane handled this parcel.'
+        : !outcome.oracleCalled ? 'A hard floor settled the route without an oracle call.'
+        : `Readiness judgment: ${Math.round(outcome.probability * 100)}%.`}</p>`;
+    if (done()) $('status').textContent = finishMessage();
+    metrics();
+    return true;
+  } catch (error) {
+    if (token === generation) $('error').textContent = error.message;
+    return false;
+  } finally {
+    busy = false;
+    lock();
+  }
+}
+
+async function next() {
+  if (!finished || done()) return false;
+  round++;
+  finished = false;
+  return preview();
+}
+
+function pause() {
+  running = false;
+  runToken++;
+  clearTimeout(timer);
+  timer = null;
+  lock();
+}
+
+async function step(token) {
+  automate = true;
+  if (finished && !await next()) return false;
+  if (token !== undefined && (!running || token !== runToken)) return false;
+  return dispatch();
+}
+
+async function tick(token) {
+  timer = null;
+  if (!running || token !== runToken) return;
+  const advanced = await step(token);
+  if (!running || token !== runToken) return;
+  if (!advanced || done()) { pause(); return; }
+  timer = setTimeout(() => tick(token), playback.delay());
+}
+
+async function reset(fresh = false) {
+  pause();
+  generation++;
+  seed = fresh ? newWorldSeed(seed) : Number($('seed').value);
+  $('seed').value = seed;
+  round = 0;
+  score = 0;
+  time = 14;
+  care = 3;
+  finished = false;
+  automate = false;
+  history = { rows: [], decisions: [] };
+  showLedger($('ledger'), history);
+  await preview();
+}
+
+document.querySelectorAll('[data-choice]').forEach(button => {
+  button.onclick = () => dispatch(button.dataset.choice);
+});
+$('agent').onclick = () => step();
+$('next').onclick = next;
+$('run').onclick = () => { playback.started(); automate = true; running = true; const token = ++runToken; lock(); tick(token); };
+$('stop').onclick = pause;
+$('takeover').onclick = () => { pause(); $('status').textContent = 'You have the conveyor. Choose a lane, or Next parcel when this one is finished.'; };
+$('restart').onclick = () => reset(true);
+$('replay').onclick = () => reset();
+for (const id of ['failure', 'threshold', 'seed']) $(id).onchange = () => reset();
+$('threshold').oninput = () => { $('bar').textContent = `${Math.round(Number($('threshold').value) * 100)}%`; };
+$('download').onclick = () => downloadLedger(history.rows);
+document.addEventListener('keydown', event => {
+  if (event.repeat || event.ctrlKey || event.metaKey || /INPUT|TEXTAREA|SELECT|BUTTON/.test(event.target.tagName)) return;
+  const move = { '1': 'ship', '2': 'inspect', '3': 'hold' }[event.key];
+  if (move && !running) dispatch(move);
+});
+setupModelControl(() => reset());
+preview();
+</script></body></html>

@@ -1,6 +1,6 @@
 import { createHash, randomUUID } from "node:crypto";
 import { appendFile, readFile } from "node:fs/promises";
-import type { Action, QuestionKind, Verdict } from "../types.ts";
+import type { Action, Question, QuestionKind, Verdict } from "../types.ts";
 
 export type Mode = "shadow" | "enforce";
 
@@ -42,6 +42,10 @@ export interface DecisionRecord {
   readonly prompt: string;
   /** Hash of the full question (prompt, options or levels in order, criteria): the rubric version. */
   readonly questionHash: string;
+  /** Effective numeric policy and defaults; absent on legacy rows. Does not version code. */
+  readonly policyHash?: string;
+  /** Caller-owned version of model/configuration, strategy, floors and state semantics. */
+  readonly evidenceVersion?: string;
   /** Hash of the whole rendered state the oracle saw. */
   readonly stateHash: string;
   /** Hash of the trusted fields alone; equal to `stateHash` for a plain string state. */
@@ -78,6 +82,7 @@ export interface Ledger {
   append(record: DecisionRecord): Promise<void>;
   /** Attach an outcome to a record. Returns false if the id is unknown. */
   label(id: string, outcome: Outcome): Promise<boolean>;
+  /** Decision insertion order, stable across labels and reloads; rollout uses it as a boundary. */
   all(): Promise<readonly DecisionRecord[]>;
   /** One row by id. Optional: the engine falls back to scanning `all()`. */
   get?(id: string): Promise<DecisionRecord | undefined>;
@@ -88,11 +93,18 @@ export interface Ledger {
 export const hashState = (state: string): string =>
   createHash("sha256").update(state).digest("hex").slice(0, 16);
 
+/** Same rubric identity that engine decision rows record. */
+export const hashQuestion = (question: Question): string => hashState(JSON.stringify(question));
+
 export const newRecordId = (): string => randomUUID();
 
 export const newRequestId = (): string => randomUUID();
 
 const requestKey = (r: DecisionRecord): string => `${r.gateId}\u0000${r.requestId}`;
+
+/** Code-only decisions carry placeholder confidence, not evidence of oracle performance. */
+export const settledWithoutAnswer = (r: DecisionRecord): boolean =>
+  r.strategy === "floored" || r.strategy === "bypass";
 
 /** True when `row` is a member of the battery whose combined row is `combined`. */
 export const isMemberOf = (combined: DecisionRecord, row: DecisionRecord): boolean =>

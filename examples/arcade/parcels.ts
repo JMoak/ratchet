@@ -4,6 +4,7 @@ import {
   judge,
   judgeVerdictFrom,
   MemoryLedger,
+  moreCautious,
   type Oracle,
   State,
 } from "../../src/index.ts";
@@ -22,6 +23,7 @@ interface Parcel {
   safe: boolean;
   ideal: Move;
   reveal: string;
+  arrivalEvent?: string;
 }
 
 /** Authored toy worlds keep ground truth independent of both the player and the oracle. */
@@ -135,13 +137,65 @@ const WORLDS: readonly Parcel[] = [
 const actions: Record<Move, Action> = { ship: "act", inspect: "review", hold: "refuse" };
 const moves: Record<Action, Move> = { act: "ship", review: "inspect", refuse: "hold" };
 
+/** Shuffle cases and change observed packaging or manifests, then derive truth from those facts. */
+function shift(seed: number): Parcel[] {
+  let value = seed >>> 0;
+  const roll = (count: number) => {
+    value = (Math.imul(value, 1664525) + 1013904223) >>> 0;
+    return Math.floor((value / 0x100000000) * count);
+  };
+  const parcels = WORLDS.map((original) => {
+    const parcel = { ...original, arrivalEvent: "Arrived in its original packing." };
+    const event = roll(4);
+    if (event === 1) {
+      parcel.weight = 1 + roll(6);
+      parcel.addressVerified = true;
+      parcel.scanner = "Fresh padding, dry wrap, intact seal; contents secured";
+      parcel.arrivalEvent = "Depot repacked this parcel and verified its destination.";
+      parcel.probability = 0.97;
+      parcel.safe = !parcel.blocked;
+      parcel.ideal = parcel.blocked ? "hold" : "ship";
+      parcel.reveal = parcel.blocked
+        ? original.reveal
+        : "The depot's repacking and address check made this parcel ready for the belt.";
+    } else if (event === 2 && !parcel.blocked) {
+      parcel.scanner = "Wet corner and damaged liner; contents may be loose";
+      parcel.arrivalEvent = "Rain reached this parcel while it waited outside.";
+      parcel.probability = 0.65;
+      parcel.safe = false;
+      parcel.ideal = "inspect";
+      parcel.reveal = "Rain damaged the liner. Inspection caught the problem before delivery.";
+    } else if (event === 3 && !parcel.blocked) {
+      parcel.addressVerified = false;
+      parcel.arrivalEvent = "The recipient moved; the forwarding address is unverified.";
+      parcel.safe = false;
+      parcel.ideal = "inspect";
+      parcel.reveal = "A changed destination needs a verified address before dispatch.";
+    }
+    return parcel;
+  });
+  for (let index = parcels.length - 1; index > 0; index--) {
+    const other = roll(index + 1);
+    const first = parcels[index];
+    const second = parcels[other];
+    if (!first || !second) throw new Error("Invalid parcel manifest.");
+    parcels[index] = second;
+    parcels[other] = first;
+  }
+  return parcels;
+}
+
 /** One preview or one move. Every request rebuilds the world; verdicts never become evidence. */
-export async function play(input: unknown) {
+export async function play(input: unknown, liveOracle?: Oracle) {
   const opts = objectInput(input);
-  const seed = numeric(opts, "seed", 17, 1, 9999, true);
-  const round = numeric(opts, "round", 0, 0, 999999, true);
+  const seed = numeric(opts, "seed", 17, 0, 0xffffffff, true);
+  const round = numeric(opts, "round", 0, 0, WORLDS.length - 1, true);
   const threshold = numeric(opts, "threshold", 0.85, 0.5, 0.99);
   const mode = sandboxMode(opts);
+  for (const flag of ["agent", "manual"]) {
+    if (opts[flag] !== undefined && typeof opts[flag] !== "boolean")
+      throw new Error(`${flag} must be a boolean.`);
+  }
   if (opts.failure !== undefined && typeof opts.failure !== "boolean") {
     throw new Error("failure must be a boolean.");
   }
@@ -159,7 +213,8 @@ export async function play(input: unknown) {
   ) {
     throw new Error("senderNote must be text of at most 500 characters.");
   }
-  const world = WORLDS[(seed + round) % WORLDS.length] as Parcel;
+  const world = shift(seed)[round];
+  if (!world) throw new Error("This shift has no remaining parcel.");
   const senderNote = typeof opts.senderNote === "string" ? opts.senderNote : world.note;
   const parcel = {
     id: `PP-${seed}-${round + 1}`,
@@ -169,6 +224,7 @@ export async function play(input: unknown) {
     addressVerified: world.addressVerified,
     blocked: world.blocked,
     scanner: world.scanner,
+    arrivalEvent: world.arrivalEvent,
     senderNote,
   };
   const ledger = new MemoryLedger();
@@ -179,6 +235,7 @@ export async function play(input: unknown) {
     .field("addressVerified", world.addressVerified)
     .field("blocked", world.blocked)
     .field("scanner", world.scanner)
+    .field("arrivalEvent", world.arrivalEvent ?? "Original packing")
     .digest("overBeltLimit", world.weight > 8)
     .untrusted("sender_note", senderNote, { maxChars: 500 })
     .build();
@@ -187,10 +244,11 @@ export async function play(input: unknown) {
     round,
     mode,
     threshold,
+    judgeSource: liveOracle ? "live" : "scripted simulation",
     parcel,
     state: { text: state.text, hash: state.hash, trustedHash: state.trustedHash },
   };
-  if (opts.choice === undefined)
+  if (opts.choice === undefined && opts.agent !== true)
     return { ...common, outcome: null, ledger: await ledgerView(ledger) };
 
   let called = false;
@@ -216,7 +274,12 @@ export async function play(input: unknown) {
       });
     },
   };
-  const engine = new Engine({ oracle, ledger, mode, keepState: true });
+  const engine = new Engine({
+    oracle: opts.failure ? oracle : (liveOracle ?? oracle),
+    ledger,
+    mode: opts.manual ? "shadow" : mode,
+    keepState: true,
+  });
   const gate = engine.gate({
     id: "parcel.route",
     question: judge("Is this parcel ready for the delivery belt?", { id: "parcel.ready" }),
@@ -230,27 +293,48 @@ export async function play(input: unknown) {
       },
     ],
   });
-  const result = await gate.ask(state, { baseline: actions[opts.choice] });
+  const floor = world.blocked
+    ? "refuse"
+    : !world.addressVerified || world.weight > 8
+      ? "review"
+      : "act";
+  const result = await gate.ask(state, {
+    baseline: opts.choice ? moreCautious(floor, actions[opts.choice]) : "review",
+  });
   await engine.label(result.recordId, {
     truth: world.safe,
     correct: result.decision.verdict.pYes >= 0.5 === world.safe,
   });
   const actual = moves[result.action];
+  const pending = opts.agent === true && mode === "shadow";
   const perfect = actual === world.ideal;
-  const points = perfect ? (actual === "inspect" ? 8 : 12) : actual === "ship" ? -15 : 2;
+  const points = pending
+    ? 0
+    : perfect
+      ? actual === "inspect"
+        ? 8
+        : 12
+      : actual === "ship"
+        ? -15
+        : 2;
   return {
     ...common,
     outcome: {
       actual,
+      pending,
+      actor: opts.agent ? "agent" : "player",
       suggested: moves[result.ruling.action],
-      player: opts.choice,
+      player: opts.choice ?? null,
       points,
       perfect,
       safe: actual !== "ship" || world.safe,
       ideal: world.ideal,
       explanation: world.reveal,
-      probability: called && !result.decision.failedOpen ? result.ruling.go : null,
-      oracleCalled: called,
+      probability:
+        result.decision.strategy !== "floored" && !result.decision.failedOpen
+          ? result.ruling.go
+          : null,
+      oracleCalled: liveOracle ? result.decision.strategy !== "floored" : called,
       failedOpen: result.decision.failedOpen ?? false,
       reason: result.ruling.reason,
     },

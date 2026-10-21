@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { Engine } from "../src/engine.ts";
+import { hashQuestion } from "../src/ledger/ledger.ts";
 import { SimOracle, type Truth } from "../src/oracles/sim.ts";
+import { hashPolicy } from "../src/policy.ts";
 import { judge } from "../src/questions.ts";
 import {
   band,
@@ -62,13 +64,22 @@ describe("Rollout", () => {
     });
     const rollout = new Rollout({
       engine,
+      evidence: {
+        version: "sim-v1",
+        policyHash: hashPolicy({ actAbove: 0.8 }),
+        questionHash: hashQuestion(q),
+      },
       promisedAccuracy: 0.9,
       minShadowRows: 100,
       minAuditRows: 30,
     });
     const run = async (slice: string[]) => {
       for (const s of slice) {
-        const r = await engine.ask(s, q, { policy: { actAbove: 0.8 }, baseline: "review" });
+        const r = await engine.ask(s, q, {
+          policy: { actAbove: 0.8 },
+          evidenceVersion: "sim-v1",
+          baseline: "review",
+        });
         const v = r.decision.verdict as JudgeVerdict;
         const truth = truths.get(s)?.judge ?? false;
         await engine.label(r.recordId, { correct: v.pYes >= 0.5 === truth, truth });
@@ -110,6 +121,7 @@ describe("Rollout per gate", () => {
     });
     const gate = engine.gate({
       id: "bash.safe",
+      evidenceVersion: "sim-v1",
       question: judge("ok?", { id: "ok" }),
       policy: { actAbove: 0.8 },
       promisedAccuracy: 0.9,
@@ -170,25 +182,34 @@ describe("Rollout action accuracy", () => {
         }),
     };
     const engine = new Engine({ oracle });
-    const tied = await engine.ask("state", judge("Act?", { id: "tied" }), {
+    const question = judge("Act?", { id: "tied" });
+    const rollout = new Rollout({
+      engine,
+      evidence: {
+        version: "mixed-v1",
+        policyHash: hashPolicy({ actAbove: 0.5, goIsYes: true }),
+        questionHash: hashQuestion(question),
+      },
+      promisedAccuracy: 0.9,
+      minShadowRows: 1,
+      minActed: 1,
+    });
+    await rollout.evaluate();
+    const tied = await engine.ask("state", question, {
       policy: { actAbove: 0.5, goIsYes: true },
+      evidenceVersion: "mixed-v1",
     });
     await engine.label(tied.recordId, { correct: false, truth: false });
     const other = await engine.ask("state", judge("Hold?", { id: "opposite" }), {
       policy: { actAbove: 0.9, goIsYes: false },
+      evidenceVersion: "mixed-v1",
     });
     await engine.label(other.recordId, { correct: true, truth: true });
 
-    const rollout = new Rollout({
-      engine,
-      promisedAccuracy: 0.9,
-      minShadowRows: 2,
-      minActed: 1,
-    });
     expect(await rollout.evaluate()).toMatchObject({
       mode: "shadow",
       changed: false,
-      window: { n: 2, acted: 1, accuracy: 0 },
+      window: { n: 1, acted: 1, accuracy: 0 },
     });
   });
 
@@ -215,12 +236,14 @@ describe("Rollout action accuracy", () => {
       const engine = new Engine({ oracle, auditRate: 1 });
       const gate = engine.gate({
         id: "cheap-act",
+        evidenceVersion: "polarity-fixture-v1",
         question: judge("Should we act?", { id: "act" }),
         // A cheap wrong act can legitimately give a bar below one half.
         policy: { actAbove: 0.1, goIsYes },
         promisedAccuracy: 0.9,
         rollout: { minShadowRows: 1, minAuditRows: 1, minActed: 1, window: 1 },
       });
+      await gate.rollout.evaluate();
       const label = async (correct: boolean) => {
         const result = await gate.ask("state");
         const truth = correct ? !goIsYes : goIsYes;

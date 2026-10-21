@@ -41,6 +41,7 @@ coverage, models seen, failed-open rows by error class, cost and mean latency.
 
 The bar is fitted on unselected rows (shadow rows and blind audits) when there are at
 least --min-support of them, else on all labelled rows, which the output marks as biased.
+Code-only floor and allowlist rows stay in operational counts, not calibration or fitting.
 Posture: underconfident when observed accuracy beats expected by more than 2 points,
 overconfident when it falls short by more than 2, calibrated otherwise.
 `;
@@ -62,7 +63,7 @@ export interface GateReport {
   readonly rows: number;
   /** Distinct request ids, when rows carry them; fewer than rows when questions were batched. */
   readonly requests: number;
-  /** Labelled rows that did not fail open: the rows every accuracy number is computed on. */
+  /** Labelled oracle answers, excluding failed-open and code-only placeholder rows. */
   readonly labelled: number;
   /** Labelled rows the oracle's confidence did not select: shadow rows and blind audits. */
   readonly unselected: number;
@@ -239,7 +240,8 @@ export function renderReport(r: LedgerReport): string {
       "Bar is the lowest confidence that delivered the target with enough support, and " +
       'coverage is the share of the fitted rows at or above it; "none" means no bar did. ' +
       'Rows fitted on "all" were selected by the engine\'s own confidence, so treat that bar ' +
-      "as a fallback. Fixed rows were decided by a floor or an allowlist without a call." +
+      "as a fallback. Fixed rows were decided by a floor or an allowlist without a call; " +
+      "they remain in operational counts but never in calibration or fitted thresholds." +
       (r.gates.some((g) => g.memberOf !== undefined)
         ? " A battery's spend is recorded on its member rows; its own row carries the ruling."
         : ""),

@@ -1,7 +1,30 @@
 # ratchet
 
-*Working name. A decision engine that compounds cheap, calibrated machine judgments into
-reliable automated decisions.*
+**Small judgments. Deliberate moves.** A decision engine that compounds cheap, calibrated
+machine judgments into reliable automated decisions.
+
+```text
+             .-.
+             |o|                 R A T C H E T
+          .--'-'--.
+     _   /  o   o  \   _         the model proposes.
+    / \  |    >    |  / \        code decides.
+    \_/==| .-----. |==\_/
+         | | >>> | |
+         | '-----' |             [ ACT | REVIEW | REFUSE ]
+         '---+---+-'
+          __|   |__
+         [___] [___]             click. check. advance.
+```
+
+`TypeScript · strict` &nbsp; `Bun 1.3.x` &nbsp; `0 runtime dependencies` &nbsp; `shadow by default`
+
+[Play the arcade](docs/arcade.md) · [Run locally](#run-it) · [Vision](docs/vision.md) ·
+[Architecture](docs/architecture.md) · [Evidence](docs/pilot-results.md) ·
+[Publishing plan](docs/publishing.md)
+
+*Working name; pre-release source checkout. Package and hosted arcade publishing are being
+[planned](docs/publishing.md).*
 
 Decision models (TypeSafe's Jev, launched September 2026, and the rivals that followed within
 weeks) answer typed questions in under half a second for hundredths of a cent, with a
@@ -24,7 +47,10 @@ const safe = engine.gate({
   policy: policyWithBand(0.85, 0.1),           // act at 0.95 and above; the band below it is reviewed
   floors: [refuseIf(/rm -rf \/(\s|$)/), oneWayDoor((s) => /--force|DROP TABLE/.test(s))],
   promisedAccuracy: 0.98,                        // observed-accuracy target; see rollout limits below
+  evidenceVersion: "shell-gate-v1",              // bump for model/config, rules, strategy or state changes
+  rollout: { evidence: { version: "shell-gate-v1", model: "typesafe/jev-1.13" } },
 });
+await safe.rollout.evaluate();                   // initialize BEFORE collecting evidence; holds shadow
 
 // State is built in code: trusted fields, digests, and untrusted spans kept apart.
 const state = State.create("Shell command proposed by the coding agent")
@@ -45,6 +71,10 @@ Rollout currently compares observed accuracy with its target. Before relying on 
 promotion, independently validate the policy on representative labels; audits of allowed
 actions do not validate a lower action bar. The [roadmap](docs/roadmap.md) puts this evidence
 loop ahead of more integrations.
+Rollout evidence is scoped to its rubric, effective policy, configuration version and model
+pin. Every promotion or demotion starts a fresh ledger phase. Save `safe.rollout.checkpoint()`
+yourself for restart; without a valid checkpoint the controller starts in shadow again.
+See [rollout lifecycle and migration](docs/rollout.md) for the exact boundaries and limits.
 
 ## Why it exists
 
@@ -93,11 +123,16 @@ ensembles, verified progress, hard rules, and learning from a ledger.
 
 ## Status
 
-0.2: gates as the unit of configuration and rollout, a State builder, recipes routed through the
-engine, a CLI (`ratchet report | check | replay`), four compounding strategies, learned composition,
+The 0.2 feature milestone includes gates as the unit of configuration and rollout, a State
+builder, recipes routed through the engine, a CLI (`ratchet report | check | replay`),
+four compounding strategies, learned composition,
 recalibration, a System One adapter
 (Jev wire format, also spoken by Cloudflare Clef and Amazon Strands Decider), an LLM-backed
 oracle, tests, simulation, demo. The adapter runs live against Jev through OpenRouter, which
 serves the same wire format at `/api/v1/systemone`; put `OPENROUTER_API_KEY` in `.env` with
 `scripts/set-key.ps1` ([docs/roadmap.md](docs/roadmap.md)). Research behind the design: `research_notes/` and
 `reports/`.
+
+The package manifest is currently `0.0.1` and private. The [publishing plan](docs/publishing.md)
+tracks the remaining package, license, runtime, and hosting decisions; a feature milestone
+is not a published release or an accuracy guarantee.

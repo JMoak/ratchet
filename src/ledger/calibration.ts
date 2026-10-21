@@ -1,5 +1,5 @@
 import { clamp, mean } from "../math.ts";
-import type { DecisionRecord } from "./ledger.ts";
+import { type DecisionRecord, settledWithoutAnswer } from "./ledger.ts";
 
 /** One scored answer: how confident the oracle was, and whether it was right. */
 export interface Scored {
@@ -245,13 +245,13 @@ export function wilsonLower(p: number, n: number, confidence = 0.95): number {
   return Math.max(0, (centre - spread) / denom);
 }
 
-/** Score labelled ledger rows by the verdict's own confidence. */
+/** Score actual labelled answers; code-only placeholders cannot calibrate an oracle. */
 export function scoredFromLedger(
   records: readonly DecisionRecord[],
   opts: { readonly unselectedOnly?: boolean } = {},
 ): Scored[] {
   return records.flatMap((r) => {
-    if (!r.outcome || r.failedOpen) return [];
+    if (!r.outcome || r.failedOpen || settledWithoutAnswer(r)) return [];
     if (opts.unselectedOnly && !isUnselected(r)) return [];
     return [{ confidence: r.confidence, correct: r.outcome.correct }];
   });
@@ -271,14 +271,15 @@ export const isUnselected = (r: DecisionRecord): boolean =>
  * Compare it with observed accuracy on labelled rows; the gap is miscalibration.
  */
 export function expectedAccuracy(records: readonly DecisionRecord[]): number | undefined {
-  const live = records.filter((r) => !r.failedOpen);
+  const live = records.filter((r) => !r.failedOpen && !settledWithoutAnswer(r));
   return live.length === 0 ? undefined : mean(live.map((r) => r.confidence));
 }
 
 /** Score labelled judge rows by the yes-probability against the boolean truth. */
 export function scoredForYes(records: readonly DecisionRecord[]): Scored[] {
   return records.flatMap((r) => {
-    if (!r.outcome || r.failedOpen || r.verdict.kind !== "judge") return [];
+    if (!r.outcome || r.failedOpen || settledWithoutAnswer(r) || r.verdict.kind !== "judge")
+      return [];
     if (typeof r.outcome.truth !== "boolean") return [];
     return [{ confidence: r.verdict.pYes, correct: r.outcome.truth }];
   });
@@ -287,14 +288,15 @@ export function scoredForYes(records: readonly DecisionRecord[]): Scored[] {
 /**
  * Score labelled judge rows with their boolean truth and the oracle's leading answer, for
  * recall-mode fitting. Rows without a boolean truth, failed-open rows and non-judge rows are
- * skipped; `correct` is the label as recorded.
+ * skipped, as are code-only placeholders; `correct` is the label as recorded.
  */
 export function scoredWithTruth(
   records: readonly DecisionRecord[],
   opts: { readonly unselectedOnly?: boolean } = {},
 ): ScoredTruth[] {
   return records.flatMap((r) => {
-    if (!r.outcome || r.failedOpen || r.verdict.kind !== "judge") return [];
+    if (!r.outcome || r.failedOpen || settledWithoutAnswer(r) || r.verdict.kind !== "judge")
+      return [];
     if (typeof r.outcome.truth !== "boolean") return [];
     if (opts.unselectedOnly && !isUnselected(r)) return [];
     return [

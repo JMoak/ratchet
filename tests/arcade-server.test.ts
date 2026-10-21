@@ -55,4 +55,13 @@ describe("local arcade", () => {
     });
     expect((await handleRequest(malformed)).status).toBe(400);
   });
+
+  it("never enables paid calls from a browser request alone", async () => {
+    const capabilities = await handleRequest(new Request(`${local}/api/capabilities`));
+    expect(await capabilities.json()).toMatchObject({ liveAvailable: false });
+    const live = await handleRequest(post("/api/bridge", { model: "live" }));
+    expect(live.status).toBe(400);
+    expect(await live.json()).toMatchObject({ error: expect.stringContaining("disabled") });
+    expect((await handleRequest(post("/api/bridge", { model: "unknown" }))).status).toBe(400);
+  });
 });

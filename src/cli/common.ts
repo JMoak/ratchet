@@ -1,5 +1,5 @@
 import { stat } from "node:fs/promises";
-import { type DecisionRecord, JsonlLedger } from "../ledger/ledger.ts";
+import { type DecisionRecord, JsonlLedger, settledWithoutAnswer } from "../ledger/ledger.ts";
 import type { Action } from "../types.ts";
 import { CliError } from "./args.ts";
 
@@ -164,8 +164,7 @@ export const byTime = (rows: readonly DecisionRecord[]): DecisionRecord[] =>
   rows.slice().sort((a, b) => (a.at < b.at ? -1 : a.at > b.at ? 1 : 0));
 
 /** Rows whose action no oracle answer decided: a floor fixed it, or an allowlist bypassed the call. */
-export const isFixed = (r: DecisionRecord): boolean =>
-  r.strategy === "floored" || r.strategy === "bypass";
+export const isFixed = settledWithoutAnswer;
 
 /** Rows where a model actually answered: not failed open, not fixed, not a battery's combined row. */
 export const answered = (r: DecisionRecord): boolean =>

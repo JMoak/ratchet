@@ -44,7 +44,7 @@ bin/ratchet.ts        The CLI entry point
 sim/                  The thesis as runnable tables (bun run sim -> docs/sim-results.md)
 examples/tool-gate.ts PreToolUse gate: shadow -> label -> fit -> enforce -> audit, as registered gates
 examples/quickstart.ts Live triage of one message through Jev via OpenRouter
-examples/arcade/      Four offline browser games; loopback Bun server, Engine/Gate and MemoryLedger
+examples/arcade/      Four browser games with agent turns; loopback server, optional capped live oracle
 experiments/pilot/    Sourced shadow fixtures, frozen-policy evidence experiment, static chart report
 scripts/set-key.ps1   Hidden-input prompt that writes API keys to the gitignored .env
 tests/                Vitest; statistical tests are seeded and tolerance-bounded
@@ -349,12 +349,24 @@ remain experiment code until representative application evidence warrants a publ
 
 ## Rollout
 
-`new Rollout({ gate, promisedAccuracy })` (or `gate.rollout`, built from the spec) reads the
-gate's labelled decision rows: in shadow it promotes the gate when enough shadow/audit rows exist
-and the observed correctness of the actions meets the promise; in enforce it demotes the gate
-when the blind-audited acts fall below it. It flips `gate.mode` only. `new Rollout({ engine,
-promisedAccuracy })` keeps the engine-level behaviour: every decision row, and
-`engine.mode`, which every gate without a pinned mode follows.
+`new Rollout({ gate, promisedAccuracy })` (or `gate.rollout`, built from the spec) reads only
+the gate's current rubric, effective policy and caller-owned evidence version, optionally
+requiring an exact recorded model. New rows carry `policyHash` and `evidenceVersion`;
+legacy rows remain reportable but cannot earn promotion. Code-only floor/bypass rows
+remain excluded. Gates derive their own hashes; engine-level controllers require explicit
+`evidence.policyHash` and `evidence.questionHash` via exported `hashPolicy`/`hashQuestion`.
+
+Initialize with `evaluate()` **before** collecting evidence. Without a valid checkpoint,
+the first call sets shadow and excludes every row already present. Fresh shadow rows can
+promote; only the current enforce phase's blind audits can demote. Each transition moves a
+ledger-order boundary past all existing target rows, including unlabelled rows. Late labels
+cannot revive a consumed phase. No timestamp comparison decides eligibility.
+
+`checkpoint()` returns plain JSON for caller-owned persistence. Restore it through
+`RolloutSettings.checkpoint`; malformed, incompatible or missing anchors hold shadow.
+Calls on one controller serialize, but multiple controllers/processes must not own the same
+target. This is not a persistence or distributed-locking layer. The
+[rollout guide](rollout.md) documents restart, migration and identity limits.
 
 This controller compares observed proportions; it does not certify a population accuracy
 or provide an anytime-valid statistical guarantee. A judge's correct leading answer is not

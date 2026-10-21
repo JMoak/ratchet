@@ -16,6 +16,7 @@
     "noEmit": true,
     "allowImportingTsExtensions": true
   },
+  "exclude": ["experiments/data", "experiments/out"],
   "include": [
     "bin/**/*.ts",
     "src/**/*.ts",

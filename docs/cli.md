@@ -128,7 +128,7 @@ Observed is accuracy on labelled rows; expected is their mean stated confidence.
 
 How to read it:
 
-- **labelled** counts rows with an outcome that did not fail open; every accuracy number is
+- **labelled** counts actual oracle answers with an outcome that did not fail open; every accuracy number is
   computed on them. **unselected** is the part of that the oracle's confidence did not select:
   shadow rows and blind audits.
 - **observed** is accuracy of the leading answer; **expected** is the mean stated confidence on
@@ -148,7 +148,8 @@ How to read it:
   `short batch`, `malformed`, `unrecorded` (failed open with no message, as a budget cap does),
   or the message with numbers masked.
 - **fixed** rows were decided by a floor or an allowlist without a call; they are excluded from
-  latency and from the label-free expected accuracy. **mean latency** is over rows that called
+  accuracy, calibration, fitted thresholds, minimum evidence, and latency. An answered row
+  whose action was bounded by a floor still contributes its real oracle answer. **mean latency** is over rows that called
   an oracle, including the ones that failed.
 
 `--json` prints the same numbers unrounded, one object per gate (abridged here to one gate):
