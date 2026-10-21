@@ -66,19 +66,9 @@ prepaid budget. Do not add a general monitoring framework to solve these one at 
 
 ## Companion applications: Relly and Pebble
 
-The [subject-relevance proposal](design/subject-relevance.md) explores source-grounded
-subject maps, goal-specific evidence selection, and explicit project/person preferences.
-At the user's direction, the local research workbench now lives in `C:/src/relly`.
-It reuses established retrieval and optional reranking before Ratchet's usefulness gate.
-The lexical baseline stays active while complementary packs remain experimental drafts.
-The first independent SciFact evaluation found that mechanical query-facet diversification
-reduced nDCG@10 from 0.6134 to 0.5637; facet coverage is not evidence of improved relevance.
-The next measurement is a recorded established reranker on the frozen candidate pool,
-then separately labelled passage usefulness and critical omissions. See Relly's
-`docs/evaluation.md` for the protocol, provenance, complete results and limits.
-
-Pebble, a small virtual pet built on the engine, lives in its own repository with its
-design and research.
+Relly, a local research workbench that uses Ratchet's gates for subject relevance, and
+Pebble, a small virtual pet built on the engine, live in their own repositories with their
+designs, research and evaluations.
 
 Both applications use sibling Ratchet sources during local development. Ingestion, UI,
 pet simulation and application persistence stay outside this engine. These experiments
