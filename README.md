@@ -134,5 +134,19 @@ serves the same wire format at `/api/v1/systemone`; put `OPENROUTER_API_KEY` in 
 `reports/`.
 
 The package manifest is currently `0.0.1` and private. The [publishing plan](docs/publishing.md)
-tracks the remaining package, license, runtime, and hosting decisions; a feature milestone
+tracks the remaining package, runtime, and hosting decisions; a feature milestone
 is not a published release or an accuracy guarantee.
+
+## License and third-party services
+
+Apache License 2.0; see [LICENSE](LICENSE) and [NOTICE](NOTICE). Material quoted in
+`research_notes/` and `reports/` belongs to its owners and is not covered by that license.
+
+Ratchet is independent and not affiliated with or endorsed by TypeSafe, OpenRouter or any
+other model provider. It ships no model: hosted backends run on your own key, under your own
+agreement with each provider, and every state you ask about is sent to them. Those terms
+forbid reselling access and distilling from model output, which rules out hosting a
+pass-through service on your key or training a lookalike model on exported ledgers. Nothing
+here is an accuracy or safety guarantee, and it should not be the sole basis for
+consequential decisions about people. Read [third-party services and terms](docs/third-party-terms.md)
+before using a hosted backend or hosting anything built on one.

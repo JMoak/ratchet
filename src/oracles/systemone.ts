@@ -17,6 +17,10 @@ import { nowIso } from "./oracle.ts";
  * Mapping: judge -> noul, pick -> choice, rate -> score. The engine's `confidence` is the
  * probability mass on the leading answer (the calibrated quantity thresholds consume); the
  * vendor's own `confidence` figure, which is a rescaling, is kept under `Decision.vendor`.
+ *
+ * Every call runs on the caller's key under the caller's own agreement with the host; through
+ * OpenRouter the model's terms apply as well. Those terms forbid reselling access and
+ * distilling from the answers (docs/third-party-terms.md).
  */
 export interface SystemOneOptions {
   /** Default: TypeSafe. Any compatible host works. */

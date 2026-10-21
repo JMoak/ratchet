@@ -110,6 +110,9 @@ const SYSTEM_PROMPT = [
  * Caveat the ledger will measure for you: self-reported probabilities from generative models
  * are usually poorly calibrated. Run in shadow mode, label, and look at the ECE before
  * trusting a threshold.
+ *
+ * Calls run on the caller's key under the caller's agreement with the endpoint and, through
+ * OpenRouter, the chosen model's own terms (docs/third-party-terms.md).
  */
 export class LlmJsonOracle implements Oracle {
   readonly id: string;

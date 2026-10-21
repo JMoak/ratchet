@@ -8,6 +8,8 @@ import type { JudgeVerdict } from "../types.ts";
  * feature-discovery cookbook does the same with a tree model. This is the smallest version:
  * L2-regularised logistic regression on the log-odds of each member, by gradient descent,
  * no dependencies. Fit on unselected rows and refit when the model version moves.
+ * The target is always the labelled outcome, never a member's answer: fitting to reproduce a
+ * provider's verdicts would be distillation, which its terms forbid (docs/third-party-terms.md).
  */
 export interface LogisticModel {
   readonly weights: readonly number[];

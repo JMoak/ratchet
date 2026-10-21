@@ -417,7 +417,8 @@ export interface Calibrator {
  * confidence that best fits observed correctness. Distribution-free, needs no parametric
  * assumption, and on decision-model outputs it has beaten Platt scaling by a wide margin
  * (ECE 0.117 to 0.008 versus 0.052 in one study). Fit it on unselected rows only, and refit
- * when the model version moves. Returns undefined below `minSupport` rows.
+ * when the model version moves. Returns undefined below `minSupport` rows. Like every fit
+ * here it maps confidence to observed correctness, never to another model's answer.
  */
 export function fitIsotonic(items: readonly Scored[], minSupport = 30): Calibrator | undefined {
   if (items.length < minSupport) return undefined;

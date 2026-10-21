@@ -1,0 +1,10 @@
+ratchet
+Copyright 2026 Jordan Moak
+
+ratchet is an independent project. It is not affiliated with, endorsed by, or sponsored by
+TypeSafe, OpenRouter, or any other model provider it can call. It contains no third-party
+model or service; using a hosted model requires your own account and key, under your own
+agreement with that provider. See docs/third-party-terms.md.
+
+Material quoted in research_notes/ and reports/ belongs to its owners and is not licensed
+under the Apache License.
