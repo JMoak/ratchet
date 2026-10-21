@@ -77,10 +77,8 @@ The next measurement is a recorded established reranker on the frozen candidate 
 then separately labelled passage usefulness and critical omissions. See Relly's
 `docs/evaluation.md` for the protocol, provenance, complete results and limits.
 
-`C:/src/pebble` implements the [virtual-pet design](../research_notes/virtual-pet.md):
-one room, six finite intentions, code-owned consequences, seeded personality and optional
-model judgments in shadow. Its offline behavior is explicitly scripted. Interaction
-completion, persistence and observed behavior diversity are the current quality criteria.
+Pebble, a small virtual pet built on the engine, lives in its own repository with its
+design and research.
 
 Both applications use sibling Ratchet sources during local development. Ingestion, UI,
 pet simulation and application persistence stay outside this engine. These experiments
