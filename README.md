@@ -105,7 +105,7 @@ bun run demo      # a PreToolUse gate: shadow -> label -> fit -> enforce -> audi
 bun run arcade    # four local browser games using the engine; no keys needed
 bun run pilot     # source-inspired shadow pilot + fixed-policy evidence experiment
 bun run pilot --live  # same pilot through Jev; keeps every application action in review
-bun run keywork --export decisions.jsonl  # keywork tool gate: dry run; --live replays answered asks in shadow
+bun run keywork --export decisions.jsonl  # keywork tool gate: dry run; --live replays answered asks in shadow; --smoke for the pre-evidence history
 bun run ratchet review <ledger> --gate <id>  # blind labels for a seeded sample, before the model is shown
 bun run quickstart  # live: triage one message with Jev via OpenRouter (needs a key in .env)
 bun run live        # live: the five calibration, routing, cascade and cost experiments (< $0.10)

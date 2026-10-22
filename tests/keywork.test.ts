@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { KEYWORK_LABEL_SOURCE, keyworkGateSpec } from "../experiments/keywork/gate.ts";
+import {
+  KEYWORK_EVIDENCE_FROM,
+  KEYWORK_LABEL_SOURCE,
+  keyworkGateSpec,
+} from "../experiments/keywork/gate.ts";
 import { callTag, ingestDecisions } from "../experiments/keywork/ingest.ts";
 import {
   KEYWORK_SCHEMA,
@@ -14,6 +18,7 @@ import type { Decision, Oracle, Question } from "../src/types.ts";
 
 let sequence = 0;
 
+/** Fixture answers fall after KEYWORK_EVIDENCE_FROM unless a test says otherwise. */
 function decision(overrides: Partial<ToolDecision> & { command?: string } = {}): ToolDecision {
   sequence++;
   const { command, ...rest } = overrides;
@@ -21,7 +26,7 @@ function decision(overrides: Partial<ToolDecision> & { command?: string } = {}):
     session: "s1",
     rootSession: "s1",
     callId: `c${sequence}`,
-    at: new Date(Date.UTC(2026, 9, 1, 0, sequence)).toISOString(),
+    at: new Date(Date.UTC(2026, 10, 1, 0, sequence)).toISOString(),
     tool: "bash",
     subject: {
       kind: "command",
@@ -32,12 +37,12 @@ function decision(overrides: Partial<ToolDecision> & { command?: string } = {}):
       opaque: false,
     },
     ask: {
-      at: new Date(Date.UTC(2026, 9, 1, 0, sequence)).toISOString(),
+      at: new Date(Date.UTC(2026, 10, 1, 0, sequence)).toISOString(),
       rule: "default",
       grantable: true,
     },
     answer: {
-      at: new Date(Date.UTC(2026, 9, 1, 0, sequence, 5)).toISOString(),
+      at: new Date(Date.UTC(2026, 10, 1, 0, sequence, 5)).toISOString(),
       verdict: "granted",
       gate: "user",
       scope: "once",
@@ -59,7 +64,8 @@ function fixedOracle(pYes: number, seen: string[] = []): Oracle {
         model: "fixed-1",
         latencyMs: 0,
         cost: 0.00001,
-        at: "2026-10-21T00:00:00.000Z",
+        // The daily cap reads this clock, so a fixed date would turn into yesterday at midnight UTC.
+        at: new Date().toISOString(),
       }));
     },
   };
@@ -139,6 +145,23 @@ describe("keywork ingestion", () => {
       expect.arrayContaining([callTag(earlier), "session:s1", "keywork:tool:bash"]),
     );
     expect(rows.every((r) => r.mode === "shadow" && r.action === "review")).toBe(true);
+  });
+
+  it("keeps the smoke set and evidence apart by the instant the person answered", async () => {
+    const smoke = decision({ answer: { ...decision().answer, at: "2026-08-15T00:00:00.000Z" } });
+    const fresh = decision();
+
+    const evidence = setup(fixedOracle(0.99));
+    const since = { since: KEYWORK_EVIDENCE_FROM };
+    const ingested = await ingestDecisions(evidence.engine, evidence.gate, [smoke, fresh], since);
+    expect(ingested).toMatchObject({ population: 1, asked: 1, outsideWindow: 1 });
+    expect((await evidence.engine.ledger.all()).map((r) => r.tags[0])).toEqual([callTag(fresh)]);
+
+    const before = setup(fixedOracle(0.99));
+    const window = { before: KEYWORK_EVIDENCE_FROM };
+    const replayed = await ingestDecisions(before.engine, before.gate, [smoke, fresh], window);
+    expect(replayed).toMatchObject({ population: 1, asked: 1, outsideWindow: 1 });
+    expect((await before.engine.ledger.all()).map((r) => r.tags[0])).toEqual([callTag(smoke)]);
   });
 
   it("never asks twice about a call already in the ledger", async () => {
@@ -231,6 +254,47 @@ describe("keywork report and acceptance", () => {
     const report = keyworkReport(await engine.ledger.all(), gate);
     expect(report).toContain("Collecting: 10 of 149 acts");
     expect(report).toContain(`${KEYWORK_LABEL_SOURCE} 12`);
+    expect(report).toContain("sealed until the planned sample is evaluated (12 labelled");
+    expect(report).not.toMatch(/approved|denied|ECE|Brier/);
+  });
+
+  it("opens accuracy and calibration once the planned sample has been evaluated", async () => {
+    const { engine, gate } = setup(fixedOracle(0.99));
+    const sessions = Array.from({ length: 150 }, (_, i) => `s${i % 15}`);
+    await ingestDecisions(
+      engine,
+      gate,
+      sessions.map((rootSession) => decision({ rootSession })),
+    );
+
+    const report = keyworkReport(await engine.ledger.all(), gate);
+
+    expect(report).toContain("Accepted: 0 wrong of 149");
+    expect(report).toContain("Suggested acts the person approved: 150; denied: 0");
+    expect(report).toContain("Calibration on 150 labelled answers");
+  });
+
+  it("shows the smoke set in full and plans nothing on it, because it is not evidence", async () => {
+    const { engine, gate } = setup(fixedOracle(0.99));
+    await ingestDecisions(engine, gate, [decision(), decision()]);
+
+    const report = keyworkReport(await engine.ledger.all(), gate, { smoke: true });
+
+    expect(report).toContain("smoke run");
+    expect(report).toContain("Suggested acts the person approved: 2; denied: 0");
+    expect(report).not.toContain("## Acceptance");
+    expect(report).not.toContain("sealed");
+  });
+
+  it("paces the plan by answers inside the evidence window only", async () => {
+    const { engine, gate } = setup(fixedOracle(0.99));
+    const fresh = [decision(), decision()];
+    const smoke = decision({ answer: { ...decision().answer, at: "2026-08-01T00:00:00.000Z" } });
+    await ingestDecisions(engine, gate, fresh);
+
+    const report = keyworkReport(await engine.ledger.all(), gate, { decisions: [...fresh, smoke] });
+
+    expect(report).toContain("2 person answers over 1 days");
   });
 
   it("refuses to judge evidence that spans two models", async () => {

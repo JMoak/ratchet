@@ -21,7 +21,7 @@ says what is next. The research that shaped the design lives in `research_notes/
 | Store an API key | `powershell -ExecutionPolicy Bypass -File scripts\set-key.ps1` |
 | Ledger CLI | `bun run ratchet report|check|replay <ledger.jsonl> ...` (see `docs/cli.md`) |
 | Blind review (interactive) | `bun run ratchet review <ledger.jsonl> --gate <id>` |
-| keywork tool gate | `bun run keywork --export <decisions.jsonl>` (dry run); add `--live` to ask Jev in shadow (needs `.env`, capped per UTC day) |
+| keywork tool gate | `bun run keywork --export <decisions.jsonl>` (dry run); add `--live` to ask Jev in shadow (needs `.env`, capped per UTC day); `--smoke` replays the pre-evidence history into its own ledger |
 
 Bun 1.3.x, no runtime dependencies. On this Windows machine `bunx` is not on the Git Bash
 path; use `bun x`.

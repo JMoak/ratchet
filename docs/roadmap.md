@@ -39,7 +39,9 @@ its 54 authored fixtures are regression evidence, and the
    whether each verdict answered one, and exports scrubbed decision records
    (`keywork sessions decisions`, its overlay 122); `bun run keywork` replays them through the
    `keywork.tool` gate in shadow. The loop runs end to end; what it lacks is volume. keywork's
-   history here is 25 person answers, and 149 acts at that pace take months. The
+   history here is 9 person answers over two days, and 149 acts answered by hand take months. That history is the
+   smoke set (`--smoke`, a ledger of its own); evidence starts 2026-10-22, and the success
+   criteria were fixed before its first row ([design](design/keywork-gate.md)). The
    output-verification example follows through the same machinery.
 
 Open choices the evidence will force: whether to tolerate a few errors in the plan for power

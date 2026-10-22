@@ -14,6 +14,13 @@ export const KEYWORK_GATE = "keywork.tool";
 /** Bump with any change to the rubric, policy, floors, state rendering or model pin. */
 export const KEYWORK_EVIDENCE = "keywork-tool-v1";
 
+/**
+ * Where evidence begins. Answers before this instant are keywork's history on this machine, read
+ * while this loop was built and replayed as its smoke set; a sample that included them would not
+ * be one fixed before its labels were seen. The smoke set never shares a ledger with evidence.
+ */
+export const KEYWORK_EVIDENCE_FROM = "2026-10-22T00:00:00.000Z";
+
 export const KEYWORK_LABEL_SOURCE = "keywork:person";
 
 /**

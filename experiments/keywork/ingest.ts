@@ -8,8 +8,24 @@ import { toolCallState } from "./state.ts";
 /** Ledger tag naming the keywork call a row came from; it makes ingestion idempotent. */
 export const callTag = (d: ToolDecision): string => `keywork:call:${decisionKey(d)}`;
 
+/** Which answers a run ingests, by the instant the person answered: a half-open interval. */
+export interface AnswerWindow {
+  /** Only answers at or after this instant (ISO 8601). */
+  readonly since?: string;
+  /** Only answers before this instant (ISO 8601). */
+  readonly before?: string;
+}
+
+export function withinWindow(d: ToolDecision, window: AnswerWindow): boolean {
+  const at = Date.parse(d.answer.at);
+  return (
+    (window.since === undefined || at >= Date.parse(window.since)) &&
+    (window.before === undefined || at < Date.parse(window.before))
+  );
+}
+
 export interface IngestResult {
-  /** Decisions a person answered: the population the gate would replace. */
+  /** Decisions a person answered inside the window: the population the gate would replace. */
   readonly population: number;
   /** Rows asked of the gate in this run. */
   readonly asked: number;
@@ -17,6 +33,8 @@ export interface IngestResult {
   readonly already: number;
   /** Decisions outside the population, by who answered them. */
   readonly skipped: Readonly<Record<Exclude<AnsweredBy, "person">, number>>;
+  /** Person-answered decisions outside the window: the smoke set in an evidence run, or the reverse. */
+  readonly outsideWindow: number;
   /** True when the budget ran out and the rest were left for a later run. */
   readonly stoppedAtBudget: boolean;
 }
@@ -27,23 +45,32 @@ export interface IngestResult {
  * covered, a rule decided or no one could answer says nothing about the person's judgment of
  * that call, and an older journal that cannot tell an answer from a grant is left out.
  *
- * Every person-answered decision is ingested regardless of its answer, in time order, so the
- * acceptance sample (the first acts in ledger order) is fixed without anyone choosing rows by
- * their labels. The answer is attached after the gate has ruled; it never enters the state.
+ * Every person-answered decision inside the window is ingested regardless of its answer, in
+ * time order, so the acceptance sample (the first acts in ledger order) is fixed without anyone
+ * choosing rows by their labels. The window keeps the smoke set and evidence apart. The answer
+ * is attached after the gate has ruled; it never enters the state.
  */
 export async function ingestDecisions(
   engine: Engine,
   gate: Gate<JudgeVerdict>,
   decisions: readonly ToolDecision[],
+  window: AnswerWindow = {},
 ): Promise<IngestResult> {
   const skipped = { headless: 0, grant: 0, rule: 0, unknown: 0 };
+  let outsideWindow = 0;
   // A failed-open row bought no answer, so its call is asked again on a later run.
   const seen = new Set((await engine.ledger.all()).flatMap((r) => (r.failedOpen ? [] : r.tags)));
   const population = decisions
     .filter((d) => {
-      if (d.answer.by === "person") return true;
-      skipped[d.answer.by]++;
-      return false;
+      if (d.answer.by !== "person") {
+        skipped[d.answer.by]++;
+        return false;
+      }
+      if (!withinWindow(d, window)) {
+        outsideWindow++;
+        return false;
+      }
+      return true;
     })
     .sort(
       (a, b) =>
@@ -81,5 +108,5 @@ export async function ingestDecisions(
     });
     asked++;
   }
-  return { population: population.length, asked, already, skipped, stoppedAtBudget };
+  return { population: population.length, asked, already, skipped, outsideWindow, stoppedAtBudget };
 }
