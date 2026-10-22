@@ -15,6 +15,8 @@ src/
   engine.ts           Engine: gate registry and shared machinery (oracle, ledger, budget, audits);
                       ask / askAll / label / report; the Asker interface
   rollout.ts          Rollout: shadow -> enforce on evidence, back to shadow on audited drift, per gate
+  acceptance.ts       the planned exact test promotion runs: sample size, sample, one evaluation
+  spend.ts            DailySpend: a per-UTC-day spend cap read from the ledger, with reservations
   math.ts             logit, Condorcet, design effect, cost thresholds, seeded RNG, Beta
   oracles/
     oracle.ts         failOpen(), cached(), withFallback(), timeouts, cost and latency helpers
@@ -176,7 +178,7 @@ interface GateSpec<Q extends Question | readonly JudgeQuestion[]> {
   readonly bypass?: readonly BypassRule[];
   readonly strategy?: StrategySpec;       // single questions only
   readonly promisedAccuracy?: number;     // drives gate.rollout
-  readonly rollout?: RolloutSettings;     // window, minShadowRows, minAuditRows, minActed
+  readonly rollout?: RolloutSettings;     // acceptance plan; demotion window and minAuditRows
   readonly mode?: Mode;                   // overrides engine.mode
   readonly auditRate?: number;            // overrides the engine's audit rate
   readonly tags?: readonly string[];
@@ -327,7 +329,15 @@ locate(chunks, question, { none, id })                     // the pure builder: 
 - **sequential() with settleLead**: first-to-ahead-by-k stopping alongside the confidence bar.
 - **Engine budgetUsd**: a spend cutoff based on completed, recorded requests; after it is
   reached, new asks fail open into review. An in-flight request, its strategy members, and
-  concurrent requests can exceed it because their final cost is not known in advance.
+  concurrent requests can exceed it because their final cost is not known in advance. It
+  starts at zero in every process.
+- **Engine dailyBudgetUsd**: the cap a restart cannot reset. `DailySpend` reads the UTC day's
+  spend from the ledger at the day's first request, and each request reserves `reserveUsd`
+  (default: the costliest request on record) before it buys an answer, so a burst of
+  concurrent asks cannot all slip under the cap. A refused request fails open with
+  `detail.budget: "daily"`. Another process writing the same ledger is seen at the next day's
+  read; a request can cost more than its reservation; a failed call can still be billed.
+  It is a recorded-spend cutoff, not a prepaid budget.
 - **allowIf() bypass**: known-safe states answered without a call; a floor still wins.
 - **cached() leases**: `ttlMs` and `maxUses` bound how long an answer is reused.
 - **withFallback()**: a second backend (open-weight clone, local model, `RuleOracle`) when the
@@ -344,8 +354,11 @@ The standalone [shadow pilot](pilot.md) exercises both tool gates and output ver
 through the real engine and JSONL ledger. It fits on one set of scenario families, saves a
 candidate manifest, then measures it on separate validation and challenge groups. Its
 authored fixtures never enable enforcement. A separate seeded IID experiment compares
-point-estimate promotion with exact fixed-time validation and repeated inspection. These
-remain experiment code until representative application evidence warrants a public API.
+point-estimate promotion with exact fixed-time validation and repeated inspection.
+
+The [keywork tool gate](design/keywork-gate.md) (`experiments/keywork/`) replays the asks a
+person answered in keywork, Jordan's coding-agent harness, through a shadow gate, labels each
+row with the person's answer, and reports progress against a planned acceptance test.
 
 ## Rollout
 
@@ -357,8 +370,9 @@ remain excluded. Gates derive their own hashes; engine-level controllers require
 `evidence.policyHash` and `evidence.questionHash` via exported `hashPolicy`/`hashQuestion`.
 
 Initialize with `evaluate()` **before** collecting evidence. Without a valid checkpoint,
-the first call sets shadow and excludes every row already present. Fresh shadow rows can
-promote; only the current enforce phase's blind audits can demote. Each transition moves a
+the first call sets shadow and excludes every row already present. Promotion runs one planned
+acceptance test (`acceptance.ts`) on the fresh phase's shadow rows; only the current enforce
+phase's blind audits can demote. Each transition moves a
 ledger-order boundary past all existing target rows, including unlabelled rows. Late labels
 cannot revive a consumed phase. No timestamp comparison decides eligibility.
 
@@ -368,14 +382,20 @@ Calls on one controller serialize, but multiple controllers/processes must not o
 target. This is not a persistence or distributed-locking layer. The
 [rollout guide](rollout.md) documents restart, migration and identity limits.
 
-This controller compares observed proportions; it does not certify a population accuracy
-or provide an anytime-valid statistical guarantee. A judge's correct leading answer is not
+The acceptance test fixes its sample before reading labels (the first eligible acts in ledger
+order, retries once, an optional cap per group), keeps the result sealed until the sample is
+complete and labelled, and evaluates once by an exact one-sided Clopper-Pearson bound. A pass
+promotes; a failure holds the configuration in shadow, recorded in a format 2 checkpoint, until
+its identity changes. Table 7 of `sim-results.md` compares it with the earlier point estimate.
+It is sound under its assumptions (independent acts of a frozen configuration, correct labels),
+not a certification of later traffic. A judge's correct leading answer is not
 necessarily a correct action when the policy acts against that answer. Rollout therefore
 scores the action's polarity from the recorded `go`, consistent with CLI action scoring.
 An exact 0.5 judge verdict does not record its policy's polarity unambiguously and supplies
 no positive evidence of a correct action.
 
-Audits currently default to 0 and must be enabled explicitly. They randomly sample only
+Audits default to 0 and must be enabled explicitly (Jordan, 2026-10-21); a gate promoted
+without them cannot be demoted by evidence, and Rollout says so. They randomly sample only
 enforced acts, so they monitor that acted population; they do not establish coverage or
 accuracy below the existing action bar. The current `unselected` fit classification combines
 shadow and audit rows, which does not by itself make them representative of all traffic.
@@ -386,8 +406,9 @@ work ahead of broader deployment is listed first in `roadmap.md`.
 
 `bin/ratchet.ts` over a JSONL ledger: `report` (per gate: calibration, posture, fitted bar
 and coverage, models seen), `check` (exit 1 when a gate breaks its promise, its ECE bound or
-its pinned model; for CI), and `replay` (re-rule every recorded distribution under a new
-policy, without oracle calls). It groups rows by `gateId` and reads a battery's combined rows
+its pinned model; for CI), `replay` (re-rule every recorded distribution under a new
+policy, without oracle calls), and `review` (blind labels for a seeded uniform sample of one
+judge gate's stored states, recorded before the model's answer is shown). It groups rows by `gateId` and reads a battery's combined rows
 as the gate's decisions and its members as their own groups.
 
 ## Extension points

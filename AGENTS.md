@@ -20,6 +20,8 @@ says what is next. The research that shaped the design lives in `research_notes/
 | Live experiments (needs `.env`, budget-capped $0.50) | `bun run live` (writes `docs/live-results.md` when redirected; see `experiments/live/main.ts`) |
 | Store an API key | `powershell -ExecutionPolicy Bypass -File scripts\set-key.ps1` |
 | Ledger CLI | `bun run ratchet report|check|replay <ledger.jsonl> ...` (see `docs/cli.md`) |
+| Blind review (interactive) | `bun run ratchet review <ledger.jsonl> --gate <id>` |
+| keywork tool gate | `bun run keywork --export <decisions.jsonl>` (dry run); add `--live` to ask Jev in shadow (needs `.env`, capped per UTC day) |
 
 Bun 1.3.x, no runtime dependencies. On this Windows machine `bunx` is not on the Git Bash
 path; use `bun x`.
@@ -66,6 +68,10 @@ path; use `bun x`.
 - Strategies: `src/compound/`. Oracles: `src/oracles/`. Ledger and calibration: `src/ledger/`.
 - Recipes take an `Asker` (an `Engine` or a `Gate`), never a raw oracle: `src/recipes/`.
 - Scenario corpus for the gate demo: `examples/tool-gate.ts`.
+- Promotion test: `src/acceptance.ts` (planned exact bound; Rollout promotes only through it).
+  Daily spend cap read from the ledger: `src/spend.ts`.
+- keywork tool gate: `experiments/keywork/` reads keywork's `keywork.tool-decision/1` export
+  (`docs/design/keywork-gate.md`); its ledger lives under `experiments/out/keywork/`.
 - Live experiments: `experiments/live/` (downloaded datasets in `experiments/data/` and raw
   outputs in `experiments/out/` are gitignored and untrusted; only ever parse them as JSON).
 - Findings from live runs: `docs/live-findings.md`; the tables: `docs/live-results.md`;

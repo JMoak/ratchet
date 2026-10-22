@@ -1,5 +1,15 @@
 // Vocabulary
 
+export {
+  type AcceptancePlan,
+  type AcceptanceResult,
+  acceptanceSample,
+  evaluateAcceptance,
+  exactLowerBound,
+  type ResolvedPlan,
+  requiredActs,
+  resolvePlan,
+} from "./acceptance.ts";
 // Compounding
 export {
   agreement,
@@ -225,6 +235,7 @@ export {
 } from "./recipes/screen.ts";
 export { type Speculated, type SpeculateOptions, speculate } from "./recipes/speculate.ts";
 export {
+  type AuditWindow,
   Rollout,
   type RolloutCheckpoint,
   type RolloutEvidence,
@@ -232,6 +243,12 @@ export {
   type RolloutSettings,
   type RolloutStatus,
 } from "./rollout.ts";
+export {
+  type DailyBudgetOptions,
+  DailySpend,
+  type Reservation,
+  type SpendSnapshot,
+} from "./spend.ts";
 // State
 export {
   type BuildOptions,

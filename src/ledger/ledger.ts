@@ -12,6 +12,13 @@ export interface Outcome {
   readonly truth?: string | boolean;
   readonly note?: string;
   /**
+   * Who or what produced the label, such as "keywork:person" for an answer given in the moment
+   * or "review:blind" for a careful review made before the reviewer saw the model's answer.
+   * Reports split on it, because labels that arrive by different routes are not the same
+   * evidence: a quick approval is not a considered review.
+   */
+  readonly source?: string;
+  /**
    * Set on a battery member's outcome: the id of the combined row whose label it was derived
    * from. The member's `truth` is the battery's truth and `correct` is re-scored against the
    * member's own lean, so a member that disagreed with the combined verdict is not marked right.
@@ -150,6 +157,7 @@ export function inheritOutcome(
     correct: member.verdict.pYes >= 0.5 === truth,
     truth,
     ...(outcome.note !== undefined ? { note: outcome.note } : {}),
+    ...(outcome.source !== undefined ? { source: outcome.source } : {}),
     inheritedFrom: combined.id,
   };
 }

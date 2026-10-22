@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { Engine } from "../src/engine.ts";
 import { hashQuestion } from "../src/ledger/ledger.ts";
-import { SimOracle, type Truth } from "../src/oracles/sim.ts";
 import { hashPolicy } from "../src/policy.ts";
 import { judge } from "../src/questions.ts";
 import {
@@ -45,19 +44,35 @@ describe("digest helpers", () => {
   });
 });
 
+/** Answers as surely as the world it believes in: pYes 0.95 for a yes, 0.05 for a no. */
+const believer = (believes: (state: string) => boolean | undefined): Oracle => ({
+  id: "believer",
+  decide: async (state, questions) =>
+    questions.map((q) => {
+      const pYes = believes(state) ? 0.95 : 0.05;
+      return {
+        verdict: { kind: "judge" as const, questionId: q.id, pYes, confidence: 0.95 },
+        oracle: "believer",
+        cost: 0,
+        latencyMs: 0,
+        at: "2026-10-21T00:00:00.000Z",
+      };
+    }),
+});
+
 describe("Rollout", () => {
   const items = Array.from({ length: 400 }, (_, i) => `s-${i}`);
   let flipped = false;
-  const truths = new Map<string, Truth>(items.map((s, i) => [s, { judge: i % 2 === 0 }]));
-  const truthOf = (s: string): Truth | undefined => {
+  const truths = new Map<string, boolean>(items.map((s, i) => [s, i % 2 === 0]));
+  const believes = (s: string): boolean | undefined => {
     const t = truths.get(s);
-    return t && flipped ? { judge: !t.judge } : t;
+    return t === undefined ? undefined : flipped ? !t : t;
   };
   const q = judge("ok?", { id: "ok" });
 
-  it("promotes on shadow evidence and demotes on audited drift", async () => {
+  it("promotes on a planned sample of shadow acts and demotes on audited drift", async () => {
     const engine = new Engine({
-      oracle: new SimOracle({ accuracy: 0.97, seed: 3 }, truthOf),
+      oracle: believer(believes),
       mode: "shadow",
       auditRate: 0.5,
       seed: 1,
@@ -70,7 +85,6 @@ describe("Rollout", () => {
         questionHash: hashQuestion(q),
       },
       promisedAccuracy: 0.9,
-      minShadowRows: 100,
       minAuditRows: 30,
     });
     const run = async (slice: string[]) => {
@@ -81,26 +95,34 @@ describe("Rollout", () => {
           baseline: "review",
         });
         const v = r.decision.verdict as JudgeVerdict;
-        const truth = truths.get(s)?.judge ?? false;
+        const truth = truths.get(s) ?? false;
         await engine.label(r.recordId, { correct: v.pYes >= 0.5 === truth, truth });
       }
     };
     expect((await rollout.evaluate()).mode).toBe("shadow");
-    await run(items.slice(0, 150));
+    await run(items.slice(0, 40));
+    expect(await rollout.evaluate()).toMatchObject({
+      mode: "shadow",
+      acceptance: { status: "collecting", acts: 20 },
+    });
+    await run(items.slice(40, 150));
     const promoted = await rollout.evaluate();
-    expect(promoted.mode).toBe("enforce");
-    expect(promoted.changed).toBe(true);
+    expect(promoted).toMatchObject({
+      mode: "enforce",
+      changed: true,
+      acceptance: { status: "accepted", errors: 0, plan: { sampleSize: 29 } },
+    });
     expect(engine.mode).toBe("enforce");
 
-    // The world changes under the model: its answers are now mostly wrong.
+    // The world changes under the model: its confident answers are now wrong.
     flipped = true;
-    await run(items.slice(150, 300));
+    await run(items.slice(150, 350));
     const demoted = await rollout.evaluate();
     expect(demoted.mode).toBe("shadow");
     expect(demoted.changed).toBe(true);
     expect(demoted.reason).toMatch(/demoted/);
     expect(engine.mode).toBe("shadow");
-    expect(rollout.history.length).toBe(3);
+    expect(rollout.history.length).toBe(4);
   });
 });
 
@@ -108,17 +130,13 @@ describe("Rollout per gate", () => {
   const items = Array.from({ length: 400 }, (_, i) => `g-${i}`);
   let flipped = false;
   const truths = new Map<string, boolean>(items.map((s, i) => [s, i % 2 === 0]));
-  const truthOf = (s: string): Truth | undefined => {
+  const believes = (s: string): boolean | undefined => {
     const t = truths.get(s);
-    return t === undefined ? undefined : { judge: flipped ? !t : t };
+    return t === undefined ? undefined : flipped ? !t : t;
   };
 
   it("promotes and demotes one gate on its own rows, leaving the engine and other gates alone", async () => {
-    const engine = new Engine({
-      oracle: new SimOracle({ accuracy: 0.97, seed: 3 }, truthOf),
-      mode: "shadow",
-      seed: 1,
-    });
+    const engine = new Engine({ oracle: believer(believes), mode: "shadow", seed: 1 });
     const gate = engine.gate({
       id: "bash.safe",
       evidenceVersion: "sim-v1",
@@ -126,7 +144,7 @@ describe("Rollout per gate", () => {
       policy: { actAbove: 0.8 },
       promisedAccuracy: 0.9,
       auditRate: 0.5,
-      rollout: { minShadowRows: 100, minAuditRows: 30 },
+      rollout: { minAuditRows: 30 },
     });
     const other = engine.gate({
       id: "bash.other",
@@ -147,12 +165,12 @@ describe("Rollout per gate", () => {
     await run(items.slice(0, 150));
     const promoted = await gate.rollout.evaluate();
     expect(promoted).toMatchObject({ mode: "enforce", changed: true, gateId: "bash.safe" });
-    expect(promoted.window.n).toBe(150);
+    expect(promoted.acceptance).toMatchObject({ status: "accepted", errors: 0 });
     expect(gate.mode).toBe("enforce");
     expect(engine.mode).toBe("shadow");
     expect(other.mode).toBe("shadow");
 
-    // The world changes under the model: its answers are now mostly wrong.
+    // The world changes under the model: its confident answers are now wrong.
     flipped = true;
     await run(items.slice(150, 350));
     const rows = await engine.ledger.all();
@@ -164,6 +182,9 @@ describe("Rollout per gate", () => {
     expect(gate.rollout.history.length).toBe(3);
   });
 });
+
+/** A one-act plan, so a single labelled act decides; real plans are far larger. */
+const oneAct = { promisedAccuracy: 0.5, confidence: 0.5 } as const;
 
 describe("Rollout action accuracy", () => {
   it("does not borrow another question's polarity to credit an ambiguous acted row", async () => {
@@ -190,9 +211,7 @@ describe("Rollout action accuracy", () => {
         policyHash: hashPolicy({ actAbove: 0.5, goIsYes: true }),
         questionHash: hashQuestion(question),
       },
-      promisedAccuracy: 0.9,
-      minShadowRows: 1,
-      minActed: 1,
+      ...oneAct,
     });
     await rollout.evaluate();
     const tied = await engine.ask("state", question, {
@@ -208,20 +227,18 @@ describe("Rollout action accuracy", () => {
 
     expect(await rollout.evaluate()).toMatchObject({
       mode: "shadow",
-      changed: false,
-      window: { n: 1, acted: 1, accuracy: 0 },
+      acceptance: { status: "rejected", errors: 1 },
     });
   });
 
-  it.each([
+  describe.each([
     { goIsYes: true, includeTruth: true },
     { goIsYes: true, includeTruth: false },
     { goIsYes: false, includeTruth: true },
     { goIsYes: false, includeTruth: false },
-  ])(
-    "judges the action when goIsYes=$goIsYes and truth is recorded=$includeTruth",
-    async ({ goIsYes, includeTruth }) => {
-      const pYes = goIsYes ? 0.2 : 0.8;
+  ])("with goIsYes=$goIsYes and truth recorded=$includeTruth", ({ goIsYes, includeTruth }) => {
+    const pYes = goIsYes ? 0.2 : 0.8;
+    const setup = () => {
       const oracle: Oracle = {
         id: "certain-hold",
         decide: async (_state, questions) =>
@@ -240,45 +257,44 @@ describe("Rollout action accuracy", () => {
         question: judge("Should we act?", { id: "act" }),
         // A cheap wrong act can legitimately give a bar below one half.
         policy: { actAbove: 0.1, goIsYes },
-        promisedAccuracy: 0.9,
-        rollout: { minShadowRows: 1, minAuditRows: 1, minActed: 1, window: 1 },
+        promisedAccuracy: oneAct.promisedAccuracy,
+        rollout: { confidence: oneAct.confidence, minAuditRows: 1, window: 1 },
       });
-      await gate.rollout.evaluate();
+      let n = 0;
       const label = async (correct: boolean) => {
-        const result = await gate.ask("state");
+        const result = await gate.ask(`state-${++n}`);
         const truth = correct ? !goIsYes : goIsYes;
-        await engine.label(result.recordId, {
-          correct,
-          ...(includeTruth ? { truth } : {}),
-        });
+        await engine.label(result.recordId, { correct, ...(includeTruth ? { truth } : {}) });
       };
+      return { gate, label };
+    };
 
-      // The leading answer is right, but acting against it is wrong: do not promote.
+    it("rejects an act whose leading answer was right but acting was wrong", async () => {
+      const { gate, label } = setup();
+      await gate.rollout.evaluate();
       await label(true);
-      const held = await gate.rollout.evaluate();
-      expect(held).toMatchObject({
+      expect(await gate.rollout.evaluate()).toMatchObject({
         mode: "shadow",
-        changed: false,
-        window: { acted: 1, accuracy: 0 },
+        acceptance: { status: "rejected", errors: 1 },
       });
+    });
 
-      // The leading answer is wrong, and acting is right: allow promotion.
+    it("accepts an act whose leading answer was wrong but acting was right, and audits the same way", async () => {
+      const { gate, label } = setup();
+      await gate.rollout.evaluate();
       await label(false);
-      const promoted = await gate.rollout.evaluate();
-      expect(promoted).toMatchObject({
+      expect(await gate.rollout.evaluate()).toMatchObject({
         mode: "enforce",
         changed: true,
-        window: { acted: 1, accuracy: 1 },
+        acceptance: { status: "accepted", errors: 0 },
       });
-
       // Live audits use the same meaning of "right" when deciding to demote.
       await label(true);
-      const demoted = await gate.rollout.evaluate();
-      expect(demoted).toMatchObject({
+      expect(await gate.rollout.evaluate()).toMatchObject({
         mode: "shadow",
         changed: true,
-        window: { acted: 1, accuracy: 0 },
+        audits: { acted: 1, accuracy: 0 },
       });
-    },
-  );
+    });
+  });
 });

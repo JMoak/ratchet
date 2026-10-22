@@ -35,6 +35,7 @@ import { clamp, mean, type Rand, rng } from "./math.ts";
 import { type FailOpenOptions, failOpen } from "./oracles/oracle.ts";
 import { type GatePolicy, goProbability, hashPolicy, type Ruling, rule } from "./policy.ts";
 import { judgeVerdictFrom, neutralVerdict } from "./questions.ts";
+import { DailySpend, type SpendSnapshot } from "./spend.ts";
 import type {
   Action,
   Decision,
@@ -85,8 +86,18 @@ export interface EngineOptions {
    * Spend cutoff in USD for this engine instance, based on completed, recorded requests.
    * Once reached, new asks fail open into the policy's onFailOpen action (review by default).
    * In-flight requests and their strategy members can exceed it; costs are known afterward.
+   * It starts at zero with every process; `dailyBudgetUsd` is the cap a restart cannot reset.
    */
   readonly budgetUsd?: number;
+  /**
+   * Spend cutoff in USD per UTC day, read from the ledger, so restarting the process does not
+   * reset it. Each request reserves `reserveUsd` while it is in flight, so concurrent asks
+   * cannot all slip under the cap together. A recorded-spend cutoff, not a prepaid budget:
+   * see `DailySpend` for what it cannot promise.
+   */
+  readonly dailyBudgetUsd?: number;
+  /** Reserved per request in flight against `dailyBudgetUsd`. Default: the costliest request the ledger records. */
+  readonly reserveUsd?: number;
   /** The default oracle. Wrapped to fail open. */
   readonly oracle: Oracle;
   readonly ledger?: Ledger;
@@ -258,6 +269,20 @@ interface Planned {
   decision: CompoundDecision | undefined;
 }
 
+/** Which cap refused a request: the instance's own, or the day's read from the ledger. */
+type BudgetKind = "instance" | "daily";
+
+/** A request's permission to buy answers, and the reservation it gives back afterwards. */
+interface Admission {
+  /** Set when the request may not call an oracle. */
+  readonly refused: BudgetKind | undefined;
+  readonly release: (requestCostUsd: number) => void;
+}
+
+const ADMITTED: Admission = { refused: undefined, release: () => {} };
+
+const refused = (budget: BudgetKind): Admission => ({ refused: budget, release: () => {} });
+
 /** The context for asks outside any registered gate: engine defaults, id "adhoc:<questionId>". */
 class AdhocGate implements GateContext {
   readonly floors: readonly FloorRule[] = [];
@@ -340,6 +365,7 @@ export class Engine implements Asker {
   private readonly tags: readonly string[];
   private readonly rand: Rand;
   private readonly budgetUsd: number | undefined;
+  private readonly daily: DailySpend | undefined;
   private readonly oracleDefaults: FailOpenOptions;
   private readonly registry = new Map<string, Gate>();
   /** Single-question gates by question id, so askAll can route a question to its gate. */
@@ -359,11 +385,41 @@ export class Engine implements Asker {
     this.auditRate = clamp(opts.auditRate ?? 0, 0, 1);
     this.rand = rng(opts.seed ?? Date.now());
     this.budgetUsd = opts.budgetUsd;
+    this.daily =
+      opts.dailyBudgetUsd === undefined
+        ? undefined
+        : new DailySpend(this.ledger, {
+            capUsd: opts.dailyBudgetUsd,
+            ...(opts.reserveUsd !== undefined ? { reserveUsd: opts.reserveUsd } : {}),
+          });
   }
 
-  /** True once the cap is reached; asks then fail open without calling the oracle. */
+  /** True once the instance cap is reached; asks then fail open without calling the oracle. */
   get overBudget(): boolean {
     return this.budgetUsd !== undefined && this.spent >= this.budgetUsd;
+  }
+
+  /** Today's recorded spend against `dailyBudgetUsd`, or undefined when no daily cap is set. */
+  async spentToday(): Promise<SpendSnapshot | undefined> {
+    return this.daily?.snapshot();
+  }
+
+  /**
+   * Admit one request before it buys any answer: the instance cap first, then a reservation
+   * against the day's cap. A refused request fails open without calling an oracle. Without a
+   * daily cap this stays synchronous, so an engine that does not use one gains no latency.
+   */
+  private admit(): Admission | Promise<Admission> {
+    if (this.overBudget) return refused("instance");
+    const daily = this.daily;
+    if (!daily) return ADMITTED;
+    return daily
+      .reserve()
+      .then((reservation) =>
+        reservation
+          ? { refused: undefined, release: (cost: number) => daily.release(reservation, cost) }
+          : refused("daily"),
+      );
   }
 
   /** Registered gates by id. Anonymous gates (asks outside a gate) are not listed. */
@@ -386,7 +442,7 @@ export class Engine implements Asker {
     return g;
   }
 
-  private exhausted(q: Question): CompoundDecision {
+  private exhausted(q: Question, budget: BudgetKind = "instance"): CompoundDecision {
     const d: Decision = {
       verdict: neutralVerdict(q),
       oracle: this.oracle.id,
@@ -395,7 +451,7 @@ export class Engine implements Asker {
       at: new Date().toISOString(),
       failedOpen: true,
     };
-    return { ...single(d), detail: { budgetExhausted: true, spent: this.spent } };
+    return { ...single(d), detail: { budgetExhausted: true, budget, spent: this.spent } };
   }
 
   /** A floor already fixes the action; no answer could change it, so none is bought. */
@@ -570,6 +626,7 @@ export class Engine implements Asker {
 
   private async append(rec: DecisionRecord): Promise<void> {
     this.spent += rec.cost;
+    this.daily?.record(rec.cost);
     await this.ledger.append(rec);
   }
 
@@ -591,28 +648,48 @@ export class Engine implements Asker {
     const open = planned.filter((p) => p.decision === undefined);
     const batched = open.filter((p) => (p.lane.opts.strategy ?? "single") === "single");
     const others = open.filter((p) => (p.lane.opts.strategy ?? "single") !== "single");
-    const batch = async (): Promise<void> => {
-      if (batched.length === 0) return;
-      const qs = batched.map((p) => p.lane.question);
-      const ds = this.overBudget
-        ? qs.map((q) => this.exhausted(q))
-        : await this.oracle.decide(state.text, qs);
-      batched.forEach((p, i) => {
-        const d = ds[i];
-        if (!d) throw new Error("oracle returned too few decisions");
-        p.decision = single(d);
+    const admitting = open.length > 0 ? this.admit() : ADMITTED;
+    const admission = admitting instanceof Promise ? await admitting : admitting;
+    let requestCost = 0;
+    try {
+      const budget = admission.refused;
+      const batch = async (): Promise<void> => {
+        if (batched.length === 0) return;
+        const qs = batched.map((p) => p.lane.question);
+        const ds =
+          budget !== undefined
+            ? qs.map((q) => this.exhausted(q, budget))
+            : await this.oracle.decide(state.text, qs);
+        batched.forEach((p, i) => {
+          const d = ds[i];
+          if (!d) throw new Error("oracle returned too few decisions");
+          p.decision = single(d);
+        });
+      };
+      await Promise.all([
+        batch(),
+        ...others.map(async (p) => {
+          p.decision =
+            budget !== undefined
+              ? this.exhausted(p.lane.question, budget)
+              : await this.decide(state.text, p.lane.question, p.lane.opts.strategy ?? "single");
+        }),
+      ]);
+      return await this.recordLanes(state, requestId, planned, (cost) => {
+        requestCost += cost;
       });
-    };
-    await Promise.all([
-      batch(),
-      ...others.map(async (p) => {
-        p.decision = await this.decide(
-          state.text,
-          p.lane.question,
-          p.lane.opts.strategy ?? "single",
-        );
-      }),
-    ]);
+    } finally {
+      admission.release(requestCost);
+    }
+  }
+
+  /** Rule, settle and append each planned lane of one request, in lane order. */
+  private async recordLanes(
+    state: StateLike,
+    requestId: string,
+    planned: readonly Planned[],
+    spent: (cost: number) => void,
+  ): Promise<AskResult[]> {
     const out: AskResult[] = [];
     for (const p of planned) {
       const decision = p.decision as CompoundDecision;
@@ -631,6 +708,7 @@ export class Engine implements Asker {
         opts,
       );
       await this.append(rec);
+      spent(rec.cost);
       out.push({
         recordId: rec.id,
         requestId,
@@ -661,16 +739,49 @@ export class Engine implements Asker {
     const state = asStateLike(input);
     const requestId = newRequestId();
     const pre = this.preempt(state, gate, plan.question, opts.policy);
+    const admitting = pre.decision ? ADMITTED : this.admit();
+    const admission = admitting instanceof Promise ? await admitting : admitting;
     let members: readonly Decision[] = [];
-    let decision: CompoundDecision;
-    if (pre.decision) decision = pre.decision;
-    else {
-      members = this.overBudget
-        ? plan.members.map((q) => this.exhausted(q))
-        : await this.oracle.decide(state.text, plan.members);
-      decision = this.combineBattery(plan, members);
+    try {
+      let decision: CompoundDecision;
+      if (pre.decision) decision = pre.decision;
+      else {
+        const budget = admission.refused;
+        members =
+          budget !== undefined
+            ? plan.members.map((q) => this.exhausted(q, budget))
+            : await this.oracle.decide(state.text, plan.members);
+        decision = this.combineBattery(plan, members);
+      }
+      return await this.recordBattery(
+        state,
+        requestId,
+        gate,
+        plan,
+        opts,
+        pre.floor,
+        members,
+        decision,
+      );
+    } finally {
+      admission.release(
+        members.reduce((sum, m) => sum + (Number.isFinite(m.cost) ? m.cost : 0), 0),
+      );
     }
-    const ruling = rule(decision, opts.policy, pre.floor);
+  }
+
+  /** Rule a battery's combined verdict and append its member rows and its combined row. */
+  private async recordBattery(
+    state: StateLike,
+    requestId: string,
+    gate: GateContext,
+    plan: BatteryPlan,
+    opts: AskOptions,
+    floor: Action,
+    members: readonly Decision[],
+    decision: CompoundDecision,
+  ): Promise<AskResult<JudgeVerdict>> {
+    const ruling = rule(decision, opts.policy, floor);
     const s = this.settle(gate, ruling, opts);
     const goIsYes = opts.policy.goIsYes ?? true;
     for (const [i, m] of members.entries()) {

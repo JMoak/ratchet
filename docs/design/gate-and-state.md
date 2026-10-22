@@ -186,7 +186,8 @@ Deliberate deviations from the text above, as built:
 - `combine` also takes `PoolOptions` (`{ method, correlation, weights }`), because invariant 7
   requires every pooling path to expose correlation. The default stays logodds, at
   correlation 0, which is the engine's default for explicit ensemble members.
-- `GateSpec.rollout` (window and minimum rows) is added so `gate.rollout` is configurable;
+- `GateSpec.rollout` (the acceptance plan and the audit limits; see [rollout](../rollout.md))
+  is added so `gate.rollout` is configurable;
   `gate.rollout` throws when the spec has no `promisedAccuracy`. `Gate` also exposes `engine`,
   `isBattery` and `auditRate`, and is generic in its verdict type.
 - The `Asker` contract honours the caller's options: in `askAll`, the given policy and

@@ -28,14 +28,17 @@ const spec = {
   promisedAccuracy: 0.9,
   rollout: {
     evidence: { version: "fixture-v1", model: "model-v1" },
-    minShadowRows: 10,
+    // A deliberately small plan: at 65% confidence ten correct acts bound accuracy above 90%.
+    confidence: 0.65,
     minAuditRows: 1,
-    minActed: 10,
   },
 } as const;
 
+let asked = 0;
+
+/** Each call is a new state: a repeated state is a retry, and retries count once. */
 async function label(gate: Gate, truth = true) {
-  const r = await gate.ask("state");
+  const r = await gate.ask(`state-${++asked}`);
   await gate.engine.label(r.recordId, { correct: truth, truth });
   return r.recordId;
 }
@@ -65,7 +68,7 @@ describe("rollout evidence epochs", () => {
     expect(await gate.rollout.evaluate()).toMatchObject({
       mode: "shadow",
       changed: false,
-      window: { n: 0, acted: 0 },
+      acceptance: { status: "collecting", acts: 0 },
     });
   });
 
@@ -82,7 +85,11 @@ describe("rollout evidence epochs", () => {
       rollout: { ...spec.rollout, evidence: { version: "fixture-v2", model: "model-v2" } },
       evidenceVersion: "fixture-v2",
     });
-    expect(await next.rollout.evaluate()).toMatchObject({ mode: "shadow", window: { n: 0 } });
+    expect(await next.rollout.evaluate()).toMatchObject({ mode: "shadow", changed: false });
+    expect(await next.rollout.evaluate()).toMatchObject({
+      mode: "shadow",
+      acceptance: { status: "collecting", acts: 0 },
+    });
   });
 
   it("consumes unlabelled rows at each transition and ignores their late labels", async () => {
@@ -96,10 +103,10 @@ describe("rollout evidence epochs", () => {
     expect((await gate.rollout.evaluate()).mode).toBe("shadow");
     await gate.engine.label(oldShadow.recordId, { correct: true, truth: true });
     await gate.engine.label(oldAudit.recordId, { correct: true, truth: true });
-    expect((await gate.rollout.evaluate()).window.n).toBe(0);
+    expect((await gate.rollout.evaluate()).acceptance).toMatchObject({ acts: 0 });
     for (let i = 0; i < 10; i++) await label(gate);
     expect((await gate.rollout.evaluate()).mode).toBe("enforce");
-    expect((await gate.rollout.evaluate()).window.n).toBe(0);
+    expect((await gate.rollout.evaluate()).audits).toMatchObject({ n: 0 });
   });
 
   it("restores a validated checkpoint, then demotes on only the new audit phase", async () => {
@@ -113,7 +120,7 @@ describe("rollout evidence epochs", () => {
     expect(await fresh.rollout.evaluate()).toMatchObject({
       mode: "enforce",
       changed: true,
-      window: { n: 0 },
+      audits: { n: 0 },
     });
     await label(fresh, false);
     expect((await fresh.rollout.evaluate()).mode).toBe("shadow");
@@ -123,7 +130,10 @@ describe("rollout evidence epochs", () => {
       ...spec,
       rollout: { ...spec.rollout, checkpoint: demoted },
     });
-    expect(await restarted.rollout.evaluate()).toMatchObject({ mode: "shadow", window: { n: 0 } });
+    expect(await restarted.rollout.evaluate()).toMatchObject({
+      mode: "shadow",
+      acceptance: { status: "collecting", acts: 0 },
+    });
   });
 
   it.each([
@@ -155,7 +165,6 @@ describe("rollout evidence epochs", () => {
       mode: "shadow",
       changed: true,
       reason: expect.stringContaining("configuration changed"),
-      window: { n: 0 },
     });
   });
 
@@ -180,7 +189,8 @@ describe("rollout evidence epochs", () => {
     }
     for (const invalid of [
       null,
-      { ...checkpoint, format: 2 },
+      { ...checkpoint, format: 3 },
+      { ...checkpoint, rejected: "no" },
       { ...checkpoint, afterId: 7 },
       { ...checkpoint, mode: "active" },
       { ...checkpoint, extra: "untrusted" },
@@ -207,7 +217,7 @@ describe("rollout evidence epochs", () => {
     expect(await checkpointless.rollout.evaluate()).toMatchObject({
       mode: "shadow",
       changed: true,
-      window: { n: 0 },
+      reason: expect.stringContaining("no checkpoint"),
     });
     const restored = new Engine({ oracle: oracle(), ledger }).gate({
       ...spec,
@@ -231,12 +241,18 @@ describe("rollout evidence epochs", () => {
       { evidenceVersion: "older" },
       { policyHash: hashPolicy({ actAbove: 0.1 }) },
       { questionHash: hashQuestion(judge("Different rubric")) },
-      { model: "model-v2" },
     ].entries())
-      await ledger.append({ ...row, ...change, id: `mismatch-${index}` });
+      await ledger.append({ ...row, ...change, id: `mismatch-${index}`, stateHash: `s${index}` });
     const { policyHash: _policy, evidenceVersion: _version, ...legacy } = row;
     await ledger.append({ ...legacy, id: "legacy" });
-    expect((await gate.rollout.evaluate()).window.n).toBe(0);
+    expect(await gate.rollout.evaluate()).toMatchObject({
+      mode: "shadow",
+      acceptance: { status: "collecting", acts: 0 },
+    });
+
+    await ledger.append({ ...row, model: "model-v2", id: "foreign-model" });
+    expect((await gate.rollout.evaluate()).reason).toContain("differs from the pinned model");
+    expect((await gate.rollout.evaluate()).acceptance).toMatchObject({ acts: 0 });
   });
 
   it("serializes concurrent evaluations and treats manual mode changes as a fresh phase", async () => {
@@ -245,14 +261,14 @@ describe("rollout evidence epochs", () => {
     for (let i = 0; i < 10; i++) await label(gate);
     const results = await Promise.all([gate.rollout.evaluate(), gate.rollout.evaluate()]);
     expect(results.map((r) => r.changed)).toEqual([true, false]);
-    expect(results.map((r) => r.window.n)).toEqual([10, 0]);
+    expect(results[0]?.acceptance).toMatchObject({ status: "accepted", errors: 0 });
+    expect(results[1]?.audits).toMatchObject({ n: 0 });
     gate.mode = "shadow";
     expect(await gate.rollout.evaluate()).toMatchObject({
       mode: "shadow",
       reason: expect.stringContaining("outside this controller"),
-      window: { n: 0 },
     });
-    expect((await gate.rollout.evaluate()).window.n).toBe(0);
+    expect((await gate.rollout.evaluate()).acceptance).toMatchObject({ acts: 0 });
   });
 
   it("detects effective policy edits on an existing controller", async () => {
@@ -305,7 +321,7 @@ describe("rollout evidence epochs", () => {
       policy: spec.policy,
       evidenceVersion: "another-version",
     });
-    expect(await rollout.evaluate()).toMatchObject({ mode: "enforce", window: { n: 0 } });
+    expect(await rollout.evaluate()).toMatchObject({ mode: "enforce", audits: { n: 0 } });
   });
 
   it("requires explicit engine identity and a caller version", async () => {
@@ -353,5 +369,106 @@ describe("rollout evidence epochs", () => {
     const row = (await gate.engine.ledger.all())[0];
     expect(result.ruling.action).toBe("act");
     expect(row?.policyHash).toBe(hashPolicy({ actAbove: 0.8 }));
+  });
+});
+
+describe("rollout acceptance", () => {
+  it("holds a rejected configuration in shadow, through its checkpoint, until it changes", async () => {
+    const ledger = new MemoryLedger();
+    const gate = new Engine({ oracle: oracle(), ledger }).gate(spec);
+    await gate.rollout.evaluate();
+    await label(gate, false);
+    for (let i = 0; i < 9; i++) await label(gate);
+    expect(await gate.rollout.evaluate()).toMatchObject({
+      mode: "shadow",
+      reason: expect.stringContaining("rejected: 1 wrong of 10"),
+      acceptance: { status: "rejected", errors: 1 },
+    });
+    for (let i = 0; i < 10; i++) await label(gate);
+    expect((await gate.rollout.evaluate()).reason).toContain("was rejected");
+    const checkpoint = gate.rollout.checkpoint();
+    expect(checkpoint).toMatchObject({ format: 2, rejected: true });
+
+    const restarted = new Engine({ oracle: oracle(), ledger }).gate({
+      ...spec,
+      rollout: { ...spec.rollout, checkpoint: checkpoint as RolloutCheckpoint },
+    });
+    for (let i = 0; i < 10; i++) await label(restarted);
+    expect((await restarted.rollout.evaluate()).reason).toContain("was rejected");
+
+    const changed = new Engine({ oracle: oracle(), ledger }).gate({
+      ...spec,
+      policy: { actAbove: 0.85 },
+      rollout: { ...spec.rollout, checkpoint: checkpoint as RolloutCheckpoint },
+    });
+    expect((await changed.rollout.evaluate()).reason).toContain("configuration changed");
+    for (let i = 0; i < 10; i++) await label(changed);
+    expect((await changed.rollout.evaluate()).mode).toBe("enforce");
+  });
+
+  it("waits for every act in the planned sample to be labelled, and ignores acts after it", async () => {
+    const gate = new Engine({ oracle: oracle() }).gate(spec);
+    await gate.rollout.evaluate();
+    const pending = await gate.ask("unlabelled first act");
+    for (let i = 0; i < 9; i++) await label(gate);
+    await label(gate, false);
+    expect(await gate.rollout.evaluate()).toMatchObject({
+      mode: "shadow",
+      acceptance: { status: "awaiting-labels", unlabelled: 1 },
+    });
+    await gate.engine.label(pending.recordId, { correct: true, truth: true });
+    expect(await gate.rollout.evaluate()).toMatchObject({
+      mode: "enforce",
+      acceptance: { status: "accepted", errors: 0 },
+    });
+  });
+
+  it("counts a retried state once", async () => {
+    const gate = new Engine({ oracle: oracle() }).gate(spec);
+    await gate.rollout.evaluate();
+    for (let i = 0; i < 10; i++) {
+      const r = await gate.ask("the same call, retried");
+      await gate.engine.label(r.recordId, { correct: true, truth: true });
+    }
+    expect((await gate.rollout.evaluate()).acceptance).toMatchObject({
+      status: "collecting",
+      acts: 1,
+    });
+  });
+
+  it("says so when it promotes a gate that no audit can demote", async () => {
+    const unwatched = new Engine({ oracle: oracle() }).gate(spec);
+    const watched = new Engine({ oracle: oracle(), auditRate: 0.1 }).gate(spec);
+    for (const gate of [unwatched, watched]) {
+      await gate.rollout.evaluate();
+      for (let i = 0; i < 10; i++) await label(gate);
+    }
+    expect((await unwatched.rollout.evaluate()).reason).toContain("audits are off");
+    expect((await unwatched.rollout.evaluate()).reason).toContain("nothing can demote");
+    expect((await watched.rollout.evaluate()).reason).not.toContain("audits are off");
+  });
+
+  it("restores a format 1 checkpoint as one that was never rejected", async () => {
+    const ledger = new MemoryLedger();
+    const gate = new Engine({ oracle: oracle(), ledger }).gate(spec);
+    const current = await promote(gate);
+    const { rejected: _rejected, ...rest } = current as Extract<RolloutCheckpoint, { format: 2 }>;
+    const legacy = { ...rest, format: 1 } as RolloutCheckpoint;
+    const restored = new Engine({ oracle: oracle(), ledger }).gate({
+      ...spec,
+      rollout: { ...spec.rollout, checkpoint: legacy },
+    });
+    expect(await restored.rollout.evaluate()).toMatchObject({ mode: "enforce" });
+  });
+
+  it("holds shadow on a plan it cannot resolve", async () => {
+    const gate = new Engine({ oracle: oracle() }).gate({
+      ...spec,
+      promisedAccuracy: 1,
+    });
+    expect(await gate.rollout.evaluate()).toMatchObject({
+      mode: "shadow",
+      reason: expect.stringContaining("invalid acceptance plan"),
+    });
   });
 });

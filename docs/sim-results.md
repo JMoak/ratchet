@@ -107,5 +107,36 @@ An overconfident cheap tier settles cases it should have escalated. Accuracy amo
 | overconfident (t=1.8)    | 0.080         | 59.6%            | 88.6%                 | 91.5%            |
 | very overconfident (t=3) | 0.137         | 80.6%            | 84.5%                 | 86.8%            |
 
+
+## 7. Promotion at a 98% promise: a point estimate at every look, or one planned exact test
+
+2000 seeded runs per row of up to 2000 labelled shadow rows, half of them acts, each act right with probability p. The point-estimate rule (the 0.2 Rollout) reads the last 200 rows after every label and promotes once 20 acts reach the promise. The exact test evaluates the first 149 acts once and needs all of them right, or the first 313 with at most two wrong, so that an exact one-sided 95% bound reaches 98%. A promotion at p at or below the promise is a false promotion.
+
+| true act accuracy | point estimate: promoted | acts at promotion | exact, 0 wrong of 149: promoted | acts | exact, at most 2 of 313: promoted | acts |
+| ----------------- | ------------------------ | ----------------- | ------------------------------- | ---- | --------------------------------- | ---- |
+| 95.0%             | 95.6%                    | 205               | 0.1%                            | 149  | 0.0%                              | -    |
+| 97.0%             | 100.0%                   | 59                | 1.1%                            | 149  | 0.4%                              | 313  |
+| 98.0%             | 100.0%                   | 53                | 5.3%                            | 149  | 4.9%                              | 313  |
+| 99.0%             | 100.0%                   | 51                | 22.3%                           | 149  | 39.1%                             | 313  |
+| 99.5%             | 100.0%                   | 50                | 46.2%                           | 149  | 78.0%                             | 313  |
+| 99.9%             | 100.0%                   | 50                | 88.2%                           | 149  | 99.8%                             | 313  |
+
+Reading it: the point estimate promotes gates that are worse than their promise because it keeps looking until a lucky window clears the bar. The exact test holds false promotions at or below 5% by construction, and pays for it in power: a gate barely better than its promise often fails a zero-error plan, and a plan that tolerates a few errors buys power back with a larger sample.
+
+
+## 8. Demotion: blind audits after promotion, against the same 98% promise
+
+2000 seeded runs of up to 2,000 enforced acts per cell. Once 30 audited acts sit in the window, an observed accuracy below the promise demotes. Without audits nothing can demote a gate. Accuracies at or above the promise show the false-demotion rate; those below it show detection.
+
+| accuracy after promotion | no audits: demoted | acts | 5% audits: demoted | acts | 10% audits: demoted | acts | 25% audits: demoted | acts |
+| ------------------------ | ------------------ | ---- | ------------------ | ---- | ------------------- | ---- | ------------------- | ---- |
+| 99.9%                    | 0.0%               | -    | 5.1%               | 656  | 4.8%                | 335  | 4.9%                | 130  |
+| 99.0%                    | 0.0%               | -    | 47.5%              | 671  | 47.0%               | 340  | 55.9%               | 150  |
+| 98.0%                    | 0.0%               | -    | 70.0%              | 655  | 82.0%               | 336  | 94.5%               | 143  |
+| 95.0%                    | 0.0%               | -    | 97.5%              | 619  | 99.7%               | 310  | 100.0%              | 123  |
+| 90.0%                    | 0.0%               | -    | 100.0%             | 599  | 100.0%              | 301  | 100.0%              | 118  |
+
+Reading it: the audit rule errs toward caution. Real drift is caught, faster with more audits, but at 30 audits a single error already reads below 98%, so a healthy gate is demoted often too: false demotions cost review work, not safety. A sequential test with an explicit false-alarm rate would trade some of that caution for fewer false alarms; it is not built.
+
 Takeaways: independence and calibration are the two properties that make 80% compound; verification is what makes chains survive; the ledger is where all three are measured instead of assumed.
 

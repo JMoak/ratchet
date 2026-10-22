@@ -1,8 +1,9 @@
 # Publishing plan
 
-Reviewed 2026-10-20 against this checkout. **Planning only: neither the npm package nor a
+Reviewed 2026-10-21 against this checkout. **Planning only: neither the npm package nor a
 hosted arcade is ready to release.** No release configuration, registry settings, accounts,
-license, or deployment has been changed by this plan.
+or deployment has been changed by this plan. The license is decided: Apache-2.0, recorded
+in `LICENSE`, `NOTICE` and `package.json`.
 
 Keep the engine and CLI in one small package. Treat the arcade as a separate deployment
 of the examples. Releasing the library does not require operating a paid model service.
@@ -12,7 +13,7 @@ of the examples. Releasing the library does not require operating a paid model s
 | Decision | Proposed starting point | Still needed |
 | --- | --- | --- |
 | Package identity | An owner-controlled scope with the working name, such as `@<owner>/ratchet` | Confirm the final name, scope ownership, registry availability, and whether the CLI stays `ratchet`. No name is reserved by this document. |
-| License | One explicit license for the code | Choose the terms and copyright holder; add `LICENSE` and matching package metadata. Review separately any third-party material retained in the repository or distributed. |
+| License | Decided: Apache-2.0, copyright Jordan Moak | Ship `LICENSE` and `NOTICE` in the package. Provider terms and quoted third-party material are covered in [third-party terms](third-party-terms.md); re-read them before release. |
 | Runtime contract | ESM JavaScript and declarations; support Bun first | Decide whether the first release also supports Node. Set minimum versions from consumer tests. Browser and CommonJS support are separate work. |
 | Release version | An explicit prerelease, published under an intentional dist-tag | Reconcile manifest `0.0.1` with the README's 0.2 feature milestone; choose the actual version and tag. |
 | Hosting | A Bun process serving the arcade and its API on the same origin, offline judges by default | Choose provider, domain, operating budget, and who operates it. Live Jev access needs a separate hosting decision. |
@@ -26,7 +27,7 @@ of the examples. Releasing the library does not require operating a paid model s
 | Build | `tsconfig.json` checks the entire repository with `noEmit`; source imports end in `.ts` | Add a separate release build scoped to `src/` and `bin/`, emitting JavaScript and `.d.ts`. |
 | CLI | `bin/ratchet.ts` uses `#!/usr/bin/env bun` | Point `bin.ratchet` at the emitted CLI; retain a Bun requirement or provide a tested Node launcher. Check Windows shims too. |
 | Package contents | No `files` allowlist; `.gitignore` excludes secrets and generated data but is not a release manifest | Allowlist the distributable files and inspect the packed archive. Keep research, experiments, local ledgers, keys, tests, and arcade assets out of the library package. |
-| Metadata | No license, repository, homepage, bugs, or supported-engine fields | Add owner-approved metadata. The checkout's remote is `https://github.com/JMoak/ratchet`; confirm this remains canonical. |
+| Metadata | `license` is set; no repository, homepage, bugs, or supported-engine fields | Add owner-approved metadata. The checkout's remote is `https://github.com/JMoak/ratchet`; confirm this remains canonical. |
 | Consumer documentation | Examples import `./src/index.ts` and run from the checkout | Add installed-package and CLI examples once the identity is chosen. Keep source-checkout instructions. Check links on npm as well as GitHub. |
 | Release validation | No build/pack/consumer workflow in the tree | Validate the actual tarball in fresh projects; repository tests alone do not exercise published resolution or declarations. |
 
@@ -42,7 +43,8 @@ to inspect and avoids another build dependency:
 ```text
 package.json
 README.md
-LICENSE                     owner-selected, not present yet
+LICENSE                     Apache-2.0
+NOTICE                      attribution notice; redistributions must carry it
 dist/
   src/index.js              package root runtime entry
   src/index.d.ts            package root type entry
@@ -51,8 +53,9 @@ dist/
 ```
 
 The future manifest would set `type: "module"`, a root `exports` mapping with `types` and
-`import` targets, a top-level `types` field, `bin.ratchet`, and `files: ["dist"]`. Add `main`
-only if required by the chosen consumer support. A build config can use repository
+`import` targets, a top-level `types` field, `bin.ratchet`, and `files: ["dist", "NOTICE"]`.
+npm always packs `LICENSE` but not `NOTICE`, which Apache-2.0 requires redistributions to
+keep. Add `main` only if required by the chosen consumer support. A build config can use repository
 `rootDir`, `outDir: "dist"`, `noEmit: false`, `declaration: true`, and
 `rewriteRelativeImportExtensions: true`; TypeScript supports rewriting relative `.ts`
 imports in emitted JavaScript. Validate declaration resolution as well.
@@ -69,7 +72,7 @@ from dependencies under `node_modules`.
 
 ## Package release stages
 
-1. **Set the contract.** Resolve identity, license, supported runtimes, version, and tag.
+1. **Set the contract.** Resolve identity, supported runtimes, version, and tag.
    Add a short changelog describing the experimental API and current rollout limitations.
    Preserve the warning that observed accuracy is not statistical certification.
 2. **Implement locally.** Add the build, entry points, allowlist, metadata, and installed
@@ -129,7 +132,7 @@ configuration. Deployment must account for those checks explicitly.
 | Package the server | Pin Bun; include the arcade assets and engine source/build in an explicit deploy artifact. Exclude `.env`, datasets, local ledgers, and research. Verify asset resolution from the deployed directory. |
 | Configure hosting | Add explicit host, port, and public-origin configuration; retain loopback defaults for local use. Honor the host's port contract, configure TLS and a health check, and test reverse-proxy origin handling without trusting arbitrary forwarded headers. |
 | Validate offline play | Keep live mode disabled. Smoke-test all four pages, autonomous turns, stop/reset, API errors, request-size bounds, cross-origin rejection, and ledger downloads on the deployed candidate. Verify a restart recovers service. |
-| Enable live play separately | Keep keys in server-side host secrets. Decide who may spend money and add access controls, rate/concurrency limits, and a durable shared usage counter. Confirm the applicable provider terms for a public demo. Browser origin checks are not authentication. |
+| Enable live play separately | Keep keys in server-side host secrets. Decide who may spend money and add access controls, rate/concurrency limits, and a durable shared usage counter. A public demo on the owner's key is an application the owner answers for; confirm it against the provider terms in [third-party terms](third-party-terms.md). Browser origin checks are not authentication. |
 | Operate and recover | Choose retention for request logs, avoid logging secrets or unnecessary state, set provider-side limits where available, and document disable-live, rollback, and shutdown procedures. Preview and production need separate configuration. |
 
 `ARCADE_LIVE=1` plus a server key enables the local live option. Its request/spend tracking

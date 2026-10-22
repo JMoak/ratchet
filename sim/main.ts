@@ -13,6 +13,7 @@ import { SimOracle } from "../src/oracles/sim.ts";
 import { judge } from "../src/questions.ts";
 import type { Decision } from "../src/types.ts";
 import { fmt, heading, judgeItems, note, pct, table } from "./lib.ts";
+import { rolloutTables } from "./rollout.ts";
 
 const N = 3000;
 const q = judge("Is the claim true?", { id: "claim" });
@@ -269,6 +270,8 @@ note(
     rows,
   );
 }
+
+rolloutTables();
 
 note(
   "Takeaways: independence and calibration are the two properties that make 80% compound; verification is what makes chains survive; the ledger is where all three are measured instead of assumed.",

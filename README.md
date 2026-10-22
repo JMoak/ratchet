@@ -67,12 +67,13 @@ await engine.label(r.recordId, { correct: true, truth: true });
 await safe.rollout.evaluate();          // empirical rollout; not statistical certification
 ```
 
-Rollout currently compares observed accuracy with its target. Before relying on automatic
-promotion, independently validate the policy on representative labels; audits of allowed
-actions do not validate a lower action bar. The [roadmap](docs/roadmap.md) puts this evidence
-loop ahead of more integrations.
-Rollout evidence is scoped to its rubric, effective policy, configuration version and model
-pin. Every promotion or demotion starts a fresh ledger phase. Save `safe.rollout.checkpoint()`
+Rollout promotes through one planned acceptance test: the first acts of a fresh shadow phase,
+fixed before their labels are read, must reach the promise by an exact one-sided 95% bound
+(149 consecutive correct acts for 98%). A failed configuration stays in shadow until it
+changes. Blind audits demote a promoted gate; with audits off nothing can, and Rollout says so.
+The test is sound under its stated assumptions, not a certification of future traffic.
+Rollout evidence is scoped to its rubric, effective policy, plan, configuration version and
+model pin. Every promotion, rejection or demotion starts a fresh ledger phase. Save `safe.rollout.checkpoint()`
 yourself for restart; without a valid checkpoint the controller starts in shadow again.
 See [rollout lifecycle and migration](docs/rollout.md) for the exact boundaries and limits.
 
@@ -104,6 +105,8 @@ bun run demo      # a PreToolUse gate: shadow -> label -> fit -> enforce -> audi
 bun run arcade    # four local browser games using the engine; no keys needed
 bun run pilot     # source-inspired shadow pilot + fixed-policy evidence experiment
 bun run pilot --live  # same pilot through Jev; keeps every application action in review
+bun run keywork --export decisions.jsonl  # keywork tool gate: dry run; --live replays answered asks in shadow
+bun run ratchet review <ledger> --gate <id>  # blind labels for a seeded sample, before the model is shown
 bun run quickstart  # live: triage one message with Jev via OpenRouter (needs a key in .env)
 bun run live        # live: the five calibration, routing, cascade and cost experiments (< $0.10)
 ```

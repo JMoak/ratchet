@@ -21,6 +21,7 @@
     "quickstart": "bun examples/quickstart.ts",
     "live": "bun experiments/live/main.ts",
     "pilot": "bun experiments/pilot/main.ts",
+    "keywork": "bun experiments/keywork/main.ts",
     "ratchet": "bun bin/ratchet.ts"
   },
   "devDependencies": {

@@ -1,51 +1,54 @@
 # Roadmap
 
-Reviewed 2026-10-20. Historical milestones below describe the existing tree.
+Reviewed 2026-10-21. Historical milestones below describe the existing tree.
 
 ## Current priority: prove one tool gate and verifier lifecycle
 
 Keep one small library, no runtime dependencies, and the existing deterministic policy
-boundary. The first pilot is agent tool gating and output verification. Start in shadow,
-collect a representative set of independently reviewed labels, and measure mistakes and
-review saved before choosing the acceptable wrong-action rate. A risk target is not yet
-agreed; 98% in examples is illustrative, not the pilot's acceptance criterion.
+boundary. The first pilot is agent tool gating, run on keywork, Jordan's coding-agent
+harness: its asks are the traffic and the person's answers are the labels
+([design](design/keywork-gate.md)). The promise is set (Jordan, 2026-10-21): 98% on acts, by
+an exact one-sided 95% bound on a planned sample, so 149 consecutive correct acts.
 
 The implementation review hardened repeated regex floors, failure and timeout handling for
 explicit strategy backends, sequential replica correlation, malformed adapter outputs,
 rollout action scoring, isotonic ties, and cost-based fitting. Regression tests cover the
 counterexamples; these changes add no new primitive.
 
-The next milestone is evidence that earns enforcement, ahead of more adapters or middleware:
+The milestone is evidence that earns enforcement, ahead of more adapters or middleware. The
+first offline/live harness is in `experiments/pilot/` (`bun run pilot`, [guide](pilot.md));
+its 54 authored fixtures are regression evidence, and the
+[first live run](pilot-results.md) is recorded. Where the four steps stand:
 
-The first offline/live harness and statistical comparison are now implemented in
-`experiments/pilot/` (`bun run pilot`, [guide](pilot.md)). Its 54 authored fixtures are
-regression evidence, not the representative independent labels still needed below.
-The [first live run and matched-budget evidence graphs](pilot-results.md) are recorded.
+1. **Done: representative labels, recorded by route.** `Outcome.source` names where a label
+   came from (`keywork:person` for an answer in the moment, `review:blind` for a considered
+   review), and `ratchet review` draws a seeded uniform sample for blind labels recorded
+   before the model's answer is shown. In keywork, every ask a person answered is labelled,
+   which is a census of the population the gate would replace, not a selection.
+2. **Done: freeze, then validate once at a planned point.** `src/acceptance.ts` fixes the
+   sample before labels are read (first eligible acts, retries once, a cap per session),
+   keeps it sealed until complete, and evaluates once by an exact Clopper-Pearson bound.
+   Rollout promotes only through it; a rejected configuration stays in shadow until it
+   changes, and the checkpoint carries the rejection.
+3. **Done: the seeded comparison.** Tables 7 and 8 of [sim-results.md](sim-results.md): at a
+   98% promise the point estimate promoted a 95% gate in 96% of runs and a 97% gate in all of
+   them; the exact test held those to 0.1% and 1.1%, at the cost of power (a 99% gate passes a
+   zero-error plan about a fifth of the time). Audit-based demotion catches drift but often
+   demotes a healthy gate too.
+4. **In progress: one complete loop on real traffic.** keywork now journals its asks, marks
+   whether each verdict answered one, and exports scrubbed decision records
+   (`keywork sessions decisions`, its overlay 122); `bun run keywork` replays them through the
+   `keywork.tool` gate in shadow. The loop runs end to end; what it lacks is volume. keywork's
+   history here is 25 person answers, and 149 acts at that pace take months. The
+   output-verification example follows through the same machinery.
 
-1. Separate representative shadow validation from audits of already-allowed actions.
-   Audit-only labels cannot justify expanding automation below the current bar. Record
-   how labels were selected; shadow mode alone does not make selectively supplied labels
-   representative.
-2. Fit a candidate, freeze its rubric, model, combiner and policy, then validate it on
-   independent labelled traffic at a predetermined evaluation point. Report insufficient
-   evidence explicitly. Reusing a fitted sample or repeatedly checking ordinary confidence
-   bounds is not certification.
-3. First compare the current rollout heuristic with independent validation in a seeded
-   offline experiment: false promotions, automation coverage, labels needed, and drift
-   detection delay. Split related requests/sessions together; do not count retries as new
-   independent evidence.
-4. Demonstrate one complete shadow -> label -> validate -> enforce -> audit loop on a
-   frozen tool-call corpus, then add the output-verification example through the same gate
-   machinery. Keep irreversible actions under code-owned floors.
-
-The current `Rollout` uses point estimates, not statistical certification. Even 20/20
-correct acts have a one-sided exact 95% lower accuracy bound of about 86.1%; with a fixed
-policy, independent trials and one planned evaluation, a zero-error sample needs 149 acts
-to put that bound above 98%. Those assumptions must be explicit in a future acceptance API.
-Primary sources and reasoning are in the
+Open choices the evidence will force: whether to tolerate a few errors in the plan for power
+(313 acts at 98% for two), whether to turn audits on before enforcing, and a sequential
+demotion test with an explicit false-alarm rate in place of the eager rule. Primary sources
+and reasoning are in the
 [learning notes](../research_notes/Jev%20novel%20patterns%20catalog/learning_and_tooling.md).
 
-The evidence boundary is now shared across calibration, CLI reports/checks, and rollout:
+The evidence boundary is shared across calibration, CLI reports/checks, and rollout:
 code-only floor/bypass rows remain operational records but cannot improve model metrics,
 earn promotion, or hide failed model audits. Answered rows with a caution floor still
 contribute real oracle evidence. Regression fixtures reproduce both false promotion and
@@ -53,16 +56,19 @@ masked drift from a large correct allowlist.
 Threshold fitting also keeps sufficient unselected evidence even when no threshold meets
 the target; confidence-selected successes cannot turn that failed fit into a passing one.
 
-Rollout now binds evidence to rubric, effective policy, caller-owned configuration version
-and an optional exact model pin. Ledger-order phase boundaries prevent old successes or
-late labels from immediately re-promoting a demoted gate. Fresh controllers warm up in
-shadow; caller-persisted checkpoints resume only with a matching scope and ledger anchor.
-These are evidence bookkeeping safeguards, not certification or automatic persistence.
-The [lifecycle guide](rollout.md) includes migration and the versioning responsibilities.
+Rollout binds evidence to rubric, effective policy, acceptance plan, caller-owned
+configuration version and an optional exact model pin. Ledger-order phase boundaries prevent
+old successes or late labels from carrying over. Fresh controllers warm up in shadow;
+caller-persisted checkpoints resume only with a matching scope and ledger anchor. The
+[lifecycle guide](rollout.md) includes the test's assumptions, migration and the versioning
+responsibilities.
 
-Other review followups, kept separate from new features: decide whether audits should default on as the vision
-intends (currently opt-in); and distinguish a recorded-spend cutoff from a guaranteed
-prepaid budget. Do not add a general monitoring framework to solve these one at a time.
+Review followups, settled 2026-10-21: audits stay opt-in (Jordan's decision); a gate promoted
+without them cannot be demoted by evidence, and Rollout says so when it promotes one and on
+every later status. Spend is capped per UTC day from the ledger (`dailyBudgetUsd`), so a
+restart cannot reset it, with a reservation per request in flight; it is documented as a
+recorded-spend cutoff, not a prepaid budget, and provider-side limits remain the only hard
+guarantee.
 
 ## Companion applications: Relly and Pebble
 
@@ -105,7 +111,8 @@ do not replace the tool-gate pilot or establish a production accuracy guarantee.
 - Done: a per-instance spend cap (`budgetUsd`) that fails open into review; recipes for
   speculative flattening, relevance batteries, map-reduce screening and chunk location, with
   lead-by-k stopping in `sequential()`. Measured live in `docs/live-recipes.md`.
-- A daily cap derived from the ledger rather than the process, so restarts cannot reset it.
+- Done (2026-10-21): a daily cap derived from the ledger rather than the process, so restarts
+  cannot reset it (`dailyBudgetUsd`, `DailySpend`).
 - Done (round two of research): soft pooling methods, learned composition, isotonic
   recalibration, cost-aware threshold fitting with held-out acceptance, negated ensemble
   members, `withFallback`, `RuleOracle`, `allowIf` bypasses, cache leases, `Hysteresis` and
@@ -152,8 +159,9 @@ do not replace the tool-gate pilot or establish a production accuracy guarantee.
   say what the ensembles do. Decide before publishing.
 - Package boundary: one package, or core + adapters + integrations?
 - How much of the research corpus ships in the repo versus a linked report.
-- Legal: TypeSafe's Master Customer Agreement forbids offering the service as a standalone
-  service and using Output to train an imitating or competing model. An open library that
-  users run with their own key is fine; a hosted engine reselling Jev is not, and fitting
-  thresholds on ledger outcomes should be reviewed against the Output clause before anything
-  trains on Jev probabilities.
+- Legal: the code is Apache-2.0, and [third-party terms](third-party-terms.md) records how
+  provider terms apply. An open library that users run with their own key fits TypeSafe's
+  Master Customer Agreement; a hosted engine reselling Jev does not, and nothing may train a
+  model to imitate Jev from ledger rows. Fitting targets human outcome labels. Before
+  release, confirm that the published per-call cost figures are compatible with the MCA's
+  pricing-confidentiality clause (§14.1).

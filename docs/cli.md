@@ -1,12 +1,14 @@
 # The `ratchet` command line
 
 `bin/ratchet.ts` reads a decision ledger (the JSON Lines file `JsonlLedger` writes) and answers
-three questions about it without calling any oracle or touching the network:
+three questions about it without calling any oracle or touching the network, and runs one
+interactive session, `review`, that adds labels to it:
 
 - **`report`**: what does the record say about each gate? Calibration, posture, the bar the
   labels support and how much traffic it would cover, which models answered, what failed.
 - **`check`**: has a gate broken its promise? Exits 1 when it has, so it can sit in CI.
 - **`replay`**: what would a different bar have done on the traffic already recorded?
+- **`review`**: are the labels right? Label a random sample yourself, blind to the model.
 
 It has no dependencies. Output is markdown tables (or JSON) and plain one-line verdicts, with
 no colour codes.
@@ -35,6 +37,7 @@ Usage:
                  [--model <id>] [--window 500]
   ratchet replay <ledger> --gate <id> --act-above <p> [--refuse-below <p>]
                  [--go-is-yes true|false] [--json]
+  ratchet review <ledger> --gate <id> [--sample 20] [--seed <n>] [--reviewer <name>]
   ratchet help [command]
 
 Commands:
@@ -43,6 +46,7 @@ Commands:
   check    The CI gate: fail when a gate breaks its accuracy promise, its ECE bound
            or its model pin.
   replay   Re-rule every recorded verdict under a new policy, without oracle calls.
+  review   Blind review: label a random sample yourself before seeing the model's answers.
 
 <ledger> is a JSON Lines file written by JsonlLedger. Rows group by gate id, or by
 question id in ledgers written before gates.
@@ -360,6 +364,27 @@ Semantics, precisely:
   verdict alone.
 - When the labelled slice contains confidence-selected rows (enforce mode outside audits), a
   second table repeats the comparison on unselected rows only, which is the slice to trust.
+
+## `review`
+
+```text
+ratchet review <ledger> --gate <id> [--sample 20] [--seed <n>] [--reviewer <name>]
+```
+
+Labels that arrive in the moment (an approval click, an accepted suggestion) are not the same
+evidence as a considered judgment. `review` measures the difference. It draws a seeded uniform
+sample of one judge gate's decision rows that kept their state (`Engine` `keepState`) and have
+not been reviewed, shows each state exactly as the oracle saw it, and asks for a verdict
+(`y`, `n`, `s` to skip, `q` to stop). Nothing about the model's answer or an earlier label is
+shown until the session ends, so neither can steer the next answer; the summary then reports how
+often your answers matched the model's lean and the earlier labels, and lists the rows whose
+label changed.
+
+The sample is drawn by the seed, never chosen by hand, and the seed is printed so the draw can be
+repeated. Each answer becomes the row's label with source `review:blind` (or
+`review:blind:<name>`); a replaced label is kept in the note, and the append-only ledger keeps
+both outcome lines. A battery's members inherit the review through the battery's truth, as
+`Engine.label` does. Reviewed rows are not drawn again.
 
 ## The library underneath
 

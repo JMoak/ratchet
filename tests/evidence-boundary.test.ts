@@ -124,16 +124,16 @@ describe("code-only decisions cannot become model evidence", () => {
         questionHash: answered.questionHash,
         policyHash: answered.policyHash,
       },
-      promisedAccuracy: 0.9,
-      minShadowRows: 10,
-      minActed: 10,
+      // A one-act plan, so the first act the model answered decides on its own.
+      promisedAccuracy: 0.5,
+      confidence: 0.5,
     });
     await rollout.evaluate();
     for (const row of rows) await ledger.append(row);
     expect(await rollout.evaluate()).toMatchObject({
       mode: "shadow",
       changed: false,
-      window: { n: 1, acted: 1, accuracy: 0 },
+      acceptance: { status: "rejected", errors: 1 },
     });
   });
 
@@ -149,9 +149,9 @@ describe("code-only decisions cannot become model evidence", () => {
         questionHash: answered.questionHash,
         policyHash: answered.policyHash,
       },
+      // A one-act plan at 90%, weak by design, so one correct act promotes.
       promisedAccuracy: 0.9,
-      minShadowRows: 1,
-      minActed: 1,
+      confidence: 0.1,
       minAuditRows: 1,
     });
     await rollout.evaluate();
@@ -167,7 +167,7 @@ describe("code-only decisions cannot become model evidence", () => {
     expect(await rollout.evaluate()).toMatchObject({
       mode: "shadow",
       changed: true,
-      window: { n: 1, acted: 1, accuracy: 0 },
+      audits: { n: 1, acted: 1, accuracy: 0 },
     });
   });
 });
