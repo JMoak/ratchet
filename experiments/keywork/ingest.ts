@@ -33,8 +33,10 @@ export interface IngestResult {
   readonly already: number;
   /** Decisions outside the population, by who answered them. */
   readonly skipped: Readonly<Record<Exclude<AnsweredBy, "person">, number>>;
-  /** Person-answered decisions outside the window: the smoke set in an evidence run, or the reverse. */
+  /** Person-answered decisions outside the window: another phase's answers. */
   readonly outsideWindow: number;
+  /** Denials that judged the moment ("not-now"), not the call; they leave the population. */
+  readonly steering: number;
   /** True when the budget ran out and the rest were left for a later run. */
   readonly stoppedAtBudget: boolean;
 }
@@ -43,12 +45,16 @@ export interface IngestResult {
  * Replay a person's answered asks through the gate in shadow, oldest first, and label each row
  * with the answer the person gave. Only fresh answers are evidence: a call a standing grant
  * covered, a rule decided or no one could answer says nothing about the person's judgment of
- * that call, and an older journal that cannot tell an answer from a grant is left out.
+ * that call, and an older journal that cannot tell an answer from a grant is left out. A denial
+ * the person marked "not-now" judged the moment (stop, not that, later) rather than the call,
+ * so it leaves the population; it is the person's reason, not the gate's verdict, that excludes
+ * it, which keeps the sample unbiased. A denial without a reason counts against the call, and
+ * the blind review of every denial corrects it when that was wrong.
  *
- * Every person-answered decision inside the window is ingested regardless of its answer, in
- * time order, so the acceptance sample (the first acts in ledger order) is fixed without anyone
- * choosing rows by their labels. The window keeps the smoke set and evidence apart. The answer
- * is attached after the gate has ruled; it never enters the state.
+ * Every remaining decision inside the window is ingested regardless of its answer, in time
+ * order, so the acceptance sample (the first acts in ledger order) is fixed without anyone
+ * choosing rows by their labels. The window keeps the phases apart. The answer is attached
+ * after the gate has ruled; it never enters the state.
  */
 export async function ingestDecisions(
   engine: Engine,
@@ -58,8 +64,14 @@ export async function ingestDecisions(
 ): Promise<IngestResult> {
   const skipped = { headless: 0, grant: 0, rule: 0, unknown: 0 };
   let outsideWindow = 0;
-  // A failed-open row bought no answer, so its call is asked again on a later run.
-  const seen = new Set((await engine.ledger.all()).flatMap((r) => (r.failedOpen ? [] : r.tags)));
+  let steering = 0;
+  // Rows of this question only: a reworded rubric is a new question, and its calls are asked
+  // again. A failed-open row bought no answer, so its call is asked again too.
+  const seen = new Set(
+    (await engine.ledger.all()).flatMap((r) =>
+      r.failedOpen || r.questionHash !== gate.questionHash ? [] : r.tags,
+    ),
+  );
   const population = decisions
     .filter((d) => {
       if (d.answer.by !== "person") {
@@ -68,6 +80,10 @@ export async function ingestDecisions(
       }
       if (!withinWindow(d, window)) {
         outsideWindow++;
+        return false;
+      }
+      if (d.answer.verdict === "denied" && d.answer.reason === "not-now") {
+        steering++;
         return false;
       }
       return true;
@@ -108,5 +124,13 @@ export async function ingestDecisions(
     });
     asked++;
   }
-  return { population: population.length, asked, already, skipped, outsideWindow, stoppedAtBudget };
+  return {
+    population: population.length,
+    asked,
+    already,
+    skipped,
+    outsideWindow,
+    steering,
+    stoppedAtBudget,
+  };
 }

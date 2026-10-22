@@ -39,15 +39,21 @@ its 54 authored fixtures are regression evidence, and the
    whether each verdict answered one, and exports scrubbed decision records
    (`keywork sessions decisions`, its overlay 122); `bun run keywork` replays them through the
    `keywork.tool` gate in shadow. The loop runs end to end; what it lacks is volume. keywork's
-   history here is 9 person answers over two days, and 149 acts answered by hand take months. That history is the
-   smoke set (`--smoke`, a ledger of its own); evidence starts 2026-10-22, and the success
-   criteria were fixed before its first row ([design](design/keywork-gate.md)). The
-   output-verification example follows through the same machinery.
+   history here is 9 person answers over two days, and 149 acts answered by hand take months. That
+   history is the smoke set (`--smoke`, a ledger of its own), and its live run on 2026-10-22
+   changed the plan: Jev put routine calls at 0.72 to 0.89, so the fixed 0.95 bar acted on
+   nothing, and one denial of `ls -la` judged the moment rather than the call. The experiment now
+   runs in three phases, smoke, fit and evidence, each with its own ledger: the bar is fitted on
+   about 50 fit rows, frozen in one commit, and validated only on rows after the freeze; keywork
+   1.4 asks why on a denial, a `not-now` leaves the population, and every denial is blind-reviewed
+   (`ratchet review --denied`). The success criteria were fixed before the first evidence row
+   ([design](design/keywork-gate.md)). The output-verification example follows through the same
+   machinery.
 
-Open choices the evidence will force: whether to tolerate a few errors in the plan for power
-(313 acts at 98% for two), whether to turn audits on before enforcing, and a sequential
-demotion test with an explicit false-alarm rate in place of the eager rule. Primary sources
-and reasoning are in the
+Open choices the evidence will force: where to freeze the bar once the fit phase has its rows,
+whether to tolerate a few errors in the plan for power (313 acts at 98% for two), whether to turn
+audits on before enforcing, and a sequential demotion test with an explicit false-alarm rate in
+place of the eager rule. Primary sources and reasoning are in the
 [learning notes](../research_notes/Jev%20novel%20patterns%20catalog/learning_and_tooling.md).
 
 The evidence boundary is shared across calibration, CLI reports/checks, and rollout:

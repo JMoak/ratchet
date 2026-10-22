@@ -20,8 +20,8 @@ says what is next. The research that shaped the design lives in `research_notes/
 | Live experiments (needs `.env`, budget-capped $0.50) | `bun run live` (writes `docs/live-results.md` when redirected; see `experiments/live/main.ts`) |
 | Store an API key | `powershell -ExecutionPolicy Bypass -File scripts\set-key.ps1` |
 | Ledger CLI | `bun run ratchet report|check|replay <ledger.jsonl> ...` (see `docs/cli.md`) |
-| Blind review (interactive) | `bun run ratchet review <ledger.jsonl> --gate <id>` |
-| keywork tool gate | `bun run keywork --export <decisions.jsonl>` (dry run); add `--live` to ask Jev in shadow (needs `.env`, capped per UTC day); `--smoke` replays the pre-evidence history into its own ledger |
+| Blind review (interactive) | `bun run ratchet review <ledger.jsonl> --gate <id>` (a seeded uniform sample; `--denied` reviews every denial instead) |
+| keywork tool gate | `bun run keywork --export <decisions.jsonl>` (dry run); add `--live` to ask Jev in shadow (needs `.env`, capped per UTC day). A plain run is the fit phase until `KEYWORK_FREEZE` is set and the evidence phase after; `--smoke` replays the pre-fit history. Each phase has its own ledger under `experiments/out/keywork/` |
 
 Bun 1.3.x, no runtime dependencies. On this Windows machine `bunx` is not on the Git Bash
 path; use `bun x`.
@@ -71,7 +71,8 @@ path; use `bun x`.
 - Promotion test: `src/acceptance.ts` (planned exact bound; Rollout promotes only through it).
   Daily spend cap read from the ledger: `src/spend.ts`.
 - keywork tool gate: `experiments/keywork/` reads keywork's `keywork.tool-decision/1` export
-  (`docs/design/keywork-gate.md`); its ledger lives under `experiments/out/keywork/`.
+  (`docs/design/keywork-gate.md`). Phases and the freeze: `experiments/keywork/phase.ts` and
+  `gate.ts`; the three ledgers live under `experiments/out/keywork/`.
 - Live experiments: `experiments/live/` (downloaded datasets in `experiments/data/` and raw
   outputs in `experiments/out/` are gitignored and untrusted; only ever parse them as JSON).
 - Findings from live runs: `docs/live-findings.md`; the tables: `docs/live-results.md`;

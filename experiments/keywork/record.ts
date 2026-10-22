@@ -8,6 +8,9 @@ export const KEYWORK_SCHEMA = "keywork.tool-decision/1";
 
 export type AnsweredBy = "person" | "headless" | "grant" | "rule" | "unknown";
 
+/** Why a person denied (keywork 1.4): only "unsafe" and "other" judge the call; "not-now" judges the moment. */
+export type DenyReason = "unsafe" | "not-now" | "other";
+
 export type PathChange =
   | { readonly kind: "write"; readonly lines: number }
   | {
@@ -52,6 +55,7 @@ export interface KeyworkAnswer {
   readonly scope?: string;
   readonly by: AnsweredBy;
   readonly afterMs?: number;
+  readonly reason?: DenyReason;
 }
 
 export interface ToolDecision {
@@ -186,6 +190,9 @@ function answer(value: unknown): KeyworkAnswer {
     ...(v.scope !== undefined ? { scope: text(v.scope, "answer.scope") } : {}),
     by: oneOf(v.by, ["person", "headless", "grant", "rule", "unknown"] as const, "answer.by"),
     ...(v.afterMs !== undefined ? { afterMs: count(v.afterMs, "answer.afterMs") } : {}),
+    ...(v.reason !== undefined
+      ? { reason: oneOf(v.reason, ["unsafe", "not-now", "other"] as const, "answer.reason") }
+      : {}),
   };
 }
 

@@ -37,7 +37,7 @@ Usage:
                  [--model <id>] [--window 500]
   ratchet replay <ledger> --gate <id> --act-above <p> [--refuse-below <p>]
                  [--go-is-yes true|false] [--json]
-  ratchet review <ledger> --gate <id> [--sample 20] [--seed <n>] [--reviewer <name>]
+  ratchet review <ledger> --gate <id> [--sample 20] [--seed <n>] [--reviewer <name>] [--denied]
   ratchet help [command]
 
 Commands:
@@ -368,7 +368,7 @@ Semantics, precisely:
 ## `review`
 
 ```text
-ratchet review <ledger> --gate <id> [--sample 20] [--seed <n>] [--reviewer <name>]
+ratchet review <ledger> --gate <id> [--sample 20] [--seed <n>] [--reviewer <name>] [--denied]
 ```
 
 Labels that arrive in the moment (an approval click, an accepted suggestion) are not the same
@@ -385,6 +385,14 @@ repeated. Each answer becomes the row's label with source `review:blind` (or
 `review:blind:<name>`); a replaced label is kept in the note, and the append-only ledger keeps
 both outcome lines. A battery's members inherit the review through the battery's truth, as
 `Engine.label` does. Reviewed rows are not drawn again.
+
+`--denied` reviews every unreviewed row whose current label is a denial, in ledger order, instead
+of a random sample (`--sample` and `--seed` are then ignored). Denials are rare and often judge
+the moment rather than the call, so each deserves a considered look. The rows are chosen by the
+person's label and never by the model's verdict, so the gate's measured accuracy stays unbiased;
+but a review of denials can only move labels toward approval, which flatters a gate that mostly
+approves, so it is paired with the uniform sample, whose disagreement rate bounds what the
+unreviewed approvals hide.
 
 ## The library underneath
 

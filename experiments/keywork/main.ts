@@ -9,10 +9,11 @@
  * Without --live nothing leaves the machine and nothing is written. With --live each new
  * person-answered call is asked once and labelled with the person's answer, under a spend cap
  * per UTC day that is read from the ledger, so running the command again cannot reset it.
- * Answers from KEYWORK_EVIDENCE_FROM on are evidence; --smoke replays only the answers before
- * it, into a ledger of its own, and never the evidence ledger. The ledgers live under
- * experiments/out/, which is gitignored; they keep rendered states so `ratchet review` can show
- * them, and those states never leave this machine.
+ * A plain run is in the fit phase until KEYWORK_FREEZE is set and in the evidence phase after;
+ * --smoke replays the answers before the fit phase began. Each phase ingests only its own
+ * answers into a ledger of its own (see phase.ts). The ledgers live under experiments/out/,
+ * which is gitignored; they keep rendered states so `ratchet review` can show them, and those
+ * states never leave this machine.
  */
 import { mkdir, readFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
@@ -20,8 +21,9 @@ import { Engine } from "../../src/engine.ts";
 import { JsonlLedger } from "../../src/ledger/ledger.ts";
 import { jev, jevViaOpenRouter } from "../../src/oracles/systemone.ts";
 import type { Oracle } from "../../src/types.ts";
-import { KEYWORK_EVIDENCE_FROM, keyworkGateSpec } from "./gate.ts";
+import { keyworkGateSpec } from "./gate.ts";
 import { type AnswerWindow, ingestDecisions, withinWindow } from "./ingest.ts";
+import { currentPhase, PHASE_LEDGERS, type Phase, phaseSpec } from "./phase.ts";
 import { parseToolDecisions, type ToolDecision } from "./record.ts";
 import { keyworkReport } from "./report.ts";
 import { toolCallState } from "./state.ts";
@@ -29,12 +31,9 @@ import { toolCallState } from "./state.ts";
 const USAGE =
   "Usage: bun run keywork --export <file> [--export <file> ...] [--smoke] [--ledger <path>] [--live] [--budget <usd per day>]";
 
-const EVIDENCE_LEDGER = "experiments/out/keywork/ledger.jsonl";
-const SMOKE_LEDGER = "experiments/out/keywork/smoke.jsonl";
-
 interface Args {
   readonly exports: readonly string[];
-  readonly ledger: string;
+  readonly ledger: string | undefined;
   readonly smoke: boolean;
   readonly live: boolean;
   readonly budgetUsd: number;
@@ -63,13 +62,27 @@ function parseArgs(argv: readonly string[]): Args {
   }
   if (exports.length === 0) throw new Error(USAGE);
   if (!(budgetUsd > 0 && budgetUsd <= 1)) throw new Error("--budget must be in (0, 1] USD a day");
-  const path = resolve(ledger ?? (smoke ? SMOKE_LEDGER : EVIDENCE_LEDGER));
-  if (smoke && path === resolve(EVIDENCE_LEDGER)) {
-    throw new Error(
-      "--smoke never writes to the evidence ledger; drop --ledger or point it elsewhere",
-    );
+  return { exports, ledger, smoke, live, budgetUsd };
+}
+
+/** The phase's own ledger unless one is named, and never another phase's ledger. */
+function ledgerFor(phase: Phase, named: string | undefined): string {
+  const path = resolve(named ?? PHASE_LEDGERS[phase]);
+  const owner = (Object.keys(PHASE_LEDGERS) as Phase[]).find(
+    (p) => resolve(PHASE_LEDGERS[p]) === path,
+  );
+  if (owner !== undefined && owner !== phase) {
+    throw new Error(`${named} is the ${owner} ledger; a ${phase} run never writes there`);
   }
-  return { exports, ledger: path, smoke, live, budgetUsd };
+  return path;
+}
+
+function describeWindow(window: AnswerWindow): string {
+  const parts = [
+    ...(window.since !== undefined ? [`from ${window.since}`] : []),
+    ...(window.before !== undefined ? [`before ${window.before}`] : []),
+  ];
+  return parts.join(" and ") || "every answer";
 }
 
 async function readExports(paths: readonly string[]): Promise<ToolDecision[]> {
@@ -97,18 +110,18 @@ function liveOracle(): Oracle {
 }
 
 const args = parseArgs(process.argv.slice(2));
-const window: AnswerWindow = args.smoke
-  ? { before: KEYWORK_EVIDENCE_FROM }
-  : { since: KEYWORK_EVIDENCE_FROM };
+const phase: Phase = args.smoke ? "smoke" : currentPhase();
+const spec = phaseSpec(phase);
+const ledgerPath = ledgerFor(phase, args.ledger);
 const decisions = await readExports(args.exports);
 const people = decisions.filter((d) => d.answer.by === "person");
 const chosen = people
-  .filter((d) => withinWindow(d, window))
+  .filter((d) => withinWindow(d, spec.window))
   .sort((a, b) => Date.parse(a.answer.at) - Date.parse(b.answer.at));
-if (args.live) await mkdir(dirname(args.ledger), { recursive: true });
+if (args.live) await mkdir(dirname(ledgerPath), { recursive: true });
 const engine = new Engine({
   oracle: args.live ? liveOracle() : unused,
-  ledger: new JsonlLedger(args.ledger),
+  ledger: new JsonlLedger(ledgerPath),
   mode: "shadow",
   keepState: true,
   dailyBudgetUsd: args.budgetUsd,
@@ -118,9 +131,7 @@ const gate = engine.gate(keyworkGateSpec());
 
 console.log(
   `${decisions.length} decisions read; ${people.length} answered by a person; ${chosen.length} ` +
-    (args.smoke
-      ? `before ${KEYWORK_EVIDENCE_FROM} (the smoke set, not evidence).`
-      : `from ${KEYWORK_EVIDENCE_FROM} on (evidence).`),
+    `in the ${phase} phase (${describeWindow(spec.window)}).`,
 );
 if (!args.live) {
   const first = chosen[0];
@@ -130,10 +141,10 @@ if (!args.live) {
   }
   console.log("\nNothing was sent or written. Add --live to ask Jev in shadow.\n");
 } else {
-  const result = await ingestDecisions(engine, gate, decisions, window);
+  const result = await ingestDecisions(engine, gate, decisions, spec.window);
   console.log(
     `Asked ${result.asked}; ${result.already} were already in the ledger; ` +
-      `${result.outsideWindow} outside the window; skipped ` +
+      `${result.outsideWindow} in other phases; ${result.steering} denied for the moment, not the call; skipped ` +
       `${Object.entries(result.skipped)
         .map(([k, v]) => `${k} ${v}`)
         .join(", ")}. Recorded spend $${engine.spent.toFixed(6)}.`,
@@ -145,4 +156,4 @@ if (!args.live) {
   }
   console.log("");
 }
-console.log(keyworkReport(await engine.ledger.all(), gate, { decisions, smoke: args.smoke }));
+console.log(keyworkReport(await engine.ledger.all(), gate, { phase, decisions }));

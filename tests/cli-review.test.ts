@@ -105,6 +105,25 @@ describe("ratchet review", () => {
     expect(done.output).toContain("no unreviewed judge rows");
   });
 
+  it("reviews every unreviewed denial in ledger order with --denied", async () => {
+    const { path, ids } = await ledgerWith(["a", "b", "c"]);
+    const ledger = new JsonlLedger(path);
+    const denied = { at: "2026-10-22T00:00:00.000Z", correct: false, truth: false };
+    await ledger.label(ids[1] as string, { ...denied, source: "keywork:person" });
+    await ledger.label(ids[2] as string, { ...denied, source: "keywork:person" });
+    const io = scripted(["y", "y"]);
+
+    const result = await main(["review", path, "--gate", "tool", "--denied"], io);
+
+    expect(io.printed.join("")).toContain("every unreviewed denial, 2 of 3 rows");
+    expect(io.printed.join("")).toMatch(/--- 1 of 2 ---\nb\n[\s\S]*--- 2 of 2 ---\nc\n/);
+    expect(result.output).toContain("Recorded 2 blind labels for tool (every denial).");
+    expect(result.output).toContain("matched the earlier label on 0 of 2");
+    const again = await main(["review", path, "--gate", "tool", "--denied"], scripted([]));
+    expect(again.exitCode).toBe(2);
+    expect(again.output).toContain("no unreviewed denials");
+  });
+
   it("stops on q or at the end of input and keeps what was answered", async () => {
     const { path } = await ledgerWith(["a", "b", "c"]);
     const result = await main(

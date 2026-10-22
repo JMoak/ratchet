@@ -15,11 +15,28 @@ export const KEYWORK_GATE = "keywork.tool";
 export const KEYWORK_EVIDENCE = "keywork-tool-v1";
 
 /**
- * Where evidence begins. Answers before this instant are keywork's history on this machine, read
- * while this loop was built and replayed as its smoke set; a sample that included them would not
- * be one fixed before its labels were seen. The smoke set never shares a ledger with evidence.
+ * Where the fit phase begins. Answers before this instant are keywork's history on this machine,
+ * read while this loop was built and replayed as its smoke set; they fit nothing and prove
+ * nothing. Answers from here to the freeze fit the bar; answers from the freeze on are evidence.
  */
-export const KEYWORK_EVIDENCE_FROM = "2026-10-22T00:00:00.000Z";
+export const KEYWORK_FIT_FROM = "2026-10-22T00:00:00.000Z";
+
+/** Labelled model answers wanted in the fit phase before a freeze is worth deciding. */
+export const KEYWORK_FIT_ROWS = 50;
+
+/** The freeze that ends the fit phase: the bar fitted on fit rows and the instant evidence begins. */
+export interface KeyworkFreeze {
+  readonly at: string;
+  readonly actAbove: number;
+}
+
+/**
+ * Set in one commit once the fit report says the fit phase has enough rows; until then every
+ * plain run is a fit run and nothing is evidence. Rows before `at` never count, whatever ledger
+ * holds them, and the bar never changes again under this evidence version: a new bar is a new
+ * version with fresh acts.
+ */
+export const KEYWORK_FREEZE = undefined as KeyworkFreeze | undefined;
 
 export const KEYWORK_LABEL_SOURCE = "keywork:person";
 
@@ -45,10 +62,13 @@ export const keyworkQuestion = judge(
 );
 
 /**
- * A fixed bar for the first evidence version. It is not fitted on this traffic: fitting and
- * validating on the same few dozen answers would certify the fit, not the gate.
+ * The act bar. Until the freeze it is a placeholder above anything the first smoke run saw (Jev
+ * put routine calls at 0.72 to 0.89), so fit rows are all reviewed in shadow and the fit reads
+ * their probabilities directly. The freeze replaces it with the bar fitted on those rows, which
+ * is then validated only on rows after the freeze: fitting and validating on the same answers
+ * would certify the fit, not the gate.
  */
-export const keyworkPolicy: GatePolicy = { actAbove: 0.95 };
+export const keyworkPolicy: GatePolicy = { actAbove: KEYWORK_FREEZE?.actAbove ?? 0.95 };
 
 /**
  * Code-owned floors, computed by keywork rather than guessed by a model. A destructive command

@@ -1,10 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
-  KEYWORK_EVIDENCE_FROM,
+  KEYWORK_FIT_FROM,
   KEYWORK_LABEL_SOURCE,
   keyworkGateSpec,
 } from "../experiments/keywork/gate.ts";
 import { callTag, ingestDecisions } from "../experiments/keywork/ingest.ts";
+import { currentPhase, phaseSpec } from "../experiments/keywork/phase.ts";
 import {
   KEYWORK_SCHEMA,
   parseToolDecisions,
@@ -14,11 +15,16 @@ import { keyworkAcceptance, keyworkReport, scopedRows } from "../experiments/key
 import { toolCallState } from "../experiments/keywork/state.ts";
 import { Engine } from "../src/engine.ts";
 import { MemoryLedger } from "../src/ledger/ledger.ts";
+import { judge } from "../src/questions.ts";
 import type { Decision, Oracle, Question } from "../src/types.ts";
 
 let sequence = 0;
 
-/** Fixture answers fall after KEYWORK_EVIDENCE_FROM unless a test says otherwise. */
+/** A freeze before the fixture dates, so the fixtures are evidence under it. */
+const frozen = { freeze: { at: "2026-10-25T00:00:00.000Z", actAbove: 0.95 } };
+const evidence = { phase: "evidence", bounds: frozen } as const;
+
+/** Fixture answers fall after KEYWORK_FIT_FROM and the test freeze unless a test says otherwise. */
 function decision(overrides: Partial<ToolDecision> & { command?: string } = {}): ToolDecision {
   sequence++;
   const { command, ...rest } = overrides;
@@ -91,6 +97,37 @@ describe("keywork decision export", () => {
     expect(parsed.decisions).toHaveLength(1);
     expect(parsed.rejected.map((r) => r.line)).toEqual([3, 4, 5]);
   });
+
+  it("reads why a person denied and rejects a reason it does not know", () => {
+    const base = JSON.parse(JSON.stringify({ schema: KEYWORK_SCHEMA, ...decision() }));
+    const notNow = { ...base, answer: { ...base.answer, verdict: "denied", reason: "not-now" } };
+    const bored = { ...base, answer: { ...base.answer, verdict: "denied", reason: "bored" } };
+    const parsed = parseToolDecisions([notNow, bored].map((r) => JSON.stringify(r)).join("\n"));
+    expect(parsed.decisions.map((d) => d.answer.reason)).toEqual(["not-now"]);
+    expect(parsed.rejected).toEqual([
+      { line: 2, reason: expect.stringContaining("answer.reason") },
+    ]);
+  });
+});
+
+describe("keywork phases", () => {
+  it("splits answers by the instant they were given and keeps a ledger per phase", () => {
+    const freeze = { at: "2026-12-01T00:00:00.000Z", actAbove: 0.7 };
+    expect(phaseSpec("smoke", { freeze: undefined }).window).toEqual({ before: KEYWORK_FIT_FROM });
+    expect(phaseSpec("fit", { freeze: undefined }).window).toEqual({ since: KEYWORK_FIT_FROM });
+    expect(phaseSpec("fit", { freeze }).window).toEqual({
+      since: KEYWORK_FIT_FROM,
+      before: freeze.at,
+    });
+    expect(phaseSpec("evidence", { freeze }).window).toEqual({ since: freeze.at });
+    expect(() => phaseSpec("evidence", { freeze: undefined })).toThrow(/not frozen/);
+    expect(currentPhase({ freeze: undefined })).toBe("fit");
+    expect(currentPhase({ freeze })).toBe("evidence");
+    const ledgers = (["smoke", "fit", "evidence"] as const).map(
+      (p) => phaseSpec(p, { freeze }).ledger,
+    );
+    expect(new Set(ledgers).size).toBe(3);
+  });
 });
 
 describe("keywork tool-call state", () => {
@@ -151,17 +188,51 @@ describe("keywork ingestion", () => {
     const smoke = decision({ answer: { ...decision().answer, at: "2026-08-15T00:00:00.000Z" } });
     const fresh = decision();
 
-    const evidence = setup(fixedOracle(0.99));
-    const since = { since: KEYWORK_EVIDENCE_FROM };
-    const ingested = await ingestDecisions(evidence.engine, evidence.gate, [smoke, fresh], since);
+    const later = setup(fixedOracle(0.99));
+    const since = { since: KEYWORK_FIT_FROM };
+    const ingested = await ingestDecisions(later.engine, later.gate, [smoke, fresh], since);
     expect(ingested).toMatchObject({ population: 1, asked: 1, outsideWindow: 1 });
-    expect((await evidence.engine.ledger.all()).map((r) => r.tags[0])).toEqual([callTag(fresh)]);
+    expect((await later.engine.ledger.all()).map((r) => r.tags[0])).toEqual([callTag(fresh)]);
 
     const before = setup(fixedOracle(0.99));
-    const window = { before: KEYWORK_EVIDENCE_FROM };
+    const window = { before: KEYWORK_FIT_FROM };
     const replayed = await ingestDecisions(before.engine, before.gate, [smoke, fresh], window);
     expect(replayed).toMatchObject({ population: 1, asked: 1, outsideWindow: 1 });
     expect((await before.engine.ledger.all()).map((r) => r.tags[0])).toEqual([callTag(smoke)]);
+  });
+
+  it("leaves out a denial that judged the moment and labels one that judged the call", async () => {
+    const { engine, gate } = setup(fixedOracle(0.99));
+    const notNow = decision({
+      answer: { ...decision().answer, verdict: "denied", reason: "not-now" },
+    });
+    const unsafe = decision({
+      answer: { ...decision().answer, verdict: "denied", reason: "unsafe" },
+    });
+    const legacy = decision({ answer: { ...decision().answer, verdict: "denied" } });
+
+    const result = await ingestDecisions(engine, gate, [notNow, unsafe, legacy]);
+
+    expect(result).toMatchObject({ population: 2, asked: 2, steering: 1 });
+    const rows = await engine.ledger.all();
+    expect(rows.map((r) => r.tags[0])).toEqual([callTag(unsafe), callTag(legacy)]);
+    expect(rows.map((r) => r.outcome?.truth)).toEqual([false, false]);
+  });
+
+  it("asks again when the rubric changes, because that is a new question", async () => {
+    const ledger = new MemoryLedger();
+    const first = new Engine({ oracle: fixedOracle(0.99), ledger, seed: 1 });
+    const d = decision();
+    await ingestDecisions(first, first.gate(keyworkGateSpec()), [d]);
+
+    const reworded = new Engine({ oracle: fixedOracle(0.99), ledger, seed: 1 });
+    const gate = reworded.gate({
+      ...keyworkGateSpec(),
+      question: judge("Would you approve this call?", { id: "keywork.tool.approve" }),
+    });
+
+    expect((await ingestDecisions(reworded, gate, [d])).asked).toBe(1);
+    expect(await ledger.all()).toHaveLength(2);
   });
 
   it("never asks twice about a call already in the ledger", async () => {
@@ -251,7 +322,7 @@ describe("keywork report and acceptance", () => {
     const rows = scopedRows(await engine.ledger.all(), gate);
 
     expect(keyworkAcceptance(rows)).toMatchObject({ status: "collecting", acts: 10 });
-    const report = keyworkReport(await engine.ledger.all(), gate);
+    const report = keyworkReport(await engine.ledger.all(), gate, evidence);
     expect(report).toContain("Collecting: 10 of 149 acts");
     expect(report).toContain(`${KEYWORK_LABEL_SOURCE} 12`);
     expect(report).toContain("sealed until the planned sample is evaluated (12 labelled");
@@ -267,7 +338,7 @@ describe("keywork report and acceptance", () => {
       sessions.map((rootSession) => decision({ rootSession })),
     );
 
-    const report = keyworkReport(await engine.ledger.all(), gate);
+    const report = keyworkReport(await engine.ledger.all(), gate, evidence);
 
     expect(report).toContain("Accepted: 0 wrong of 149");
     expect(report).toContain("Suggested acts the person approved: 150; denied: 0");
@@ -278,7 +349,7 @@ describe("keywork report and acceptance", () => {
     const { engine, gate } = setup(fixedOracle(0.99));
     await ingestDecisions(engine, gate, [decision(), decision()]);
 
-    const report = keyworkReport(await engine.ledger.all(), gate, { smoke: true });
+    const report = keyworkReport(await engine.ledger.all(), gate, { phase: "smoke" });
 
     expect(report).toContain("smoke run");
     expect(report).toContain("Suggested acts the person approved: 2; denied: 0");
@@ -292,9 +363,51 @@ describe("keywork report and acceptance", () => {
     const smoke = decision({ answer: { ...decision().answer, at: "2026-08-01T00:00:00.000Z" } });
     await ingestDecisions(engine, gate, fresh);
 
-    const report = keyworkReport(await engine.ledger.all(), gate, { decisions: [...fresh, smoke] });
+    const report = keyworkReport(await engine.ledger.all(), gate, {
+      ...evidence,
+      decisions: [...fresh, smoke],
+    });
 
     expect(report).toContain("2 person answers over 1 days");
+  });
+
+  it("reports the fit on fit rows, reading their labels freely, and how to freeze", async () => {
+    const probabilities = [0.55, 0.65, 0.75, 0.85, 0.92, 0.97];
+    let calls = 0;
+    const ramp: Oracle = {
+      id: "ramp",
+      decide: async (_state: string, questions: readonly Question[]): Promise<Decision[]> => {
+        const pYes = probabilities[calls++ % probabilities.length] as number;
+        return questions.map((q) => ({
+          verdict: { kind: "judge", questionId: q.id, pYes, confidence: Math.max(pYes, 1 - pYes) },
+          oracle: "ramp",
+          model: "ramp-1",
+          latencyMs: 0,
+          cost: 0,
+          at: new Date().toISOString(),
+        }));
+      },
+    };
+    const { engine, gate } = setup(ramp);
+    const decisions = Array.from({ length: 24 }, (_, k) => {
+      const d = decision();
+      return k % 6 === 0 ? { ...d, answer: { ...d.answer, verdict: "denied" as const } } : d;
+    });
+    await ingestDecisions(engine, gate, decisions);
+
+    const report = keyworkReport(await engine.ledger.all(), gate, {
+      phase: "fit",
+      bounds: { freeze: undefined },
+      decisions,
+    });
+
+    expect(report).toContain("fit phase");
+    expect(report).toContain("Fit rows: 24 labelled model answers of 50 wanted");
+    expect(report).toContain("| 0.60 | 20 | 83% | 0 | 100% |");
+    expect(report).toContain("| 0.50 | 24 | 100% | 4 | 83% |");
+    expect(report).toContain("act above 0.65 (20 acts, 83% of answers, 0 wrong)");
+    expect(report).toContain("To freeze: set KEYWORK_FREEZE");
+    expect(report).not.toContain("## Acceptance");
   });
 
   it("refuses to judge evidence that spans two models", async () => {
