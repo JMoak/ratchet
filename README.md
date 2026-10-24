@@ -5,14 +5,14 @@
 
 
 
-              ┬─┐ ┌─┐ ┌┬┐ ┌─┐ ┬ ┬ ┌─┐ ┌┬┐
-              ├┬┘ ├─┤  │  │   ├─┤ ├┤   │
-              ┴└─ ┴ ┴  ┴  └─┘ ┴ ┴ └─┘  ┴
+                        ┬─┐ ┌─┐ ┌┬┐ ┌─┐ ┬ ┬ ┌─┐ ┌┬┐
+                        ├┬┘ ├─┤  │  │   ├─┤ ├┤   │
+                        ┴└─ ┴ ┴  ┴  └─┘ ┴ ┴ └─┘  ┴
 
-                              ▼
-        ────/|────/|────/|────/|────/|────/|────/|────/|────▶
+                                     ▼
+        ────/|────/|────/|────/|────/|────/|────/|────/|────/|────▶
 
-                 small judgments.  deliberate moves.
+                    small judgments.  deliberate moves.
 
 
 
@@ -34,7 +34,7 @@ into reliable automated decisions.
 [![One-way doors](https://img.shields.io/badge/one--way%20doors-never%20automated-6b7280?style=flat-square)](docs/vision.md)
 [![Alpha](https://img.shields.io/badge/status-alpha-b45309?style=flat-square)](docs/publishing.md)
 
-[Arcade](docs/arcade.md) · [Install](#install) · [Vision](docs/vision.md) ·
+[Arcade](#play-the-arcade) · [Install](#install) · [Vision](docs/vision.md) ·
 [Architecture](docs/architecture.md) · [Evidence](docs/pilot-results.md) ·
 [Publishing](docs/publishing.md)
 
@@ -111,9 +111,9 @@ policy recommended, what the application did, and later, what was true.
 ## Five clicks
 
 ```text
-     shadow           label            fit            enforce           audit
+        shadow          label            fit           enforce          audit
    ───────/|──────────────/|──────────────/|──────────────/|──────────────/|───▶
-   nothing acts     truth arrives    bar is fitted    acts begin     blind re-checks
+     nothing acts   truth arrives   bar is fitted     acts begin   blind re-checks
 ```
 
 A gate starts by changing nothing and earns the right to act from its own record. Promotion
@@ -205,13 +205,39 @@ Checks and simulations need no network or keys; the demo uses a simulated oracle
 oracle has known accuracy, calibration and error correlation so every claim can be checked
 against the truth.
 
-The [Ratchet Arcade](docs/arcade.md) is four small browser games (Signal Orchard, Bridge
-Builder, Parcel Patrol, Treasure Survey) in which every move goes through a real `Engine` and
-`Gate` with a `MemoryLedger`; you can inspect the decision trail and download the JSONL. The
-[shadow pilot](docs/pilot.md) includes sourced application scenarios, separate fit and
+The [shadow pilot](docs/pilot.md) includes sourced application scenarios, separate fit and
 validation groups, persisted evidence, and exportable charts. Its authored labels exercise the
 workflow without claiming production accuracy. Read the
 [first live results and graphs](docs/pilot-results.md).
+
+<br>
+
+## Play the arcade
+
+Four small browser games, each a toy world where every move goes through a real `Engine`
+and `Gate` with a `MemoryLedger`. There is no hosted version yet; it runs on your machine
+from the source checkout, with no API key, network service or build step.
+
+```sh
+git clone https://github.com/JMoak/ratchet.git
+cd ratchet
+bun install
+bun run arcade
+```
+
+Open **http://127.0.0.1:3210**. Stop with Ctrl+C. Set `ARCADE_PORT` to use another port.
+
+```text
+   Signal Orchard    guide Pip through a twelve-day harvest      ensembles and abstention
+   Bridge Builder    cross five spans before supplies run out    choose, verify, commit
+   Parcel Patrol     share a conveyor shift with Dot             trusted vs untrusted, floors
+   Treasure Survey   train Scout, freeze a bar, then dig         practice labels, calibration
+```
+
+Every game opens in shadow: manual controls work at once, and **Play** or **Step** is an
+explicit request to let the agent take its reversible game actions. You can inspect the
+decision trail and download the ledger as JSONL. The server binds to loopback only; see
+[docs/arcade.md](docs/arcade.md) for the controls and each game's design.
 
 <br>
 
@@ -286,8 +312,8 @@ before using a hosted backend or hosting anything built on one.
 <div align="center">
 
 ```text
-        ────/|────/|────/|────/|────/|────/|────/|────/|────▶
-                      click.  check.  advance.
+        ────/|────/|────/|────/|────/|────/|────/|────/|────/|────▶
+                         click.  check.  advance.
 ```
 
 </div>
