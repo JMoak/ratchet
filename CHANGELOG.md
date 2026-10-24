@@ -5,6 +5,34 @@ may change exported signatures, and every change that affects a gate's evidence 
 policy, strategy, state builder or model pin) is called out so you know when to bump an
 `evidenceVersion`.
 
+## 0.3.0-alpha.1 (unreleased)
+
+The first version released through CI: the `v*` tag runs the checks, builds, and stages the
+package on npm through trusted publishing, where it waits for a 2FA approval.
+
+### Added
+
+- `ratchet hook <claude-code|codex> event|install|status|replay`: shadow a coding agent's
+  permission prompts. The harness's `PermissionRequest`, `PostToolUse`, `PostToolUseFailure`
+  and `SessionEnd` hooks append to a journal under `~/.ratchet/hooks/<harness>/`; `replay`
+  resolves each prompt from what happened next (ran: allowed; never ran before the next turn
+  or the session end: denied), asks the `agent.tool.<harness>` gate in shadow, and labels the
+  row with source `<harness>:person`. Nothing is enforced; no prompt changes. Design and the
+  label inference in `docs/design/agent-hook.md`.
+- Public API: `hookGateSpec`, `parseHookInput`, `resolvePrompts`, `ingestPrompts`,
+  `promptState`, `subjectOf`, `scrub`, `hookPaths`, `readEvents`.
+
+### Evidence
+
+- New gates `agent.tool.claude-code` and `agent.tool.codex`, evidence version `agent-tool-v1`,
+  placeholder bar 0.95 until a fit phase freezes one. Same promise and plan as the keywork
+  gate. No existing gate's evidence changes.
+
+### Changed
+
+- The CLI prints nothing when a command's output is empty, so a hook's stdout stays clean.
+- The README imports from the package.
+
 ## 0.2.0-alpha.1 (2026-10-24)
 
 First published prerelease. Everything below already existed in the source checkout; this

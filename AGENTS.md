@@ -23,6 +23,7 @@ says what is next. The research that shaped the design lives in `research_notes/
 | Store an API key | `powershell -ExecutionPolicy Bypass -File scripts\set-key.ps1` |
 | Ledger CLI | `bun run ratchet report|check|replay <ledger.jsonl> ...` (see `docs/cli.md`) |
 | Blind review (interactive) | `bun run ratchet review <ledger.jsonl> --gate <id>` (a seeded uniform sample; `--denied` reviews every denial instead) |
+| Agent-harness hook | `bun run ratchet hook <claude-code\|codex> install\|status\|replay [--live]` (journals under `~/.ratchet/hooks/<harness>/`; `event` is the hook command itself and must stay silent and exit 0) |
 | keywork tool gate | `bun run keywork --export <decisions.jsonl>` (dry run); add `--live` to ask Jev in shadow (needs `.env`, capped per UTC day). A plain run is the fit phase until `KEYWORK_FREEZE` is set and the evidence phase after; `--smoke` replays the pre-fit history. Each phase has its own ledger under `experiments/out/keywork/` |
 
 Bun 1.3.x, no runtime dependencies. On this Windows machine `bunx` is not on the Git Bash
@@ -81,6 +82,10 @@ path; use `bun x`.
   under Node types. CI is `.github/workflows/ci.yml`; `release.yml` publishes on a `v*` tag
   through npm trusted publishing (`docs/publishing.md`). Add a `CHANGELOG.md` entry for any
   change that alters a gate's evidence.
+- Agent-harness hook: `src/hook/` (event parsing, scrubbed subjects, prompt resolution,
+  ingestion) and `src/cli/hook.ts`; design in `docs/design/agent-hook.md`. The label is read
+  from what happened after a prompt, never told by the harness; a denial is inferred and must
+  be blind-reviewed. Both harnesses send the same stdin shape; keep the parser shared.
 - Live experiments: `experiments/live/` (downloaded datasets in `experiments/data/` and raw
   outputs in `experiments/out/` are gitignored and untrusted; only ever parse them as JSON).
 - Findings from live runs: `docs/live-findings.md`; the tables: `docs/live-results.md`;

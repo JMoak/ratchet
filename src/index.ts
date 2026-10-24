@@ -104,6 +104,28 @@ export {
   type GateVerdict,
   isBattery,
 } from "./gate.ts";
+// Agent-harness hooks: shadow a coding agent's permission prompts (`ratchet hook`)
+export {
+  EVENTS_FOR,
+  HARNESSES,
+  type Harness,
+  type HookEvent,
+  hashInput,
+  parseHookInput,
+} from "./hook/event.ts";
+export {
+  HOOK_EVIDENCE,
+  HOOK_PLAN,
+  hookFloors,
+  hookGateId,
+  hookGateSpec,
+  hookQuestion,
+} from "./hook/gate.ts";
+export { ingestPrompts } from "./hook/ingest.ts";
+export { hookPaths, readEvents } from "./hook/journal.ts";
+export { type PromptOutcome, type Resolution, resolvePrompts } from "./hook/resolve.ts";
+export { promptState } from "./hook/state.ts";
+export { type Subject, scrub, subjectOf } from "./hook/subject.ts";
 export {
   brier,
   type Calibrator,

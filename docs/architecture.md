@@ -407,8 +407,12 @@ work ahead of broader deployment is listed first in `roadmap.md`.
 `bin/ratchet.ts` over a JSONL ledger: `report` (per gate: calibration, posture, fitted bar
 and coverage, models seen), `check` (exit 1 when a gate breaks its promise, its ECE bound or
 its pinned model; for CI), `replay` (re-rule every recorded distribution under a new
-policy, without oracle calls), and `review` (blind labels for a seeded uniform sample of one
-judge gate's stored states, recorded before the model's answer is shown). It groups rows by `gateId` and reads a battery's combined rows
+policy, without oracle calls), `review` (blind labels for a seeded uniform sample of one
+judge gate's stored states, recorded before the model's answer is shown), and `hook` (shadow a
+coding agent's permission prompts: Claude Code and Codex hook events go to a journal under
+`~/.ratchet/hooks/<harness>/`, `replay` resolves each prompt from what happened next and asks
+the `agent.tool.<harness>` gate in shadow; `src/hook/`, design in
+`docs/design/agent-hook.md`). It groups rows by `gateId` and reads a battery's combined rows
 as the gate's decisions and its members as their own groups.
 
 ## Extension points

@@ -1,5 +1,6 @@
 import { CHECK_USAGE, check } from "./check.ts";
 import type { CommandResult } from "./common.ts";
+import { HOOK_USAGE, hook } from "./hook.ts";
 import { REPLAY_USAGE, replay } from "./replay.ts";
 import { REPORT_USAGE, report } from "./report.ts";
 import { REVIEW_USAGE, type ReviewIo, review } from "./review.ts";
@@ -20,6 +21,7 @@ Usage:
   ratchet replay <ledger> --gate <id> --act-above <p> [--refuse-below <p>]
                  [--go-is-yes true|false] [--json]
   ratchet review <ledger> --gate <id> [--sample 20] [--seed <n>] [--reviewer <name>]
+  ratchet hook   <claude-code|codex> <event|install|status|replay> [--live] [--budget <usd>]
   ratchet help [command]
 
 Commands:
@@ -29,6 +31,7 @@ Commands:
            or its model pin.
   replay   Re-rule every recorded verdict under a new policy, without oracle calls.
   review   Blind review: label a random sample yourself before seeing the model's answers.
+  hook     Shadow a coding agent's permission prompts and learn from the answers.
 
 <ledger> is a JSON Lines file written by JsonlLedger. Rows group by gate id, or by
 question id in ledgers written before gates.
@@ -41,6 +44,7 @@ const USAGE: Readonly<Record<string, string>> = {
   check: CHECK_USAGE,
   replay: REPLAY_USAGE,
   review: REVIEW_USAGE,
+  hook: HOOK_USAGE,
 };
 
 /**
@@ -58,6 +62,8 @@ export async function main(argv: readonly string[], io?: ReviewIo): Promise<Comm
       return replay(rest);
     case "review":
       return review(rest, io);
+    case "hook":
+      return hook(rest);
     case "help":
     case "--help":
     case "-h": {

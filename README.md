@@ -131,7 +131,7 @@ rejection or demotion starts a fresh ledger phase. [Boundaries and migration](do
 ## In code
 
 ```ts
-import { Engine, judge, jevViaOpenRouter, oneWayDoor, policyWithBand, refuseIf, State } from "./src/index.ts";
+import { Engine, judge, jevViaOpenRouter, oneWayDoor, policyWithBand, refuseIf, State } from "@jmoak/ratchet";
 
 const engine = new Engine({ oracle: jevViaOpenRouter(), budgetUsd: 5, auditRate: 0.05 });
 
@@ -168,6 +168,35 @@ decision model on the market answers. The oracle interface is one method.
 
 <br>
 
+## Shadow your coding agent
+
+Every permission prompt your agent shows you is a label. Two hook lines turn Claude Code or
+Codex into a source of them, with no change to what you see and nothing enforced.
+
+```sh
+npm install -g @jmoak/ratchet@alpha
+ratchet hook claude-code install     # prints the settings to paste; or: ratchet hook codex install
+```
+
+```text
+   prompt ──▶ journal ──▶ did it run? ──▶ allowed · denied · open
+                                │
+                 ratchet hook claude-code replay --live
+                                │
+                                ▼
+                 gate agent.tool.claude-code, in shadow, labelled with your answer
+```
+
+The hooks append one line per prompt, run and session end; they run in the background and
+never decide anything. `replay` asks the gate about each settled prompt under a spend cap and
+labels the row with what you did: a prompted call that ran was approved, one that never ran
+before the turn moved on was denied, and `ratchet review --denied` is where you say whether a
+denial judged the call or the moment. What leaves the machine is a scrubbed command or a path
+with line counts, never file contents, tool output or the conversation; the dry run prints the
+exact text first. Design and the label inference: [docs/design/agent-hook.md](docs/design/agent-hook.md).
+
+<br>
+
 ## Install
 
 ```sh
@@ -180,9 +209,8 @@ import { Engine, judge, policyWithBand, refuseIf, State } from "@jmoak/ratchet";
 
 ESM only. Node 22.14 or later, or Bun 1.3 or later. Zero runtime dependencies. The package
 ships the engine and the `ratchet` CLI; the arcade, simulations and experiments stay in the
-repository. The code sample above imports from the source checkout; from the package, import
-the same names from `@jmoak/ratchet`. See [CHANGELOG.md](CHANGELOG.md) for what each version
-ships and the limitations to read first.
+repository. See [CHANGELOG.md](CHANGELOG.md) for what each version ships and the limitations
+to read first.
 
 ## Run it from source
 

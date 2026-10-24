@@ -35,5 +35,8 @@ const result = await main(argv, term?.io);
 term?.close();
 // Usage errors go to stderr so a CI log separates "could not run" from a check's verdict.
 const stream = result.exitCode === 2 ? process.stderr : process.stdout;
-stream.write(result.output.endsWith("\n") ? result.output : `${result.output}\n`);
+// `ratchet hook ... event` must leave stdout empty: a harness parses a hook's stdout as JSON.
+if (result.output !== "") {
+  stream.write(result.output.endsWith("\n") ? result.output : `${result.output}\n`);
+}
 process.exitCode = result.exitCode;
