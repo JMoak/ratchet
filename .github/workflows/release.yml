@@ -1,0 +1,63 @@
+name: release
+
+# Publishes @jmoak/ratchet to npm through trusted publishing (OIDC), so no npm token is
+# stored in this repository. Requires, once, on npmjs.com under the package's settings:
+# trusted publisher = GitHub Actions, owner JMoak, repository ratchet, workflow release.yml.
+# A pushed tag like v0.2.0-alpha.1 must match package.json's version exactly.
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+
+      # Trusted publishing needs npm 11.5.1+ and Node 22.14+. Node 24 ships npm 11.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+
+      - run: bun install --frozen-lockfile
+
+      - run: bun run check
+
+      - run: bun run build
+
+      - run: node dist/bin/ratchet.js help
+
+      - name: tag must match package.json version
+        run: |
+          pkg="$(node -p "require('./package.json').version")"
+          tag="${GITHUB_REF_NAME#v}"
+          test "$pkg" = "$tag" || { echo "package.json is $pkg but tag is $tag"; exit 1; }
+
+      - name: package must not be private
+        run: |
+          node -e "if (require('./package.json').private) { console.error('package.json is still private'); process.exit(1) }"
+
+      - name: pick the dist-tag from the version
+        id: tag
+        run: |
+          v="$(node -p "require('./package.json').version")"
+          case "$v" in
+            *-alpha*) echo "name=alpha" >> "$GITHUB_OUTPUT" ;;
+            *-beta*)  echo "name=beta"  >> "$GITHUB_OUTPUT" ;;
+            *-rc*)    echo "name=next"  >> "$GITHUB_OUTPUT" ;;
+            *)        echo "name=latest" >> "$GITHUB_OUTPUT" ;;
+          esac
+
+      - run: npm pack --dry-run
+
+      - run: npm publish --access public --tag "${{ steps.tag.outputs.name }}"

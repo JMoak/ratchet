@@ -32,7 +32,7 @@ into reliable automated decisions.
 [![One-way doors](https://img.shields.io/badge/one--way%20doors-never%20automated-6b7280?style=flat-square)](docs/vision.md)
 [![Pre-release](https://img.shields.io/badge/status-pre--release%200.0.1-b45309?style=flat-square)](docs/publishing.md)
 
-[Arcade](docs/arcade.md) · [Run it](#run-it) · [Vision](docs/vision.md) ·
+[Arcade](docs/arcade.md) · [Install](#install) · [Vision](docs/vision.md) ·
 [Architecture](docs/architecture.md) · [Evidence](docs/pilot-results.md) ·
 [Publishing](docs/publishing.md)
 
@@ -166,7 +166,23 @@ decision model on the market answers. The oracle interface is one method.
 
 <br>
 
-## Run it
+## Install
+
+```sh
+bun add @jmoak/ratchet@alpha      # or: npm install @jmoak/ratchet@alpha
+```
+
+```ts
+import { Engine, judge, policyWithBand, refuseIf, State } from "@jmoak/ratchet";
+```
+
+ESM only. Node 22.14 or later, or Bun 1.3 or later. Zero runtime dependencies. The package
+ships the engine and the `ratchet` CLI; the arcade, simulations and experiments stay in the
+repository. Until the first alpha is on the registry, the import path in the examples above
+is the source checkout's `./src/index.ts`. See [CHANGELOG.md](CHANGELOG.md) for what each
+version ships and the limitations to read first.
+
+## Run it from source
 
 ```sh
 bun install

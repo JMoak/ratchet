@@ -1,9 +1,47 @@
 # Publishing plan
 
-Reviewed 2026-10-21 against this checkout. **Planning only: neither the npm package nor a
-hosted arcade is ready to release.** No release configuration, registry settings, accounts,
-or deployment has been changed by this plan. The license is decided: Apache-2.0, recorded
-in `LICENSE`, `NOTICE` and `package.json`.
+Reviewed 2026-10-21; decisions and release tooling added 2026-10-24. **The package is
+built, packed and consumer-tested but not yet published; the hosted arcade is still planning
+only.** The license is decided: Apache-2.0, recorded in `LICENSE`, `NOTICE` and
+`package.json`.
+
+## Decided 2026-10-24
+
+| Decision | Outcome |
+| --- | --- |
+| Package identity | `@jmoak/ratchet`, CLI `ratchet`. The `@jmoak` scope is Jordan's (it already publishes `@jmoak/chrono-mcp`); the name was unclaimed on 2026-10-24. |
+| Runtime contract | ESM; Node 22.14+ and Bun 1.3+ (`engines`). `tsconfig.build.json` type-checks `src/` and `bin/` against Node types only, so Bun-only APIs cannot creep into the package. The CLI shebang is `node`; `bunx ratchet` also works. |
+| Version and tag | `0.2.0-alpha.1`, dist-tag `alpha`. The release workflow derives the dist-tag from the version suffix (`alpha`, `beta`, `rc` to `next`, otherwise `latest`). |
+| Publishing route | GitHub Actions with npm trusted publishing (OIDC, no stored token): `.github/workflows/release.yml` on `v*` tags. npm configures a trusted publisher from an existing package's settings page, so the very first version is published once by hand. |
+| Package contents | `files: ["dist", "NOTICE", "CHANGELOG.md"]` plus the files npm always packs. Verified 2026-10-24: 81 files, 0.41 MB unpacked, nothing from tests, experiments, research, examples or `.env`. |
+| Validation | Done 2026-10-24 from the packed tarball in fresh projects outside the checkout: Bun and Node each ran a gate, labelled, reopened a JSONL ledger, and exercised the installed `ratchet report` and `check`; the Bun consumer type-checked with `skipLibCheck: false`. |
+
+### Release procedure
+
+Owner steps are marked. Everything else is already in the tree or in CI.
+
+1. Commit the packaging change set and push `main`; `ci.yml` runs check, build, a Node CLI
+   smoke and a pack dry run. **Owner.**
+2. Bootstrap publish, once, from a machine logged in to npm with 2FA. **Owner.**
+   ```sh
+   npm login
+   bun run check && bun run build
+   npm pack --dry-run             # read the file list one more time
+   # set "private": false in package.json, commit, tag v0.2.0-alpha.1
+   npm publish --access public --tag alpha
+   ```
+3. On npmjs.com, open the package's settings and add a trusted publisher: GitHub Actions,
+   organization or user `JMoak`, repository `ratchet`, workflow filename `release.yml`, no
+   environment. Decide whether to allow direct `npm publish` or only staged publishing (the
+   staged route holds each CI publish for a 2FA approval). **Owner.**
+4. From then on a pushed `v*` tag whose version matches `package.json` publishes through CI.
+   The workflow refuses a tag that does not match the version and a manifest still marked
+   private. Provenance is automatic only if the GitHub repository is public.
+5. After each publish, install from the registry into an empty directory and run the smoke in
+   step "Validation" above. Then add the npm version badge to the README.
+
+A published name and version can never be reused, even after unpublishing; a correction is a
+new version.
 
 Keep the engine and CLI in one small package. Treat the arcade as a separate deployment
 of the examples. Releasing the library does not require operating a paid model service.

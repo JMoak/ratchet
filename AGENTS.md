@@ -12,6 +12,8 @@ says what is next. The research that shaped the design lives in `research_notes/
 | --- | --- |
 | Full check before reporting done | `bun run check` (types, lint, tests) |
 | Type check | `bun x tsc -p tsconfig.json --noEmit` |
+| Release build (ESM + declarations into `dist/`, type-checked against Node types only) | `bun run build` |
+| Inspect what the package would ship | `bun run pack:check` (never publishes; `private` stays `true` until Jordan flips it) |
 | Lint and format | `bun x biome check .` and `bun x biome format --write .` |
 | Tests | `bun x vitest run` (or `bun run test`) |
 | Simulation tables | `bun run sim` (regenerate `docs/sim-results.md` with `bun sim/main.ts > docs/sim-results.md`) |
@@ -73,6 +75,12 @@ path; use `bun x`.
 - keywork tool gate: `experiments/keywork/` reads keywork's `keywork.tool-decision/1` export
   (`docs/design/keywork-gate.md`). Phases and the freeze: `experiments/keywork/phase.ts` and
   `gate.ts`; the three ledgers live under `experiments/out/keywork/`.
+- Packaging: the package is `@jmoak/ratchet`. `tsconfig.build.json` emits `src/` and `bin/`
+  with `.js` imports; `package.json` `files` is the allowlist (`dist`, `NOTICE`,
+  `CHANGELOG.md`). `src/` and `bin/` must stay free of Bun-only APIs so the build passes
+  under Node types. CI is `.github/workflows/ci.yml`; `release.yml` publishes on a `v*` tag
+  through npm trusted publishing (`docs/publishing.md`). Add a `CHANGELOG.md` entry for any
+  change that alters a gate's evidence.
 - Live experiments: `experiments/live/` (downloaded datasets in `experiments/data/` and raw
   outputs in `experiments/out/` are gitignored and untrusted; only ever parse them as JSON).
 - Findings from live runs: `docs/live-findings.md`; the tables: `docs/live-results.md`;

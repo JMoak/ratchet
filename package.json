@@ -1,13 +1,52 @@
 {
-  "name": "ratchet",
+  "name": "@jmoak/ratchet",
   "private": true,
   "type": "module",
-  "version": "0.0.1",
+  "version": "0.2.0-alpha.1",
   "license": "Apache-2.0",
-  "description": "A decision engine that compounds cheap, calibrated machine judgments into reliable automated decisions. Name provisional.",
+  "description": "A decision engine that compounds cheap, calibrated machine judgments into reliable automated decisions.",
+  "keywords": [
+    "decision-engine",
+    "calibration",
+    "ensemble",
+    "llm-judge",
+    "agent-safety",
+    "tool-gate",
+    "shadow-mode",
+    "typescript"
+  ],
+  "author": "Jordan Moak",
+  "homepage": "https://github.com/JMoak/ratchet#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JMoak/ratchet.git"
+  },
+  "bugs": {
+    "url": "https://github.com/JMoak/ratchet/issues"
+  },
+  "engines": {
+    "node": ">=22.14.0",
+    "bun": ">=1.3.0"
+  },
   "packageManager": "bun@1.3.9",
+  "exports": {
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "import": "./dist/src/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "types": "./dist/src/index.d.ts",
   "bin": {
-    "ratchet": "bin/ratchet.ts"
+    "ratchet": "dist/bin/ratchet.js"
+  },
+  "files": [
+    "dist",
+    "NOTICE",
+    "CHANGELOG.md"
+  ],
+  "publishConfig": {
+    "access": "public"
   },
   "scripts": {
     "check": "bun run check:types && bun run lint && bun run test",
@@ -15,6 +54,8 @@
     "lint": "biome check .",
     "format": "biome format --write .",
     "test": "vitest run",
+    "build": "rm -rf dist && tsc -p tsconfig.build.json",
+    "pack:check": "bun run build && bun pm pack --dry-run --ignore-scripts",
     "sim": "bun sim/main.ts",
     "demo": "bun examples/tool-gate.ts",
     "arcade": "bun examples/arcade/server.ts",
@@ -27,6 +68,7 @@
   "devDependencies": {
     "@biomejs/biome": "2.5.7",
     "@types/bun": "1.3.14",
+    "@types/node": "26.6.5",
     "typescript": "5.9.3",
     "vitest": "4.1.10"
   }

@@ -1,4 +1,4 @@
-#!/usr/bin/env bun
+#!/usr/bin/env node
 import { createInterface } from "node:readline/promises";
 import { main, type ReviewIo } from "../src/cli/main.ts";
 
