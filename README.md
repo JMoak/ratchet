@@ -22,6 +22,8 @@
 A decision engine that compounds cheap, calibrated machine judgments
 into reliable automated decisions.
 
+[![npm](https://img.shields.io/npm/v/@jmoak/ratchet/alpha?style=flat-square&color=1f2937&label=npm%20%40alpha)](https://www.npmjs.com/package/@jmoak/ratchet)
+[![ci](https://img.shields.io/github/actions/workflow/status/JMoak/ratchet/ci.yml?branch=main&style=flat-square&label=ci)](https://github.com/JMoak/ratchet/actions/workflows/ci.yml)
 [![TypeScript strict](https://img.shields.io/badge/TypeScript-strict-1f2937?style=flat-square&logo=typescript&logoColor=white)](tsconfig.json)
 [![Bun 1.3](https://img.shields.io/badge/Bun-1.3.x-1f2937?style=flat-square&logo=bun&logoColor=white)](package.json)
 [![Zero runtime dependencies](https://img.shields.io/badge/runtime%20deps-0-1f2937?style=flat-square)](package.json)
@@ -30,7 +32,7 @@ into reliable automated decisions.
 [![Shadow by default](https://img.shields.io/badge/default%20mode-shadow-6b7280?style=flat-square)](docs/rollout.md)
 [![Fail open means review](https://img.shields.io/badge/fail%20open-review-6b7280?style=flat-square)](docs/vision.md)
 [![One-way doors](https://img.shields.io/badge/one--way%20doors-never%20automated-6b7280?style=flat-square)](docs/vision.md)
-[![Pre-release](https://img.shields.io/badge/status-pre--release%200.0.1-b45309?style=flat-square)](docs/publishing.md)
+[![Alpha](https://img.shields.io/badge/status-alpha-b45309?style=flat-square)](docs/publishing.md)
 
 [Arcade](docs/arcade.md) · [Install](#install) · [Vision](docs/vision.md) ·
 [Architecture](docs/architecture.md) · [Evidence](docs/pilot-results.md) ·
@@ -178,9 +180,9 @@ import { Engine, judge, policyWithBand, refuseIf, State } from "@jmoak/ratchet";
 
 ESM only. Node 22.14 or later, or Bun 1.3 or later. Zero runtime dependencies. The package
 ships the engine and the `ratchet` CLI; the arcade, simulations and experiments stay in the
-repository. Until the first alpha is on the registry, the import path in the examples above
-is the source checkout's `./src/index.ts`. See [CHANGELOG.md](CHANGELOG.md) for what each
-version ships and the limitations to read first.
+repository. The code sample above imports from the source checkout; from the package, import
+the same names from `@jmoak/ratchet`. See [CHANGELOG.md](CHANGELOG.md) for what each version
+ships and the limitations to read first.
 
 ## Run it from source
 

@@ -5,7 +5,7 @@ may change exported signatures, and every change that affects a gate's evidence 
 policy, strategy, state builder or model pin) is called out so you know when to bump an
 `evidenceVersion`.
 
-## 0.2.0-alpha.1 (unreleased)
+## 0.2.0-alpha.1 (2026-10-24)
 
 First published prerelease. Everything below already existed in the source checkout; this
 entry describes what the package ships and what it does not promise.

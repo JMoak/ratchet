@@ -1,8 +1,9 @@
 # Publishing plan
 
-Reviewed 2026-10-21; decisions and release tooling added 2026-10-24. **The package is
-built, packed and consumer-tested but not yet published; the hosted arcade is still planning
-only.** The license is decided: Apache-2.0, recorded in `LICENSE`, `NOTICE` and
+Reviewed 2026-10-21; decisions and release tooling added 2026-10-24. **`0.2.0-alpha.1` was
+published by hand on 2026-10-24 and verified from the registry under Bun and Node. CI
+publishing starts once the trusted publisher is configured. The hosted arcade is still
+planning only.** The license is decided: Apache-2.0, recorded in `LICENSE`, `NOTICE` and
 `package.json`.
 
 ## Decided 2026-10-24
