@@ -1,9 +1,10 @@
 name: release
 
-# Publishes @jmoak/ratchet to npm through trusted publishing (OIDC), so no npm token is
-# stored in this repository. Requires, once, on npmjs.com under the package's settings:
-# trusted publisher = GitHub Actions, owner JMoak, repository ratchet, workflow release.yml.
-# A pushed tag like v0.2.0-alpha.1 must match package.json's version exactly.
+# Stages @jmoak/ratchet on npm through trusted publishing (OIDC), so no npm token is
+# stored in this repository. Configured on npmjs.com (2026-10-24): trusted publisher =
+# GitHub Actions, owner JMoak, repository ratchet, workflow release.yml, allowed action
+# `npm stage publish` only; publishing access requires 2FA and disallows tokens.
+# A pushed tag like v0.2.0-alpha.2 must match package.json's version exactly.
 
 on:
   push:
@@ -60,4 +61,10 @@ jobs:
 
       - run: npm pack --dry-run
 
-      - run: npm publish --access public --tag "${{ steps.tag.outputs.name }}"
+      # Staged publishing needs npm 11.15+; do not rely on the npm that ships with Node.
+      - run: npm install -g npm@latest && npm --version
+
+      # The trusted publisher allows only `npm stage publish`. The version is uploaded with
+      # provenance but stays staged until Jordan approves it with 2FA on npmjs.com or via
+      # `npm stage approve <stage-id>`. A one-way door keeps its human.
+      - run: npm stage publish --access public --tag "${{ steps.tag.outputs.name }}"

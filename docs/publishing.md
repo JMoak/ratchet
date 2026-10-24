@@ -31,15 +31,22 @@ Owner steps are marked. Everything else is already in the tree or in CI.
    # set "private": false in package.json, commit, tag v0.2.0-alpha.1
    npm publish --access public --tag alpha
    ```
-3. On npmjs.com, open the package's settings and add a trusted publisher: GitHub Actions,
-   organization or user `JMoak`, repository `ratchet`, workflow filename `release.yml`, no
-   environment. Decide whether to allow direct `npm publish` or only staged publishing (the
-   staged route holds each CI publish for a 2FA approval). **Owner.**
-4. From then on a pushed `v*` tag whose version matches `package.json` publishes through CI.
-   The workflow refuses a tag that does not match the version and a manifest still marked
-   private. Provenance is automatic only if the GitHub repository is public.
-5. After each publish, install from the registry into an empty directory and run the smoke in
-   step "Validation" above. Then add the npm version badge to the README.
+3. Done 2026-10-24 on npmjs.com: trusted publisher = GitHub Actions, user `JMoak`,
+   repository `ratchet`, workflow `release.yml`, no environment, allowed action
+   `npm stage publish` only (direct publish and dist-tag management left off). Publishing
+   access is "require two-factor authentication and disallow tokens", which does not affect
+   OIDC. A publish is a one-way door, so the workflow may stage but never release.
+4. From then on a pushed `v*` tag whose version matches `package.json` runs `release.yml`:
+   check, build, Node CLI smoke, tag and private-flag guards, then `npm stage publish` with
+   the dist-tag derived from the version. The staged version waits for approval with 2FA on
+   npmjs.com (Staged Packages) or `npm stage approve <stage-id>`. **Owner approves.**
+   Provenance is automatic because the repository is public. The first tag,
+   `v0.2.0-alpha.1`, predates this setup and failed at the publish step as expected; the
+   staged route is unproven until `v0.2.0-alpha.2`.
+5. After each approval, install from the registry into an empty directory and run the smoke
+   in "Validation" above. Setting `--tag` at stage time is assumed to need only publish
+   access; if alpha.2 is rejected on that flag, enable `npm dist-tag` on the trusted
+   publisher.
 
 A published name and version can never be reused, even after unpublishing; a correction is a
 new version.
