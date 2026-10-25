@@ -4,15 +4,22 @@ name: release
 # stored in this repository. Configured on npmjs.com (2026-10-24): trusted publisher =
 # GitHub Actions, owner JMoak, repository ratchet, workflow release.yml, allowed action
 # `npm stage publish` only; publishing access requires 2FA and disallows tokens.
-# A pushed tag like v0.2.0-alpha.2 must match package.json's version exactly.
+#
+# Runs on every push to main. The version in package.json is the release switch: a push
+# whose version is already on the registry builds and checks but does not publish, so
+# ordinary commits are free and a version bump is the whole release.
 
 on:
   push:
-    tags: ["v*"]
+    branches: [main]
 
 permissions:
   contents: read
   id-token: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
 
 jobs:
   publish:
@@ -38,33 +45,47 @@ jobs:
 
       - run: node dist/bin/ratchet.js help
 
-      - name: tag must match package.json version
-        run: |
-          pkg="$(node -p "require('./package.json').version")"
-          tag="${GITHUB_REF_NAME#v}"
-          test "$pkg" = "$tag" || { echo "package.json is $pkg but tag is $tag"; exit 1; }
-
       - name: package must not be private
         run: |
           node -e "if (require('./package.json').private) { console.error('package.json is still private'); process.exit(1) }"
 
+      # `npm view` sees only released versions. A version that is staged but not yet
+      # approved is invisible here, so a second push at the same version before the
+      # approval fails at the stage step; approve or bump, then push again.
+      - name: skip when this version is already on the registry
+        id: version
+        run: |
+          name="$(node -p "require('./package.json').name")"
+          v="$(node -p "require('./package.json').version")"
+          echo "value=$v" >> "$GITHUB_OUTPUT"
+          if published="$(npm view "$name@$v" version 2>/dev/null)" && [ -n "$published" ]; then
+            echo "$name@$v is already published; nothing to release"
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "$name@$v is not on the registry; staging it"
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: pick the dist-tag from the version
+        if: steps.version.outputs.publish == 'true'
         id: tag
         run: |
-          v="$(node -p "require('./package.json').version")"
-          case "$v" in
+          case "${{ steps.version.outputs.value }}" in
             *-alpha*) echo "name=alpha" >> "$GITHUB_OUTPUT" ;;
             *-beta*)  echo "name=beta"  >> "$GITHUB_OUTPUT" ;;
             *-rc*)    echo "name=next"  >> "$GITHUB_OUTPUT" ;;
             *)        echo "name=latest" >> "$GITHUB_OUTPUT" ;;
           esac
 
-      - run: npm pack --dry-run
+      - if: steps.version.outputs.publish == 'true'
+        run: npm pack --dry-run
 
       # Staged publishing needs npm 11.15+; do not rely on the npm that ships with Node.
-      - run: npm install -g npm@latest && npm --version
+      - if: steps.version.outputs.publish == 'true'
+        run: npm install -g npm@latest && npm --version
 
       # The trusted publisher allows only `npm stage publish`. The version is uploaded with
       # provenance but stays staged until Jordan approves it with 2FA on npmjs.com or via
       # `npm stage approve <stage-id>`. A one-way door keeps its human.
-      - run: npm stage publish --access public --tag "${{ steps.tag.outputs.name }}"
+      - if: steps.version.outputs.publish == 'true'
+        run: npm stage publish --access public --tag "${{ steps.tag.outputs.name }}"

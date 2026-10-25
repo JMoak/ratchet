@@ -7,7 +7,7 @@ policy, strategy, state builder or model pin) is called out so you know when to 
 
 ## 0.3.0-alpha.1 (unreleased)
 
-The first version released through CI: the `v*` tag runs the checks, builds, and stages the
+The first version released through CI: a push to `main` with a new version runs the checks, builds, and stages the
 package on npm through trusted publishing, where it waits for a 2FA approval.
 
 ### Added

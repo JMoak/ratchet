@@ -13,7 +13,7 @@ planning only.** The license is decided: Apache-2.0, recorded in `LICENSE`, `NOT
 | Package identity | `@jmoak/ratchet`, CLI `ratchet`. The `@jmoak` scope is Jordan's (it already publishes `@jmoak/chrono-mcp`); the name was unclaimed on 2026-10-24. |
 | Runtime contract | ESM; Node 22.14+ and Bun 1.3+ (`engines`). `tsconfig.build.json` type-checks `src/` and `bin/` against Node types only, so Bun-only APIs cannot creep into the package. The CLI shebang is `node`; `bunx ratchet` also works. |
 | Version and tag | `0.2.0-alpha.1`, dist-tag `alpha`. The release workflow derives the dist-tag from the version suffix (`alpha`, `beta`, `rc` to `next`, otherwise `latest`). |
-| Publishing route | GitHub Actions with npm trusted publishing (OIDC, no stored token): `.github/workflows/release.yml` on `v*` tags. npm configures a trusted publisher from an existing package's settings page, so the very first version is published once by hand. |
+| Publishing route | GitHub Actions with npm trusted publishing (OIDC, no stored token): `.github/workflows/release.yml` on every push to `main`; the version in `package.json` is the release switch, and a push whose version is already on the registry builds, checks and skips the publish. npm configures a trusted publisher from an existing package's settings page, so the very first version is published once by hand. |
 | Package contents | `files: ["dist", "NOTICE", "CHANGELOG.md"]` plus the files npm always packs. Verified 2026-10-24: 81 files, 0.41 MB unpacked, nothing from tests, experiments, research, examples or `.env`. |
 | Validation | Done 2026-10-24 from the packed tarball in fresh projects outside the checkout: Bun and Node each ran a gate, labelled, reopened a JSONL ledger, and exercised the installed `ratchet report` and `check`; the Bun consumer type-checked with `skipLibCheck: false`. |
 
@@ -28,7 +28,7 @@ Owner steps are marked. Everything else is already in the tree or in CI.
    npm login
    bun run check && bun run build
    npm pack --dry-run             # read the file list one more time
-   # set "private": false in package.json, commit, tag v0.2.0-alpha.1
+   # set "private": false in package.json, commit
    npm publish --access public --tag alpha
    ```
 3. Done 2026-10-24 on npmjs.com: trusted publisher = GitHub Actions, user `JMoak`,
@@ -36,16 +36,19 @@ Owner steps are marked. Everything else is already in the tree or in CI.
    `npm stage publish` only (direct publish and dist-tag management left off). Publishing
    access is "require two-factor authentication and disallow tokens", which does not affect
    OIDC. A publish is a one-way door, so the workflow may stage but never release.
-4. From then on a pushed `v*` tag whose version matches `package.json` runs `release.yml`:
-   check, build, Node CLI smoke, tag and private-flag guards, then `npm stage publish` with
-   the dist-tag derived from the version. The staged version waits for approval with 2FA on
-   npmjs.com (Staged Packages) or `npm stage approve <stage-id>`. **Owner approves.**
-   Provenance is automatic because the repository is public. The first tag,
-   `v0.2.0-alpha.1`, predates this setup and failed at the publish step as expected; the
-   staged route is unproven until `v0.2.0-alpha.2`.
+4. From then on every push to `main` runs `release.yml`: check, build, Node CLI smoke, the
+   private-flag guard, then a registry lookup. If `package.json`'s version is already
+   published the run stops there, so ordinary commits cost nothing. Otherwise
+   `npm stage publish` uploads it with the dist-tag derived from the version, and the staged
+   version waits for approval with 2FA on npmjs.com (Staged Packages) or
+   `npm stage approve <stage-id>`. **Owner approves.** A release is therefore one commit
+   that bumps the version and dates its changelog entry. Provenance is automatic because
+   the repository is public. The staged route is unproven until `0.3.0-alpha.1` lands.
+   A second push at the same version before the approval fails at the stage step, because
+   the lookup cannot see staged versions; approve or bump, then push again.
 5. After each approval, install from the registry into an empty directory and run the smoke
    in "Validation" above. Setting `--tag` at stage time is assumed to need only publish
-   access; if alpha.2 is rejected on that flag, enable `npm dist-tag` on the trusted
+   access; if 0.3.0-alpha.1 is rejected on that flag, enable `npm dist-tag` on the trusted
    publisher.
 
 A published name and version can never be reused, even after unpublishing; a correction is a
