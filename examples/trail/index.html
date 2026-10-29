@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>Ratchet trail</title>
+  <link rel="stylesheet" href="/trail.css">
+</head>
+<body>
+<a class="skip" href="#rows">Skip to decisions</a>
+
+<header class="masthead">
+  <div class="brand"><span class="mark" aria-hidden="true"></span>Ratchet <span class="sep">/</span> Trail</div>
+  <p class="source" id="source" aria-live="polite">Waiting for a ledger.</p>
+  <div class="masthead-actions">
+    <label class="filebtn">
+      <input id="file" type="file" accept=".jsonl,.ndjson,.txt,application/x-ndjson">
+      Open ledger
+    </label>
+    <button id="theme" type="button" aria-pressed="false">Dark</button>
+  </div>
+</header>
+
+<section class="controls" id="controls" aria-label="Filters" hidden>
+  <label class="field">
+    <span class="field-name">Gate</span>
+    <select id="gate"><option value="">All gates</option></select>
+  </label>
+  <fieldset class="chips">
+    <legend>Ruling</legend>
+    <label><input type="radio" name="soft" value="" checked><span>Any</span></label>
+    <label><input type="radio" name="soft" value="act"><span>Act</span></label>
+    <label><input type="radio" name="soft" value="review"><span>Review</span></label>
+    <label><input type="radio" name="soft" value="refuse"><span>Refuse</span></label>
+  </fieldset>
+  <fieldset class="chips">
+    <legend>Label</legend>
+    <label><input type="radio" name="label" value="" checked><span>Any</span></label>
+    <label><input type="radio" name="label" value="labelled"><span>Labelled</span></label>
+    <label><input type="radio" name="label" value="wrong"><span>Wrong</span></label>
+    <label><input type="radio" name="label" value="unlabelled"><span>Unlabelled</span></label>
+  </fieldset>
+  <label class="check" title="Failed open, fixed by a floor or an allowlist, floored, audited, or labelled wrong">
+    <input type="checkbox" id="exceptions"><span>Exceptions only</span>
+  </label>
+  <label class="check" id="follow-wrap" hidden>
+    <input type="checkbox" id="follow" checked><span>Follow</span>
+  </label>
+  <label class="field grow">
+    <span class="field-name">Find</span>
+    <input id="find" type="search" placeholder="question, request id, state hash, tag" autocomplete="off">
+  </label>
+</section>
+
+<section class="bars" id="bars" aria-label="Act bars inferred from the rulings" hidden></section>
+
+<main class="list" id="list" hidden>
+  <div class="colhead" aria-hidden="true">
+    <span>When</span><span>Gate</span><span>How</span><span>Evidence, 0 to 1</span><span>Ruling</span><span>Label</span>
+  </div>
+  <p class="earlier" id="earlier-wrap" hidden><button type="button" id="earlier">Show earlier decisions</button></p>
+  <ol id="rows" class="rows"></ol>
+  <p class="none" id="none" hidden>No decision matches these filters.</p>
+</main>
+
+<section class="empty" id="empty">
+  <div class="drop" id="drop">
+    <p class="drop-title">Drop a ledger here</p>
+    <p id="drop-help">A <code>.jsonl</code> written by <code>JsonlLedger</code>, or downloaded from the arcade.
+      Nothing leaves this machine: the local server reads it and lays out how every decision was reached.</p>
+    <p class="drop-alt">Or start the server with a path: <code>bun run trail path/to/ledger.jsonl</code></p>
+    <button type="button" id="choose">Choose a file</button>
+  </div>
+</section>
+
+<footer class="foot">
+  <p>Shadow rows show what the engine would have done next to what the application did. The act bar is inferred from
+    the recorded rulings, never read from a policy; judge members are placed by their probability that acting is right.</p>
+  <p class="keys"><kbd>j</kbd> <kbd>k</kbd> move · <kbd>Enter</kbd> open · <kbd>/</kbd> find</p>
+</footer>
+
+<script type="module" src="/trail.js"></script>
+</body>
+</html>

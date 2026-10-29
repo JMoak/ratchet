@@ -1,13 +1,15 @@
 # The `ratchet` command line
 
 `bin/ratchet.ts` reads a decision ledger (the JSON Lines file `JsonlLedger` writes) and answers
-three questions about it without calling any oracle or touching the network, and runs one
+four questions about it without calling any oracle or touching the network, and runs one
 interactive session, `review`, that adds labels to it:
 
 - **`report`**: what does the record say about each gate? Calibration, posture, the bar the
   labels support and how much traffic it would cover, which models answered, what failed.
 - **`check`**: has a gate broken its promise? Exits 1 when it has, so it can sit in CI.
 - **`replay`**: what would a different bar have done on the traffic already recorded?
+- **`trail`**: how was each decision reached? Every answer bought, the pooled verdict, the
+  floor, the action and the label, one request at a time.
 - **`review`**: are the labels right? Label a random sample yourself, blind to the model.
 
 It has no dependencies. Output is markdown tables (or JSON) and plain one-line verdicts, with
@@ -394,10 +396,77 @@ but a review of denials can only move labels toward approval, which flatters a g
 approves, so it is paired with the uniform sample, whose disagreement rate bounds what the
 unreviewed approvals hide.
 
+## `trail`
+
+```text
+ratchet trail <ledger> [--gate <id>] [--request <id>] [--last <n>] [--json]
+```
+
+| flag | default | meaning |
+| --- | --- | --- |
+| `--gate <id>` | all | one gate, with its battery members attached to each decision |
+| `--request <id>` | | one request, by request id or decision id; a prefix of six or more characters will do |
+| `--last <n>` | 10 | the newest n decisions, printed oldest first |
+| `--json` | off | the `Trail` object instead of text |
+
+`report` says what a gate's record adds up to; `trail` shows the record itself. One section per
+decision: the question, the strategy, every member answer it bought (an ensemble's votes in the
+order asked, a cascade's tiers marked escalated or settled, a sequential run's samples, a
+battery's member rows with their inherited labels), the pooled verdict and the probability that
+acting is right, the ruling, the floor that bounded it, what the application did, the state and
+rubric hashes, and the label when one has arrived.
+
+```text
+$ bun run ratchet trail experiments/out/cli-example-ledger.jsonl --gate stop.done --last 1
+```
+
+```text
+# ratchet trail: experiments/out/cli-example-ledger.jsonl
+
+1 of 150 decisions of gate stop.done, oldest first. Judge answers show p(yes); pick and rate answers show the leading probability.
+
+- stop.done: act bar above 0.930 and at or below 0.960, from 150 rows
+
+## 2026-10-17T22:17:43.111Z · stop.done · soft act, applied review (shadow)
+
+battery stop.done: tests, claims, scope
+battery · jev · sim-p0.93-rho0 · yes (1.00) · go 1.000 · agreement 1.00 · $0.0000600 · 150 ms
+
+| #   | member                  | answer     | confidence | cost       | latency | note  |
+| --- | ----------------------- | ---------- | ---------- | ---------- | ------- | ----- |
+| 1   | tests (sim-p0.93-rho0)  | yes (0.90) | 0.90       | $0.0000200 | 150 ms  | right |
+| 2   | claims (sim-p0.93-rho0) | yes (0.94) | 0.94       | $0.0000200 | 150 ms  | right |
+| 3   | scope (sim-p0.93-rho0)  | yes (0.95) | 0.95       | $0.0000200 | 150 ms  | right |
+
+state 39fa6716 · request 03b68898 · decision c159840e
+label right, truth true at 2026-10-17T22:17:43.112Z
+```
+
+The act bar printed per gate is **inferred** from the rulings: it lies above the highest go the
+policy held back and at or below the lowest it acted on, over answered rows with no floor, one
+bar per policy hash. The ledger stores the policy only as a hash, so this is what the record can
+say about the bar, and when the rulings fit no single bar the line says so.
+
+Member answers are recorded on compound rows (ensemble, cascade, sequential) as `members` and
+`detail` from this version on; older compound rows print the pooled verdict alone. Battery
+members were always rows of their own and need nothing new.
+
+### The viewer
+
+The same trail, laid out: `bun run trail <ledger>` starts a loopback server (port 3211,
+`TRAIL_PORT` to change it) and serves `examples/trail/`, a page with no framework and no build
+step. Each decision is a row with its evidence on one scale from 0 to 1: member answers as
+ticks, the pooled verdict as a marker coloured by the ruling, the inferred act bar as a band
+running down the page. Filters (gate, ruling, label, exceptions, free text) live in the URL, as
+does one opened decision, so a view can be handed to someone. The page polls the file and
+follows new rows, or takes a dropped `.jsonl` (an arcade download works) without a path on the
+command line. The server reuses `buildTrail`, so the page shows exactly what the command prints.
+
 ## The library underneath
 
 The CLI is a thin layer over functions any program can call. `src/cli/report.ts`,
-`src/cli/check.ts` and `src/cli/replay.ts` export `buildReport`, `checkGate` and `replayGate`
+`src/cli/check.ts`, `src/cli/replay.ts` and `src/cli/trail.ts` export `buildReport`, `checkGate`,
+`replayGate` and `buildTrail` / `selectTrail` / `inferBars`
 (pure, rows in, result out) next to the command functions `report`, `check` and `replay`, which
 take an argv array and return `{ exitCode, output }`; `src/cli/main.ts` dispatches.
 

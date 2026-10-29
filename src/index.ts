@@ -164,10 +164,12 @@ export {
   isMemberOf,
   JsonlLedger,
   type Ledger,
+  type MemberRecord,
   MemoryLedger,
   type Mode,
   newRequestId,
   type Outcome,
+  parseJsonlLedger,
 } from "./ledger/ledger.ts";
 // Math worth exporting
 export { effectiveN, majorityAccuracy, thresholdFromCosts } from "./math.ts";

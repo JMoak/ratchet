@@ -41,12 +41,13 @@ src/
     screen.ts         relevance() for compaction, screenMany() map-reduce, locate() / locateWith() chunks
     loop.ts           Hysteresis and Freshness for decision models inside control loops
     digest.ts         band, compare, relativeTime, count, pruneFields, lines: arithmetic in code
-  cli/                ratchet report / check / replay over a JSONL ledger (see bin/ratchet.ts)
+  cli/                ratchet report / check / replay / review / trail over a JSONL ledger (see bin/ratchet.ts)
 bin/ratchet.ts        The CLI entry point
 sim/                  The thesis as runnable tables (bun run sim -> docs/sim-results.md)
 examples/tool-gate.ts PreToolUse gate: shadow -> label -> fit -> enforce -> audit, as registered gates
 examples/quickstart.ts Live triage of one message through Jev via OpenRouter
 examples/arcade/      Four browser games with agent turns; loopback server, optional capped live oracle
+examples/trail/       The decision trail viewer: a loopback server over src/cli/trail.ts and one static page
 experiments/pilot/    Sourced shadow fixtures, frozen-policy evidence experiment, static chart report
 scripts/set-key.ps1   Hidden-input prompt that writes API keys to the gitignored .env
 tests/                Vitest; statistical tests are seeded and tolerance-bounded
@@ -412,8 +413,10 @@ judge gate's stored states, recorded before the model's answer is shown), and `h
 coding agent's permission prompts: Claude Code and Codex hook events go to a journal under
 `~/.ratchet/hooks/<harness>/`, `replay` resolves each prompt from what happened next and asks
 the `agent.tool.<harness>` gate in shadow; `src/hook/`, design in
-`docs/design/agent-hook.md`). It groups rows by `gateId` and reads a battery's combined rows
-as the gate's decisions and its members as their own groups.
+`docs/design/agent-hook.md`), and `trail` (how each decision was reached: every member answer,
+the pooled verdict, floor, action and label, with the act bar inferred from the rulings; the
+viewer in `examples/trail/` renders the same `Trail`). It groups rows by `gateId` and reads a
+battery's combined rows as the gate's decisions and its members as their own groups.
 
 ## Extension points
 

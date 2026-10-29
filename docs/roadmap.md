@@ -121,6 +121,11 @@ do not replace the tool-gate pilot or establish a production accuracy guarantee.
   lead-by-k stopping in `sequential()`. Measured live in `docs/live-recipes.md`.
 - Done (2026-10-21): a daily cap derived from the ledger rather than the process, so restarts
   cannot reset it (`dailyBudgetUsd`, `DailySpend`).
+- Done (2026-10-28): compound rows keep their member answers and the strategy's detail;
+  `ratchet trail` reads the path to each verdict back, and the viewer in `examples/trail/`
+  draws it (one evidence scale per decision, the act bar inferred from the rulings). Chain
+  traces (`runChain`) are still not persisted; a step's verifications reach the ledger only
+  through whatever gate the verifier asks.
 - Done (round two of research): soft pooling methods, learned composition, isotonic
   recalibration, cost-aware threshold fitting with held-out acceptance, negated ensemble
   members, `withFallback`, `RuleOracle`, `allowIf` bypasses, cache leases, `Hysteresis` and

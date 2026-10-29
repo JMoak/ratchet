@@ -59,6 +59,7 @@
     "sim": "bun sim/main.ts",
     "demo": "bun examples/tool-gate.ts",
     "arcade": "bun examples/arcade/server.ts",
+    "trail": "bun examples/trail/server.ts",
     "quickstart": "bun examples/quickstart.ts",
     "live": "bun experiments/live/main.ts",
     "pilot": "bun experiments/pilot/main.ts",

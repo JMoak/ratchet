@@ -23,6 +23,7 @@ says what is next. The research that shaped the design lives in `research_notes/
 | Store an API key | `powershell -ExecutionPolicy Bypass -File scripts\set-key.ps1` |
 | Ledger CLI | `bun run ratchet report|check|replay <ledger.jsonl> ...` (see `docs/cli.md`) |
 | Blind review (interactive) | `bun run ratchet review <ledger.jsonl> --gate <id>` (a seeded uniform sample; `--denied` reviews every denial instead) |
+| Decision trail | `bun run ratchet trail <ledger.jsonl> [--gate <id>] [--request <id>] [--last 10]` (every answer behind each decision); `bun run trail <ledger.jsonl>` serves the viewer in `examples/trail/` on 127.0.0.1:3211 |
 | Agent-harness hook | `bun run ratchet hook <claude-code\|codex> install\|status\|replay [--live]` (journals under `~/.ratchet/hooks/<harness>/`; `event` is the hook command itself and must stay silent and exit 0) |
 | keywork tool gate | `bun run keywork --export <decisions.jsonl>` (dry run); add `--live` to ask Jev in shadow (needs `.env`, capped per UTC day). A plain run is the fit phase until `KEYWORK_FREEZE` is set and the evidence phase after; `--smoke` replays the pre-fit history. Each phase has its own ledger under `experiments/out/keywork/` |
 
@@ -70,7 +71,8 @@ path; use `bun x`.
   all three: `docs/design/gate-and-state.md`.
 - Strategies: `src/compound/`. Oracles: `src/oracles/`. Ledger and calibration: `src/ledger/`.
 - Recipes take an `Asker` (an `Engine` or a `Gate`), never a raw oracle: `src/recipes/`.
-- Scenario corpus for the gate demo: `examples/tool-gate.ts`.
+- Scenario corpus for the gate demo: `examples/tool-gate.ts`. Trail viewer: `examples/trail/`
+  (loopback server over `src/cli/trail.ts`; vanilla page, no build step, no dependency).
 - Promotion test: `src/acceptance.ts` (planned exact bound; Rollout promotes only through it).
   Daily spend cap read from the ledger: `src/spend.ts`.
 - keywork tool gate: `experiments/keywork/` reads keywork's `keywork.tool-decision/1` export

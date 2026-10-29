@@ -27,6 +27,21 @@ export interface Outcome {
 }
 
 /**
+ * One member's answer inside a compound decision (an ensemble vote, a cascade tier, a
+ * sequential sample), kept on the row that pooled it. A battery's members are rows of their
+ * own instead, because each takes a label; these do not.
+ */
+export interface MemberRecord {
+  readonly oracle: string;
+  readonly model?: string;
+  readonly verdict: Verdict;
+  readonly cost: number;
+  readonly latencyMs: number;
+  readonly failedOpen?: true;
+  readonly error?: string;
+}
+
+/**
  * One row of the decision ledger: what was asked, what the oracle said, what the policy
  * would do, what the application actually did, and later, what turned out to be true.
  * Everything the engine learns (calibration, thresholds, correlation, shadow agreement)
@@ -68,6 +83,14 @@ export interface DecisionRecord {
   readonly go: number;
   readonly confidence: number;
   readonly agreement: number;
+  /**
+   * For a compound strategy (ensemble, cascade, sequential): every member's answer in the
+   * order it was bought, so the path to the verdict can be read back and member error
+   * correlation measured. Single, floored, bypass and battery rows carry none.
+   */
+  readonly members?: readonly MemberRecord[];
+  /** The strategy's own account of how it settled: the tier, the sample count, what was pooled. */
+  readonly detail?: Readonly<Record<string, unknown>>;
   /** What the engine's policy said to do. */
   readonly soft: Action;
   /** What the application did: in shadow mode, the baseline; in enforce mode, `soft` floored. */
@@ -222,6 +245,30 @@ function upgrade(r: StoredRecord): DecisionRecord {
 }
 
 /**
+ * The text of a JSONL ledger as rows with their outcomes joined. A bare row (no `type`
+ * wrapper, as a downloaded in-memory ledger is written) is read as a decision. Throws on a
+ * line that is not JSON.
+ */
+export function parseJsonlLedger(text: string): DecisionRecord[] {
+  const rows = new Map<string, DecisionRecord>();
+  for (const raw of text.split("\n")) {
+    if (!raw.trim()) continue;
+    const line = JSON.parse(raw) as
+      | { readonly type: "decision"; readonly record: StoredRecord }
+      | { readonly type: "outcome"; readonly id: string; readonly outcome: Outcome }
+      | StoredRecord;
+    if (!("type" in line)) {
+      if (typeof line.id === "string") rows.set(line.id, upgrade(line));
+    } else if (line.type === "decision") rows.set(line.record.id, upgrade(line.record));
+    else {
+      const row = rows.get(line.id);
+      if (row) rows.set(line.id, { ...row, outcome: line.outcome });
+    }
+  }
+  return [...rows.values()];
+}
+
+/**
  * Append-only JSON Lines file. Decisions and outcomes are separate lines, so labelling
  * never rewrites history; `all()` replays the file and joins them. A battery label is one
  * outcome line per row it reaches, written by the engine.
@@ -252,19 +299,7 @@ export class JsonlLedger implements Ledger {
       if ((e as NodeJS.ErrnoException).code === "ENOENT") return [];
       throw e;
     }
-    const rows = new Map<string, DecisionRecord>();
-    for (const raw of text.split("\n")) {
-      if (!raw.trim()) continue;
-      const line = JSON.parse(raw) as
-        | { readonly type: "decision"; readonly record: StoredRecord }
-        | { readonly type: "outcome"; readonly id: string; readonly outcome: Outcome };
-      if (line.type === "decision") rows.set(line.record.id, upgrade(line.record));
-      else {
-        const row = rows.get(line.id);
-        if (row) rows.set(line.id, { ...row, outcome: line.outcome });
-      }
-    }
-    return [...rows.values()];
+    return parseJsonlLedger(text);
   }
 
   async get(id: string): Promise<DecisionRecord | undefined> {

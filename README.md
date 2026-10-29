@@ -224,6 +224,8 @@ bun run pilot     # source-inspired shadow pilot + fixed-policy evidence experim
 bun run pilot --live  # same pilot through Jev; keeps every application action in review
 bun run keywork --export decisions.jsonl  # keywork tool gate: dry run; --live replays answered asks in shadow (fit phase, then evidence after the freeze); --smoke for the pre-fit history
 bun run ratchet review <ledger> --gate <id>  # blind labels for a seeded sample, before the model is shown; --denied reviews every denial
+bun run ratchet trail <ledger> --last 10     # how each decision was reached: every answer bought, verdict, floor, action, label
+bun run trail <ledger>                       # the same trail as a local page on 127.0.0.1:3211; drops a .jsonl too
 bun run quickstart  # live: triage one message with Jev via OpenRouter (needs a key in .env)
 bun run live        # live: the five calibration, routing, cascade and cost experiments (< $0.10)
 ```

@@ -100,8 +100,12 @@ export async function loadLedger(path: string, command: string): Promise<Decisio
     const message = e instanceof Error ? e.message : String(e);
     throw new CliError(`could not read ledger ${path}: ${message}`, command);
   }
-  return rows.filter(isRow).map(normalise);
+  return readRows(rows);
 }
+
+/** Keep the parsed lines that are decision rows and fill what older rows lack. */
+export const readRows = (rows: readonly unknown[]): DecisionRecord[] =>
+  rows.filter(isRow).map(normalise);
 
 // ---------------------------------------------------------------------------
 // Gates

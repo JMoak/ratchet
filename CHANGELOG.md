@@ -21,12 +21,29 @@ package on npm through trusted publishing, where it waits for a 2FA approval.
   label inference in `docs/design/agent-hook.md`.
 - Public API: `hookGateSpec`, `parseHookInput`, `resolvePrompts`, `ingestPrompts`,
   `promptState`, `subjectOf`, `scrub`, `hookPaths`, `readEvents`.
+- `ratchet trail <ledger> [--gate] [--request] [--last] [--json]`: how each decision was
+  reached. One section per decision with every answer bought (ensemble votes, cascade tiers,
+  sequential samples, battery member rows), the pooled verdict, the ruling and its floor, the
+  action, provenance hashes and the label. Prints each gate's act bar as the rulings imply it.
+- The decision trail viewer, `bun run trail <ledger>`: a loopback page over the same builder
+  (`examples/trail/`), one evidence scale per row, filters and one opened decision in the URL,
+  polling a growing file or taking a dropped `.jsonl`. No framework, no build, no dependency.
+- Compound rows (ensemble, cascade, sequential) now record their `members` (each answer's
+  oracle, model, verdict, cost, latency and failure) and the strategy's `detail` (settling
+  tier, sample count, pooling), so the path to a verdict can be read from the ledger alone and
+  member error correlation measured from it. Battery members were already rows; a battery row
+  gains `detail` (member count and combiner). Single, floored and bypass rows are unchanged.
+- Public API: `MemberRecord`, `parseJsonlLedger` (reads bare rows too, as an in-memory ledger
+  download writes them); `src/cli`: `buildTrail`, `selectTrail`, `inferBars`, `renderTrail`.
 
 ### Evidence
 
 - New gates `agent.tool.claude-code` and `agent.tool.codex`, evidence version `agent-tool-v1`,
   placeholder bar 0.95 until a fit phase freezes one. Same promise and plan as the keywork
   gate. No existing gate's evidence changes.
+- Rows gain optional `members` and `detail` fields. Nothing reads them for calibration,
+  fitting, rollout or spend, so no gate's evidence, bar or promise changes; older ledgers load
+  as before and print the pooled verdict alone in `trail`.
 
 ### Changed
 

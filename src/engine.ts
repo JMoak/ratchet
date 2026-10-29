@@ -24,6 +24,7 @@ import {
   inheritOutcome,
   isMemberOf,
   type Ledger,
+  type MemberRecord,
   MemoryLedger,
   type Mode,
   newRecordId,
@@ -280,6 +281,33 @@ interface Admission {
 }
 
 const ADMITTED: Admission = { refused: undefined, release: () => {} };
+
+/** Strategies whose rows need no member trail: one answer, no answer, or members that are rows. */
+const UNTRAILED: ReadonlySet<string> = new Set(["single", "floored", "bypass", "battery"]);
+
+const memberRecord = (d: Decision): MemberRecord => ({
+  oracle: d.oracle,
+  ...(d.model !== undefined ? { model: d.model } : {}),
+  verdict: d.verdict,
+  cost: d.cost,
+  latencyMs: d.latencyMs,
+  ...(d.failedOpen === true ? { failedOpen: true as const } : {}),
+  ...(d.error !== undefined ? { error: d.error } : {}),
+});
+
+/**
+ * The part of a compound decision that is otherwise lost at the row: each member's answer
+ * and the strategy's account of how it settled. Kept so the path to a verdict can be read
+ * back from the ledger alone and member error correlation measured from it.
+ */
+function trailOf(d: CompoundDecision): Pick<DecisionRecord, "members" | "detail"> {
+  const members = UNTRAILED.has(d.strategy) ? {} : { members: d.members.map(memberRecord) };
+  // A floor's or a bypass's detail only repeats its strategy; a battery's names its combiner
+  // and an exhausted budget's says which budget, so those are worth the bytes.
+  const skipDetail =
+    d.strategy === "floored" || d.strategy === "bypass" || Object.keys(d.detail).length === 0;
+  return { ...members, ...(skipDetail ? {} : { detail: d.detail }) };
+}
 
 const refused = (budget: BudgetKind): Admission => ({ refused: budget, release: () => {} });
 
@@ -610,6 +638,7 @@ export class Engine implements Asker {
       go,
       confidence: d.verdict.confidence,
       agreement: d.agreement,
+      ...trailOf(d),
       soft: s.soft,
       action: s.action,
       mode: s.mode,
