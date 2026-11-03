@@ -1,24 +1,30 @@
+import { describeGrade, type EvidenceGrade } from "../ledger/evidence.ts";
 import type { DecisionRecord, Mode } from "../ledger/ledger.ts";
+import type { CalibrationProfile } from "../ledger/profile.ts";
+import { type TrustClass, trustRegistry } from "../ledger/sources.ts";
 import type { Action, QuestionKind, Verdict } from "../types.ts";
-import { CliError, ledgerPath, numberFlag, parseArgs } from "./args.ts";
+import { CliError, ledgerPath, numberFlag, parseArgs, trustFlag } from "./args.ts";
 import {
   byTime,
   type CommandResult,
   dec,
   findGate,
   gateIdOf,
+  gradeGroup,
   groupGates,
   isCombined,
   isFixed,
   loadLedger,
   msec,
+  pct,
   requestIdOf,
   runCommand,
   table,
   usd,
 } from "./common.ts";
+import { type OfferedProfile, offered, offeredLine, readProfiles } from "./profile.ts";
 
-export const TRAIL_USAGE = `Usage: ratchet trail <ledger> [--gate <id>] [--request <id>] [--last <n>] [--json]
+export const TRAIL_USAGE = `Usage: ratchet trail <ledger> [--gate <id>] [--request <id>] [--last <n>] [--target 0.98] [--min-estimated 30] [--trust <prefix>=<class> ...] [--profile <file> ...] [--min-support 30] [--json]
 
 How was each decision reached? One section per request, oldest first: the question, the
 strategy, every member answer it bought (an ensemble's votes, a cascade's tiers, a
@@ -29,12 +35,22 @@ that bounded it, what the application did, and the label when one has arrived.
   --request <id>     One request, by request id or decision id (a prefix of at least 6
                      characters will do). Overrides --last.
   --last <n>         The newest n requests. Default 10.
+  --target <p>       The promise each gate's grade is read against, as in "ratchet
+                     report". Default 0.98.
+  --min-estimated <n>  Labelled unselected rows an estimated grade needs. Default 30.
+  --trust <p>=<c>    Read labels whose source starts <p> as trust class <c>, as in
+                     "ratchet report". Repeatable.
+  --profile <file>   A calibration profile a bar with no fitted bar under it may be
+                     graded borrowed from, as in "ratchet report". Repeatable.
+  --min-support <n>  With --profile: labelled rows a fitted bar needs at or above it.
+                     Default 30.
   --json             JSON instead of text.
 
 Member answers exist on rows written since members were recorded; older compound rows show
 the pooled verdict alone. The act bar printed per gate is inferred from the recorded rulings
 (between the highest go that was not acted on and the lowest that was), never from the
-policy itself, which the ledger stores only as a hash.
+policy itself, which the ledger stores only as a hash. Each bar line ends with the grade of
+the rows recorded under that policy: what kind of evidence stands behind it.
 `;
 
 export interface TrailMember {
@@ -42,6 +58,8 @@ export interface TrailMember {
   readonly index: number;
   /** A battery member's question id; a compound member's oracle id. */
   readonly name: string;
+  /** A compound member's identity across rows (`MemberRecord.key`); battery members use name. */
+  readonly key?: string;
   readonly oracle: string;
   readonly model?: string;
   /** The leading answer: yes or no, the chosen option, the most probable level. */
@@ -121,12 +139,24 @@ export interface InferredBar {
   readonly consistent: boolean;
 }
 
+/** An inferred bar with the grade of the gate's rows recorded under its policy. */
+export interface GradedBar extends InferredBar {
+  readonly grade: EvidenceGrade;
+}
+
 export interface Trail {
   readonly ledger: string;
   /** Decisions in the ledger (battery members not counted) before any filter. */
   readonly total: number;
   readonly gate?: string;
-  readonly bars: readonly InferredBar[];
+  /** The levers the grades were read with. */
+  readonly target: number;
+  readonly minEstimated: number;
+  readonly labelTrust?: Readonly<Record<string, TrustClass>>;
+  /** The profiles `--profile` offered, and the support a bar of a gate's own needed. */
+  readonly profiles?: readonly OfferedProfile[];
+  readonly minSupport?: number;
+  readonly bars: readonly GradedBar[];
   readonly entries: readonly TrailEntry[];
 }
 
@@ -134,6 +164,16 @@ export interface TrailOptions {
   readonly gate?: string;
   readonly request?: string;
   readonly last?: number;
+  /** The promise a bar's grade is read against. Default 0.98, as in `ratchet report`. */
+  readonly target?: number;
+  /** Labelled unselected rows an estimated grade needs. Default 30. */
+  readonly minEstimated?: number;
+  /** Trust classes laid over `DEFAULT_TRUST`, as `--trust` gives them. */
+  readonly labelTrust?: Readonly<Record<string, TrustClass>>;
+  /** Profiles a bar with no fitted bar under it may be graded borrowed from. */
+  readonly profiles?: readonly CalibrationProfile[];
+  /** With `profiles`: labelled rows a fitted bar needs at or above it. Default 30. */
+  readonly minSupport?: number;
 }
 
 const leading = (v: Verdict): string =>
@@ -162,14 +202,26 @@ function memberOfRow(index: number, r: DecisionRecord): TrailMember {
   };
 }
 
+/**
+ * Which recorded member settled the run. Members say so themselves (`settled`); rows written
+ * before they did are read from the strategy's detail, the same account the engine reads.
+ */
+function settledIndex(r: DecisionRecord, raw: readonly unknown[]): number | undefined {
+  const marked = raw.findIndex(
+    (m) => typeof m === "object" && m !== null && (m as Record<string, unknown>).settled === true,
+  );
+  if (marked >= 0) return marked;
+  const detail = (extra(r, "detail") ?? {}) as Record<string, unknown>;
+  if (r.strategy === "cascade" && typeof detail.tier === "number") return detail.tier;
+  if (r.strategy === "sequential" && detail.settled === true) return raw.length - 1;
+  return undefined;
+}
+
 /** Member answers recorded on a compound row, read loosely so hand-written rows cannot crash it. */
 function membersOf(r: DecisionRecord): TrailMember[] {
   const raw = extra(r, "members");
   if (!Array.isArray(raw)) return [];
-  const detail = (extra(r, "detail") ?? {}) as Record<string, unknown>;
-  const settledTier = r.strategy === "cascade" ? detail.tier : undefined;
-  const settledSample =
-    r.strategy === "sequential" && detail.settled === true ? raw.length - 1 : undefined;
+  const settled = settledIndex(r, raw);
   const out: TrailMember[] = [];
   raw.forEach((m: unknown, i: number) => {
     if (typeof m !== "object" || m === null) return;
@@ -177,18 +229,18 @@ function membersOf(r: DecisionRecord): TrailMember[] {
     const v = o.verdict as Verdict | undefined;
     if (!v || typeof v !== "object") return;
     const failedOpen = o.failedOpen === true;
+    // Every cascade tier before the settling one was asked and passed the question on.
     const role = failedOpen
       ? "dropped"
-      : settledTier === i
+      : settled === i
         ? "settled"
-        : settledTier !== undefined && i < (settledTier as number)
+        : r.strategy === "cascade" && settled !== undefined && i < settled
           ? "escalated"
-          : settledSample === i
-            ? "settled"
-            : undefined;
+          : undefined;
     out.push({
       index: i + 1,
       name: typeof o.oracle === "string" ? o.oracle : "?",
+      ...(typeof o.key === "string" ? { key: o.key } : {}),
       oracle: typeof o.oracle === "string" ? o.oracle : "?",
       ...(typeof o.model === "string" ? { model: o.model } : {}),
       answer: failedOpen ? "failed open" : leading(v),
@@ -344,11 +396,33 @@ export function selectTrail(
   } else if (opts.last !== undefined && entries.length > opts.last) {
     entries = entries.slice(entries.length - opts.last);
   }
+  const target = opts.target ?? 0.98;
+  const minEstimated = opts.minEstimated ?? 30;
+  const trust = trustRegistry(opts.labelTrust);
+  const profiles = opts.profiles;
+  const minSupport = opts.minSupport ?? 30;
+  const gates = groupGates(scoped).filter((g) => g.memberOf === undefined);
+  // Each bar is graded on its own policy's rows, so a changed bar does not inherit the old
+  // one's evidence: its planned sample, like its bar, starts with its policy.
+  const bars = inferBars(all).map((b) => {
+    const rows = gates.find((g) => g.key === b.gate)?.rows ?? [];
+    const group = {
+      key: b.gate,
+      gateId: b.gate,
+      rows: rows.filter((r) => r.policyHash === b.policyHash),
+    };
+    const lend = profiles !== undefined ? { profiles, minSupport } : {};
+    return { ...b, grade: gradeGroup(group, trust, { target, minEstimated, ...lend }) };
+  });
   return {
     ledger,
     total: all.length,
     ...(opts.gate !== undefined ? { gate: opts.gate } : {}),
-    bars: inferBars(all),
+    target,
+    minEstimated,
+    ...(opts.labelTrust !== undefined ? { labelTrust: opts.labelTrust } : {}),
+    ...(profiles !== undefined ? { profiles: offered(profiles), minSupport } : {}),
+    bars,
     entries,
   };
 }
@@ -358,7 +432,7 @@ const short = (id: string): string => id.slice(0, 8);
 const answerWith = (answer: string, pYes: number | undefined, confidence: number): string =>
   pYes !== undefined ? `${answer} (${dec(pYes, 2)})` : `${answer} (${dec(confidence, 2)})`;
 
-function describeBar(b: InferredBar): string {
+function describeBar(b: GradedBar): string {
   const where =
     b.above !== undefined && b.atOrBelow !== undefined
       ? `above ${dec(b.above)} and at or below ${dec(b.atOrBelow)}`
@@ -369,7 +443,7 @@ function describeBar(b: InferredBar): string {
           : "unknown (no answered rows)";
   const policy = b.policyHash !== undefined ? ` under policy ${short(b.policyHash)}` : "";
   const warn = b.consistent ? "" : "; the rulings do not fit one bar";
-  return `${b.gate}: act bar ${where}${policy}, from ${b.rows} rows${warn}`;
+  return `${b.gate}: act bar ${where}${policy}, from ${b.rows} rows${warn}; ${describeGrade(b.grade)}`;
 }
 
 function describeDetail(e: TrailEntry): string | undefined {
@@ -393,9 +467,22 @@ function describeDetail(e: TrailEntry): string | undefined {
   if (e.strategy === "battery") {
     return `${d.members ?? e.members.length} members combined by ${d.combine ?? "?"}`;
   }
-  return Object.entries(d)
+  // The bar's source has a line of its own.
+  const rest = Object.entries(d).filter(([k]) => k !== "barSource");
+  if (rest.length === 0) return undefined;
+  return rest
     .map(([k, v]) => `${k} ${typeof v === "object" ? JSON.stringify(v) : String(v)}`)
     .join(", ");
+}
+
+/** The profile a borrowed bar came from, as the row's detail names it. */
+function barSourceOf(e: TrailEntry): string | undefined {
+  const source = e.detail?.barSource;
+  const hash =
+    typeof source === "object" && source !== null
+      ? (source as Record<string, unknown>).profileHash
+      : undefined;
+  return typeof hash === "string" ? hash : undefined;
 }
 
 function renderEntry(e: TrailEntry): string[] {
@@ -418,6 +505,8 @@ function renderEntry(e: TrailEntry): string[] {
   out.push(head.join(" · "));
   const detail = describeDetail(e);
   if (detail) out.push(detail);
+  const source = barSourceOf(e);
+  if (source !== undefined) out.push(`bar borrowed from profile ${short(source)}`);
   if (e.fixed)
     out.push(
       `fixed by ${e.strategy === "bypass" ? "an allowlist" : "a floor"}: no answer was bought`,
@@ -480,7 +569,21 @@ export function renderTrail(t: Trail): string {
   );
   const bars = t.gate !== undefined ? t.bars.filter((b) => b.gate === t.gate) : t.bars;
   if (bars.length > 0) {
-    out.push("");
+    const trusted = Object.entries(t.labelTrust ?? {});
+    const read =
+      trusted.length > 0
+        ? `, labels read with --trust ${trusted.map(([p, c]) => `${p}=${c}`).join(", ")}`
+        : "";
+    out.push(
+      "",
+      `Grades are read against a ${pct(t.target)} promise; estimated needs ${t.minEstimated} labelled unselected rows${read}.`,
+      ...(t.profiles !== undefined
+        ? [
+            `${offeredLine(t.profiles)} A fitted bar needs ${t.minSupport ?? 30} rows at or above it.`,
+          ]
+        : []),
+      "",
+    );
     for (const b of bars) out.push(`- ${describeBar(b)}`);
   }
   out.push("");
@@ -492,7 +595,11 @@ export function trail(argv: readonly string[]): Promise<CommandResult> {
   return runCommand("trail", async () => {
     const p = parseArgs(
       argv,
-      { values: ["gate", "request", "last"], booleans: ["json", "help"] },
+      {
+        values: ["gate", "request", "last", "target", "min-estimated", "min-support"],
+        booleans: ["json", "help"],
+        lists: ["trust", "profile"],
+      },
       "trail",
     );
     if (p.booleans.has("help")) return { exitCode: 0, output: TRAIL_USAGE };
@@ -500,11 +607,21 @@ export function trail(argv: readonly string[]): Promise<CommandResult> {
     const gate = p.values.get("gate");
     const request = p.values.get("request");
     const last = numberFlag(p, "last", { min: 1, integer: true }, "trail") ?? 10;
+    const target = numberFlag(p, "target", { min: 0, max: 1, above: true }, "trail");
+    const minEstimated = numberFlag(p, "min-estimated", { min: 1, integer: true }, "trail");
+    const labelTrust = trustFlag(p, "trail");
+    const minSupport = numberFlag(p, "min-support", { min: 1, integer: true }, "trail");
+    const profiles = await readProfiles(p, "trail");
     const rows = await loadLedger(path, "trail");
     const t = selectTrail(path, rows, {
       ...(gate !== undefined ? { gate } : {}),
       ...(request !== undefined ? { request } : {}),
       last,
+      ...(target !== undefined ? { target } : {}),
+      ...(minEstimated !== undefined ? { minEstimated } : {}),
+      ...(labelTrust !== undefined ? { labelTrust } : {}),
+      ...(profiles !== undefined ? { profiles } : {}),
+      ...(minSupport !== undefined ? { minSupport } : {}),
     });
     const output = p.booleans.has("json") ? `${JSON.stringify(t, null, 2)}\n` : renderTrail(t);
     return { exitCode: 0, output };

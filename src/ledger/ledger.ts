@@ -1,5 +1,6 @@
 import { createHash, randomUUID } from "node:crypto";
 import { appendFile, readFile } from "node:fs/promises";
+import { memberKey } from "../compound/compound.ts";
 import type { Action, Question, QuestionKind, Verdict } from "../types.ts";
 
 export type Mode = "shadow" | "enforce";
@@ -12,10 +13,11 @@ export interface Outcome {
   readonly truth?: string | boolean;
   readonly note?: string;
   /**
-   * Who or what produced the label, such as "keywork:person" for an answer given in the moment
-   * or "review:blind" for a careful review made before the reviewer saw the model's answer.
-   * Reports split on it, because labels that arrive by different routes are not the same
-   * evidence: a quick approval is not a considered review.
+   * Who or what produced the label, as `<channel>:<kind>[:<name>]`: "keywork:person" for an
+   * answer given in the moment, "review:blind" for a careful review made before the reviewer
+   * saw the model's answer. Labels that arrive by different routes are not the same evidence,
+   * so each source has a trust class (`sources.ts`) and fitting and acceptance read only the
+   * trusted ones. An absent or unregistered source reads as it always has.
    */
   readonly source?: string;
   /**
@@ -32,6 +34,12 @@ export interface Outcome {
  * own instead, because each takes a label; these do not.
  */
 export interface MemberRecord {
+  /**
+   * The member's identity across rows: its `Member` or `Tier` label, else `memberKey(oracle,
+   * position)`. Pairing one member's answers across rows by key, not position, is what lets
+   * member error correlation be measured when a cascade stops early or a member is added.
+   */
+  readonly key: string;
   readonly oracle: string;
   readonly model?: string;
   readonly verdict: Verdict;
@@ -39,6 +47,8 @@ export interface MemberRecord {
   readonly latencyMs: number;
   readonly failedOpen?: true;
   readonly error?: string;
+  /** On the member whose answer settled the run: a cascade's tier, a sequential run's last sample. */
+  readonly settled?: true;
 }
 
 /**
@@ -226,21 +236,42 @@ type Line =
   | { readonly type: "decision"; readonly record: DecisionRecord }
   | { readonly type: "outcome"; readonly id: string; readonly outcome: Outcome };
 
-/** A row as older ledgers wrote it, before gates, request ids and state provenance. */
-type StoredRecord = Omit<DecisionRecord, "gateId" | "requestId" | "trustedHash" | "untrusted"> &
-  Partial<Pick<DecisionRecord, "gateId" | "requestId" | "trustedHash" | "untrusted">>;
+/** A member as rows written before member keys stored it. */
+type StoredMember = Omit<MemberRecord, "key"> & { readonly key?: string };
+
+/** A row as older ledgers wrote it, before gates, request ids, state provenance and member keys. */
+type StoredRecord = Omit<
+  DecisionRecord,
+  "gateId" | "requestId" | "trustedHash" | "untrusted" | "members"
+> &
+  Partial<Pick<DecisionRecord, "gateId" | "requestId" | "trustedHash" | "untrusted">> & {
+    readonly members?: readonly StoredMember[];
+  };
+
+/** Key each unkeyed member as it would be keyed today; anything else is kept as found. */
+const keyed = (members: readonly StoredMember[]): MemberRecord[] =>
+  members.map((m, i) =>
+    typeof m === "object" && m !== null && typeof m.key !== "string"
+      ? { ...m, key: memberKey(m.oracle, i) }
+      : (m as MemberRecord),
+  );
 
 /**
  * Read older rows as if each had been its own anonymous request with a plain string state,
- * so ledgers written before gates existed still load, report and replay.
+ * so ledgers written before gates existed still load, report and replay; and give the members
+ * of rows written before member keys their keys, so they pair across rows like new ones.
  */
 function upgrade(r: StoredRecord): DecisionRecord {
+  const { members, ...rest } = r;
   return {
-    ...r,
+    ...rest,
     gateId: r.gateId ?? `adhoc:${r.questionId}`,
     requestId: r.requestId ?? r.id,
     trustedHash: r.trustedHash ?? r.stateHash,
     untrusted: r.untrusted ?? [],
+    ...(members !== undefined
+      ? { members: Array.isArray(members) ? keyed(members) : (members as readonly MemberRecord[]) }
+      : {}),
   };
 }
 

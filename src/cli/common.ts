@@ -1,5 +1,15 @@
 import { stat } from "node:fs/promises";
+import { borrowFor } from "../ledger/borrow.ts";
+import { type FittedThreshold, fitThreshold, scoredFromLedger } from "../ledger/calibration.ts";
+import {
+  type BorrowedVia,
+  type EvidenceGrade,
+  type FittedFrom,
+  gradeOf,
+} from "../ledger/evidence.ts";
 import { type DecisionRecord, JsonlLedger, settledWithoutAnswer } from "../ledger/ledger.ts";
+import type { CalibrationProfile } from "../ledger/profile.ts";
+import type { TrustRegistry } from "../ledger/sources.ts";
 import type { Action } from "../types.ts";
 import { CliError } from "./args.ts";
 
@@ -161,6 +171,93 @@ export function findGate(groups: readonly GateGroup[], key: string, command: str
       ? "the ledger has no rows"
       : `gates: ${keys.slice(0, 20).join(", ")}${keys.length > 20 ? ", ..." : ""}`;
   throw new CliError(`no gate "${key}" in the ledger; ${known}`, command);
+}
+
+/** The levers a gate's grade is read with on the command line. */
+export interface GroupGradeOptions {
+  /** The promise a planned sample is read against for a measured grade. */
+  readonly target: number;
+  /** Labelled unselected rows an estimated grade needs. Default 30. */
+  readonly minEstimated?: number;
+  /** Only rows this model answered enter the planned sample, as a pinned rollout reads them. */
+  readonly model?: string;
+  /** Evidence that is not this gate's labels, graded when nothing stronger exists. */
+  readonly borrowed?: BorrowedVia;
+  /**
+   * Profiles to borrow a bar from when the gate has no fitted bar of its own (`borrowFor`),
+   * matched against `model` when it is given, else the model its newest answered row recorded.
+   */
+  readonly profiles?: readonly CalibrationProfile[];
+  /** With `profiles`: labelled rows a bar of the gate's own needs at or above it. Default 30. */
+  readonly minSupport?: number;
+}
+
+/**
+ * A gate's grade as every command reads it, from the gate's whole history in ledger order:
+ * measured when the first acts of its current shadow phase reached `target` (exact 95% bound,
+ * no wrong act), else estimated, borrowed or none. A battery member's rows are features of its
+ * battery's decision, and no finite sample bounds a promise of 1, so neither is ever measured;
+ * nor does a member borrow, since a profile describes a gate's decisions.
+ */
+export function gradeGroup(
+  group: GateGroup,
+  trust: TrustRegistry,
+  opts: GroupGradeOptions,
+): EvidenceGrade {
+  const planned = group.memberOf === undefined && opts.target < 1;
+  const profiles = opts.profiles ?? [];
+  // A profile lends a bar only to a gate with none of its own.
+  const lends =
+    opts.borrowed === undefined &&
+    group.memberOf === undefined &&
+    profiles.length > 0 &&
+    fitGroup(group.rows, trust, opts.target, opts.minSupport ?? 30).fitted === undefined;
+  const borrowing = lends
+    ? borrowFor(group.rows, profiles, {
+        target: opts.target,
+        ...(opts.model !== undefined ? { model: opts.model } : {}),
+      })
+    : undefined;
+  return gradeOf(group.rows, {
+    ...(planned ? { plan: { target: opts.target } } : {}),
+    ...(planned && opts.model !== undefined ? { model: opts.model } : {}),
+    trust,
+    ...(opts.minEstimated !== undefined ? { minEstimated: opts.minEstimated } : {}),
+    ...(opts.borrowed !== undefined ? { borrowed: opts.borrowed } : {}),
+    ...(borrowing !== undefined ? { borrowed: borrowing.via, stale: borrowing.stale } : {}),
+  });
+}
+
+/** A gate's own bar, and which of its labelled rows it was fitted on. */
+export interface GroupFit {
+  readonly fitted?: FittedThreshold;
+  /** Absent when no label from a trusted source exists. */
+  readonly fittedFrom?: FittedFrom;
+  readonly fitRows?: number;
+}
+
+/**
+ * The bar a gate's own labels support, as `report` fits it: on its unselected rows (shadow rows
+ * and blind audits) when there are at least `minSupport` of them, else on every trusted
+ * labelled row, which the oracle's confidence selected, so it is marked "all" and biased.
+ */
+export function fitGroup(
+  rows: readonly DecisionRecord[],
+  trust: TrustRegistry,
+  target: number,
+  minSupport: number,
+): GroupFit {
+  const trusted = scoredFromLedger(rows, { trust });
+  if (trusted.length === 0) return {};
+  const unselected = scoredFromLedger(rows, { unselectedOnly: true, trust });
+  const onUnselected = unselected.length >= minSupport;
+  const fitSet = onUnselected ? unselected : trusted;
+  const fitted = fitThreshold(fitSet, target, minSupport);
+  return {
+    fittedFrom: onUnselected ? "unselected" : "all",
+    fitRows: fitSet.length,
+    ...(fitted ? { fitted } : {}),
+  };
 }
 
 /** Oldest first; rows written in the same instant keep their file order. */

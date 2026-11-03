@@ -1,11 +1,17 @@
 import { neutralVerdict } from "../questions.ts";
 import type { Decision, Question, Verdict } from "../types.ts";
 import { type PoolOptions, pool } from "./aggregate.ts";
-import { type CompoundDecision, compoundOf } from "./compound.ts";
+import { type CompoundDecision, compoundOf, memberKey } from "./compound.ts";
 import { identity, type Member } from "./ensemble.ts";
 
 export interface SequentialOptions extends PoolOptions {
-  /** Members are sampled in order and cycled if more samples are needed than members. */
+  /**
+   * Members are sampled in order and cycled if more samples are needed than members. Sample i
+   * is keyed by member i % members.length, with `~<round>` added from that member's second
+   * sampling on (`jev#1`, `jev#2`, `jev#1~2`): a repeat draw is the same member asked again,
+   * whose agreement with its first answer is exactly what the design effect discounts, so it
+   * gets its own key rather than sharing one that would make a row hold the key twice.
+   */
   readonly members: readonly Member[];
   /** Stop once the pooled verdict's confidence reaches this. */
   readonly settleAbove: number;
@@ -54,15 +60,20 @@ export async function sequential(
   if (opts.members.length === 0) throw new Error("sequential needs at least one member");
   const minSamples = Math.max(1, opts.minSamples ?? 1);
   const members: Decision[] = [];
+  const memberKeys: string[] = [];
   const trajectory: number[] = [];
   let verdict: Verdict = neutralVerdict(question);
   let settled = false;
   for (let i = 0; i < opts.maxSamples; i++) {
-    const m = opts.members[i % opts.members.length] as Member;
+    const j = i % opts.members.length;
+    const round = Math.floor(i / opts.members.length);
+    const m = opts.members[j] as Member;
     const seen = (m.transform ?? identity)(state, question);
     const [d] = await m.oracle.decide(seen.state, [seen.question]);
     if (!d) throw new Error(`member ${m.label ?? m.oracle.id} returned nothing`);
     members.push({ ...d, verdict: { ...d.verdict, questionId: question.id } as Verdict });
+    const key = memberKey(m.oracle.id, j, m.label);
+    memberKeys.push(round === 0 ? key : `${key}~${round + 1}`);
     const live = members.filter((x) => !x.failedOpen);
     if (live.length > 0) {
       verdict = pool(
@@ -85,6 +96,7 @@ export async function sequential(
   const base = compoundOf("sequential", verdict, members, {
     parallel: false,
     oracle: `sequential(${opts.members.map((m) => m.label ?? m.oracle.id).join(",")})`,
+    memberKeys,
   });
   const allFailed = members.every((d) => d.failedOpen);
   return {

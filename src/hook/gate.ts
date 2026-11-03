@@ -1,7 +1,9 @@
 import type { AcceptancePlan } from "../acceptance.ts";
 import { oneWayDoor, reviewIf } from "../floors.ts";
 import type { GateSpec } from "../gate.ts";
-import type { GatePolicy } from "../policy.ts";
+import { hashQuestion } from "../ledger/ledger.ts";
+import { type CalibrationProfile, keyText } from "../ledger/profile.ts";
+import { type GatePolicy, policyFromProfile } from "../policy.ts";
 import { judge } from "../questions.ts";
 
 /**
@@ -37,6 +39,9 @@ export const hookQuestion = judge(
   { id: "agent.tool.approve" },
 );
 
+/** The rubric identity the gate's rows record, which a profile keyed to one must name. */
+const hookQuestionHash = hashQuestion(hookQuestion);
+
 /**
  * A placeholder bar that acts on nothing a routine call reaches (keywork's smoke run put them
  * at 0.72 to 0.89). Like keywork, the real bar is fitted on labelled rows and frozen as a new
@@ -61,11 +66,36 @@ export const hookFloors = [
   ),
 ] as const;
 
-export function hookGateSpec(harness: string): GateSpec<typeof hookQuestion> {
+export interface HookGateOptions {
+  /**
+   * Start from a calibration profile of the model that will answer, instead of the placeholder
+   * bar: the policy is `policyFromProfile` at the hook's 98% promise, and every row names the
+   * profile as its bar's source. The policy hash moves with it, so the gate starts a fresh
+   * evidence phase, still in shadow. The profile must be of judge questions, and of this
+   * gate's rubric when it is keyed to one; whether its model is the one answering is read off
+   * the rows, where a report calls a mismatch stale.
+   */
+  readonly profile?: CalibrationProfile;
+}
+
+export function hookGateSpec(
+  harness: string,
+  opts: HookGateOptions = {},
+): GateSpec<typeof hookQuestion> {
+  const profile = opts.profile;
+  if (profile !== undefined) {
+    const rubric = profile.key.questionHash;
+    if (profile.key.kind !== "judge" || (rubric !== undefined && rubric !== hookQuestionHash)) {
+      throw new Error(
+        `profile ${profile.hash.slice(0, 8)} describes ${keyText(profile.key)}, not this gate's judge question`,
+      );
+    }
+  }
   return {
     id: hookGateId(harness),
     question: hookQuestion,
-    policy: hookPolicy,
+    policy: profile === undefined ? hookPolicy : policyFromProfile(profile, HOOK_PLAN.target),
+    ...(profile !== undefined ? { barSource: { profileHash: profile.hash } } : {}),
     evidenceVersion: HOOK_EVIDENCE,
     floors: hookFloors,
     promisedAccuracy: HOOK_PLAN.target,

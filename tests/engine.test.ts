@@ -2,9 +2,19 @@ import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { buildTrail } from "../src/cli/trail.ts";
+import { replicate } from "../src/compound/ensemble.ts";
 import { asStateLike, Engine, type StrategySpec } from "../src/engine.ts";
 import { forQuestion, refuseIf } from "../src/floors.ts";
-import { hashState, JsonlLedger, MemoryLedger } from "../src/ledger/ledger.ts";
+import { memberCorrelation } from "../src/ledger/calibration.ts";
+import {
+  type DecisionRecord,
+  hashState,
+  JsonlLedger,
+  type MemberRecord,
+  MemoryLedger,
+  parseJsonlLedger,
+} from "../src/ledger/ledger.ts";
 import { SimOracle, type Truth } from "../src/oracles/sim.ts";
 import { judge } from "../src/questions.ts";
 import type { Oracle, StateLike } from "../src/types.ts";
@@ -303,6 +313,266 @@ describe("JsonlLedger", () => {
     });
     expect(await engine.label("r1", { correct: true })).toBe(true);
     expect((await engine.report()).byGate["adhoc:safe"]?.labelled).toBe(1);
+  });
+});
+
+describe("member identity", () => {
+  /** p(yes) fixed per oracle, so which member settled is known in advance. */
+  const says = (id: string, pYes: number): Oracle => ({
+    id,
+    decide: async (_state, questions) =>
+      questions.map((q) => ({
+        verdict: { kind: "judge", questionId: q.id, pYes, confidence: Math.max(pYes, 1 - pYes) },
+        oracle: id,
+        cost: 0,
+        latencyMs: 0,
+        at: "2026-10-30T00:00:00.000Z",
+      })),
+  });
+  const policy = { actAbove: 0.9 };
+  const keysOf = (rows: readonly DecisionRecord[]) =>
+    rows.map((r) => r.members?.map((m) => `${m.key}${m.settled ? " settled" : ""}`));
+
+  it("rows record each member's key and mark the member that settled the run", async () => {
+    const engine = new Engine({ oracle: says("jev", 0.95) });
+    await engine.ask("ls", safe, {
+      policy,
+      strategy: {
+        cascade: {
+          tiers: [
+            { oracle: says("cheap", 0.6), settleAbove: 0.9, label: "cheap" },
+            { oracle: says("strong", 0.97), settleAbove: 0.9 },
+          ],
+        },
+      },
+    });
+    await engine.ask("ls", safe, {
+      policy,
+      strategy: { sequential: { settleAbove: 0.99, maxSamples: 3 } },
+    });
+    await engine.ask("ls", safe, {
+      policy,
+      strategy: { sequential: { settleAbove: 0.9, maxSamples: 3 } },
+    });
+    await engine.ask("ls", safe, { policy, strategy: { ensemble: { k: 2 } } });
+    await engine.ask("ls", safe, { policy });
+    expect(keysOf(await engine.ledger.all())).toEqual([
+      ["cheap", "strong#2 settled"],
+      ["jev#1", "jev#2", "jev#3"],
+      ["jev#1 settled"],
+      ["jev#1", "jev#2"],
+      undefined,
+    ]);
+  });
+
+  it("reads members written before keys with the keys they would carry today", () => {
+    const verdict = { kind: "judge", questionId: "safe", pYes: 0.9, confidence: 0.9 };
+    const legacy = {
+      id: "c1",
+      at: "2026-10-24T00:00:00.000Z",
+      gateId: "adhoc:safe",
+      requestId: "c1",
+      questionId: "safe",
+      kind: "judge",
+      prompt: "safe?",
+      questionHash: "q",
+      stateHash: "s",
+      trustedHash: "s",
+      untrusted: [],
+      oracle: "cascade(sim>strong)",
+      strategy: "cascade",
+      verdict,
+      go: 0.9,
+      confidence: 0.9,
+      agreement: 1,
+      members: [
+        {
+          oracle: "sim",
+          verdict: { ...verdict, pYes: 0.6, confidence: 0.6 },
+          cost: 0,
+          latencyMs: 1,
+        },
+        { oracle: "strong", verdict, cost: 0, latencyMs: 1 },
+        { key: "kept", oracle: "other", verdict, cost: 0, latencyMs: 1 },
+      ],
+      detail: { tier: 1, tierLabel: "strong", escalations: 1, pooled: false },
+      soft: "act",
+      action: "review",
+      mode: "shadow",
+      cost: 0,
+      latencyMs: 2,
+      failedOpen: false,
+      tags: [],
+    };
+    const [row] = parseJsonlLedger(`${JSON.stringify({ type: "decision", record: legacy })}\n`);
+    expect(row?.members?.map((m) => m.key)).toEqual(["sim#1", "strong#2", "kept"]);
+    // A replicated member labels itself the same way, so old and new rows pair by key.
+    const [replica] = replicate(new SimOracle({ accuracy: 0.8, id: "sim" }, truthOf), 1);
+    expect(replica?.label).toBe(row?.members?.[0]?.key);
+    // With no member marked, the trail still reads the settling tier off the detail.
+    const [entry] = buildTrail(row ? [row] : []);
+    expect(entry?.members.map((m) => [m.key, m.role])).toEqual([
+      ["sim#1", "escalated"],
+      ["strong#2", "settled"],
+      ["kept", undefined],
+    ]);
+  });
+});
+
+describe("member correlation", () => {
+  const at = "2026-10-30T00:00:00.000Z";
+  /** A compound row whose members answered yes (true) or no (false), labelled with `truth`. */
+  function compound(
+    id: string,
+    members: readonly (readonly [string, boolean | "failed"])[],
+    truth: boolean | string,
+    source?: string,
+  ): DecisionRecord {
+    const recorded: MemberRecord[] = members.map(([key, yes]) => ({
+      key,
+      oracle: key,
+      verdict: {
+        kind: "judge",
+        questionId: "safe",
+        pYes: yes === "failed" ? 0.5 : yes ? 0.9 : 0.1,
+        confidence: 0.9,
+      },
+      cost: 0,
+      latencyMs: 0,
+      ...(yes === "failed" ? { failedOpen: true as const } : {}),
+    }));
+    return {
+      id,
+      at,
+      gateId: "g",
+      requestId: id,
+      questionId: "safe",
+      kind: "judge",
+      prompt: "safe?",
+      questionHash: "q",
+      stateHash: id,
+      trustedHash: id,
+      untrusted: [],
+      oracle: "ensemble",
+      strategy: "ensemble",
+      verdict: { kind: "judge", questionId: "safe", pYes: 0.9, confidence: 0.9 },
+      go: 0.9,
+      confidence: 0.9,
+      agreement: 1,
+      members: recorded,
+      soft: "act",
+      action: "review",
+      mode: "shadow",
+      cost: 0,
+      latencyMs: 0,
+      failedOpen: false,
+      tags: [],
+      outcome: { at, correct: true, truth, ...(source !== undefined ? { source } : {}) },
+    };
+  }
+
+  it("pairs members across rows by key, not by position", () => {
+    // a is right exactly when b is wrong; rows 2 and 4 list b first, so positions would
+    // pair a right with b right everywhere and read phi as 0.
+    const rows = [
+      compound(
+        "r1",
+        [
+          ["a", true],
+          ["b", false],
+        ],
+        true,
+      ),
+      compound(
+        "r2",
+        [
+          ["b", true],
+          ["a", false],
+        ],
+        true,
+      ),
+      compound(
+        "r3",
+        [
+          ["a", true],
+          ["b", false],
+        ],
+        true,
+      ),
+      compound(
+        "r4",
+        [
+          ["b", true],
+          ["a", false],
+        ],
+        true,
+      ),
+      // A cascade that settled at its first tier: read, but not part of the pair.
+      compound("r5", [["a", true]], true),
+      // b failed open: no lean, so it is no evidence about b.
+      compound(
+        "r6",
+        [
+          ["a", true],
+          ["b", "failed"],
+        ],
+        true,
+      ),
+      // Never read: a consequence label, and a truth that is not boolean.
+      compound(
+        "r7",
+        [
+          ["a", true],
+          ["b", true],
+        ],
+        true,
+        "reverted:commit",
+      ),
+      compound(
+        "r8",
+        [
+          ["a", true],
+          ["b", true],
+        ],
+        "yes",
+      ),
+    ];
+    const m = memberCorrelation(rows);
+    expect(m.n).toBe(6);
+    expect(m.pairs).toEqual([{ keys: ["a", "b"], correlation: -1, n: 4 }]);
+    expect(m.mean).toBe(-1);
+    expect(memberCorrelation(rows.slice(4, 5))).toEqual({ pairs: [], n: 1 });
+  });
+
+  it("measures the simulated correlation of a seeded two-member ensemble", async () => {
+    const measured = async (rho: number) => {
+      const truths = new Map<string, Truth>();
+      const engine = new Engine({
+        oracle: new SimOracle({ accuracy: 0.8, correlation: rho, seed: 41 }, (s) => truths.get(s)),
+      });
+      for (let i = 0; i < 1500; i++) {
+        const state = `item-${i}`;
+        const truth = i % 3 !== 0;
+        truths.set(state, { judge: truth });
+        const r = await engine.ask(state, safe, {
+          policy: { actAbove: 0.9 },
+          strategy: { ensemble: { k: 2 } },
+        });
+        const v = r.decision.verdict;
+        await engine.label(r.recordId, {
+          correct: v.kind === "judge" && v.pYes >= 0.5 === truth,
+          truth,
+        });
+      }
+      return memberCorrelation(await engine.ledger.all());
+    };
+    const correlated = await measured(0.6);
+    expect(correlated.n).toBe(1500);
+    expect(correlated.pairs.map((p) => p.keys)).toEqual([["sim#1", "sim#2"]]);
+    expect(correlated.mean ?? 0).toBeGreaterThan(0.6 - 0.08);
+    expect(correlated.mean ?? 1).toBeLessThan(0.6 + 0.08);
+    const independent = await measured(0);
+    expect(Math.abs(independent.mean ?? 1)).toBeLessThan(0.08);
   });
 });
 

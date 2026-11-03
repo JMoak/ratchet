@@ -9,6 +9,7 @@
       "sim/**",
       "tests/**",
       "examples/**",
+      "scripts/**",
       "experiments/**",
       "*.json",
       "!node_modules",

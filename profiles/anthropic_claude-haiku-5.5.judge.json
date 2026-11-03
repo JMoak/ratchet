@@ -1,0 +1,146 @@
+{
+  "format": 1,
+  "key": {
+    "model": "anthropic/claude-haiku-5.5",
+    "kind": "judge"
+  },
+  "targets": [
+    0.9,
+    0.95,
+    0.98,
+    0.99
+  ],
+  "minSupport": 30,
+  "resolution": 100,
+  "bars": [
+    {
+      "target": 0.9,
+      "bar": 0.6,
+      "support": 211
+    }
+  ],
+  "bins": [
+    {
+      "gate": "adhoc:a",
+      "lo": 0.6,
+      "hi": 0.61,
+      "n": 1,
+      "meanConfidence": 0.6,
+      "accuracy": 1
+    },
+    {
+      "gate": "adhoc:a",
+      "lo": 0.7,
+      "hi": 0.71,
+      "n": 4,
+      "meanConfidence": 0.7,
+      "accuracy": 1
+    },
+    {
+      "gate": "adhoc:a",
+      "lo": 0.8,
+      "hi": 0.81,
+      "n": 17,
+      "meanConfidence": 0.8,
+      "accuracy": 0.8823529411764706
+    },
+    {
+      "gate": "adhoc:a",
+      "lo": 0.85,
+      "hi": 0.86,
+      "n": 2,
+      "meanConfidence": 0.85,
+      "accuracy": 1
+    },
+    {
+      "gate": "adhoc:a",
+      "lo": 0.88,
+      "hi": 0.89,
+      "n": 1,
+      "meanConfidence": 0.88,
+      "accuracy": 1
+    },
+    {
+      "gate": "adhoc:a",
+      "lo": 0.9,
+      "hi": 0.91,
+      "n": 17,
+      "meanConfidence": 0.9,
+      "accuracy": 0.9411764705882353
+    },
+    {
+      "gate": "adhoc:a",
+      "lo": 0.92,
+      "hi": 0.93,
+      "n": 3,
+      "meanConfidence": 0.92,
+      "accuracy": 1
+    },
+    {
+      "gate": "adhoc:a",
+      "lo": 0.93,
+      "hi": 0.94,
+      "n": 21,
+      "meanConfidence": 0.93,
+      "accuracy": 0.9047619047619048
+    },
+    {
+      "gate": "adhoc:a",
+      "lo": 0.95,
+      "hi": 0.96,
+      "n": 7,
+      "meanConfidence": 0.95,
+      "accuracy": 1
+    },
+    {
+      "gate": "adhoc:a",
+      "lo": 0.96,
+      "hi": 0.97,
+      "n": 14,
+      "meanConfidence": 0.96,
+      "accuracy": 1
+    },
+    {
+      "gate": "adhoc:a",
+      "lo": 0.97,
+      "hi": 0.98,
+      "n": 67,
+      "meanConfidence": 0.97,
+      "accuracy": 0.9253731343283582
+    },
+    {
+      "gate": "adhoc:a",
+      "lo": 0.98,
+      "hi": 0.99,
+      "n": 30,
+      "meanConfidence": 0.98,
+      "accuracy": 0.9666666666666667
+    },
+    {
+      "gate": "adhoc:a",
+      "lo": 0.99,
+      "hi": 1,
+      "n": 27,
+      "meanConfidence": 0.9903703703703703,
+      "accuracy": 0.9629629629629629
+    }
+  ],
+  "from": {
+    "rows": 211,
+    "gates": [
+      "adhoc:a"
+    ],
+    "ledgers": [
+      "experiments/out/boolq-anthropic_claude-haiku-5.5-ledger.jsonl"
+    ],
+    "firstAt": "2026-10-16T06:55:26.409Z",
+    "lastAt": "2026-10-16T06:56:13.130Z",
+    "sources": {
+      "blind": 0,
+      "census": 0,
+      "moment": 0,
+      "unknown": 211
+    }
+  },
+  "hash": "0cfd18ea0a0ffa3c"
+}

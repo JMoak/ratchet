@@ -1,6 +1,6 @@
 import type { Decision, Oracle, Question } from "../types.ts";
 import { type PoolOptions, pool } from "./aggregate.ts";
-import { type CompoundDecision, compoundOf } from "./compound.ts";
+import { type CompoundDecision, compoundOf, memberKey } from "./compound.ts";
 
 export interface Tier {
   readonly oracle: Oracle;
@@ -68,6 +68,11 @@ export async function cascade(
   const base = compoundOf("cascade", verdict, members, {
     parallel: false,
     oracle: `cascade(${opts.tiers.map((t) => t.label ?? t.oracle.id).join(">")})`,
+    // Only the tiers asked are members; a tier's key is the same whether or not it was reached.
+    memberKeys: members.map((_, i) => {
+      const t = opts.tiers[i] as Tier;
+      return memberKey(t.oracle.id, i, t.label);
+    }),
   });
   const result: CascadeDecision = {
     ...base,

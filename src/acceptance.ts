@@ -1,5 +1,14 @@
 import { actWasRight, recordedGoIsYes } from "./ledger/calibration.ts";
 import { type DecisionRecord, hashState, settledWithoutAnswer } from "./ledger/ledger.ts";
+import {
+  admits,
+  DEFAULT_TRUST,
+  type FitClass,
+  isTrustClass,
+  TRUST_CLASSES,
+  TRUSTED_SOURCES,
+  type TrustRegistry,
+} from "./ledger/sources.ts";
 import { binomialTail } from "./math.ts";
 
 /**
@@ -31,6 +40,13 @@ export interface AcceptancePlan {
    * counting a hundred of them as a hundred independent trials would overstate the evidence.
    */
   readonly group?: { readonly tagPrefix: string; readonly maxPerGroup: number };
+  /**
+   * Trust classes whose labels the evaluation reads. Default `TRUSTED_SOURCES`: blind, census
+   * and unsourced labels. An act labelled only from another source stays in the sample and
+   * counts as unlabelled. Consequence is refused outright: what happened next depends on what
+   * the gate did, so it cannot certify the gate.
+   */
+  readonly sources?: readonly FitClass[];
 }
 
 /** What a plan resolves to once validated: every default filled and the sample size fixed. */
@@ -40,6 +56,8 @@ export interface ResolvedPlan {
   readonly maxErrors: number;
   readonly sampleSize: number;
   readonly group?: { readonly tagPrefix: string; readonly maxPerGroup: number };
+  /** The classes read, in `TRUST_CLASSES` order. */
+  readonly sources: readonly FitClass[];
   /** Identity of the plan, so evidence gathered under one plan is never judged by another. */
   readonly hash: string;
 }
@@ -56,6 +74,8 @@ export type AcceptanceResult =
       readonly status: "awaiting-labels";
       readonly plan: ResolvedPlan;
       readonly unlabelled: number;
+      /** Of the unlabelled, acts whose only label came from a source the plan does not read. */
+      readonly untrusted?: number;
       readonly sample: readonly string[];
     }
   | {
@@ -117,7 +137,21 @@ export function requiredActs(target: number, confidence = 0.95, maxErrors = 0): 
   return lo;
 }
 
-/** Validate a plan and fix its sample size. Throws on a target, confidence or group out of range. */
+/** The plan's trust classes, deduplicated in canonical order. Throws on an empty or unknown set. */
+function planSources(sources: readonly FitClass[] | undefined): readonly FitClass[] {
+  if (sources === undefined) return TRUSTED_SOURCES;
+  if (sources.length === 0) throw new Error("sources must name at least one trust class");
+  for (const c of sources as readonly unknown[]) {
+    if (!isTrustClass(c)) throw new Error(`unknown trust class "${String(c)}"`);
+    if (c === "consequence") throw new Error("consequence labels never feed acceptance");
+  }
+  return TRUST_CLASSES.filter((c): c is FitClass => (sources as readonly string[]).includes(c));
+}
+
+/**
+ * Validate a plan and fix its sample size. Throws on a target, confidence, group or sources
+ * out of range.
+ */
 export function resolvePlan(plan: AcceptancePlan): ResolvedPlan {
   const confidence = plan.confidence ?? 0.95;
   const maxErrors = plan.maxErrors ?? 0;
@@ -128,14 +162,25 @@ export function resolvePlan(plan: AcceptancePlan): ResolvedPlan {
       throw new Error("group maxPerGroup must be a positive integer");
     }
   }
+  const sources = planSources(plan.sources);
   const sampleSize = requiredActs(plan.target, confidence, maxErrors);
-  const identity = { target: plan.target, confidence, maxErrors, sampleSize, group: group ?? null };
+  // The default sources stay out of the identity, so a plan written before sources existed
+  // keeps its hash, and with it every rollout checkpoint scoped to it.
+  const identity = {
+    target: plan.target,
+    confidence,
+    maxErrors,
+    sampleSize,
+    group: group ?? null,
+    ...(sources.join() === TRUSTED_SOURCES.join() ? {} : { sources }),
+  };
   return {
     target: plan.target,
     confidence,
     maxErrors,
     sampleSize,
     ...(group !== undefined ? { group: { ...group } } : {}),
+    sources,
     hash: hashState(JSON.stringify(identity)),
   };
 }
@@ -145,7 +190,8 @@ export function resolvePlan(plan: AcceptancePlan): ResolvedPlan {
  * label, so labelling only the easy ones or stopping on a good run cannot shape it. An act is a
  * row the policy would have acted on and an oracle actually answered (floors, bypasses and
  * failed-open rows decide nothing about the oracle). A repeated state is a retry and counts
- * once; past `maxPerGroup` acts, a group's further acts are skipped.
+ * once; past `maxPerGroup` acts, a group's further acts are skipped. The plan's `sources` are
+ * not read here either: a label's source is part of the label, so it applies at evaluation.
  */
 export function acceptanceSample(
   rows: readonly DecisionRecord[],
@@ -174,12 +220,18 @@ export function acceptanceSample(
 /**
  * Evaluate a plan against rows already scoped by the caller (one gate, one evidence version,
  * shadow rows of one phase, in ledger order). The verdict is reached once the planned sample is
- * complete and fully labelled. An act whose correctness cannot be read from its label counts as
- * wrong, so an unreadable label can never help a gate pass.
+ * complete and fully labelled by sources the plan reads, classified by `trust`. An act whose
+ * correctness cannot be read from its label counts as wrong, so an unreadable label can never
+ * help a gate pass.
+ *
+ * A label from a source the plan does not read is no label here, and its act stays in the
+ * sample: dropping it would let the route a label arrived by choose the sample, and a revert is
+ * a consequence label that lands on wrong acts.
  */
 export function evaluateAcceptance(
   rows: readonly DecisionRecord[],
   plan: AcceptancePlan | ResolvedPlan,
+  trust: TrustRegistry = DEFAULT_TRUST,
 ): AcceptanceResult {
   const resolved = "hash" in plan ? plan : resolvePlan(plan);
   const sample = acceptanceSample(rows, resolved);
@@ -187,9 +239,17 @@ export function evaluateAcceptance(
     return { status: "collecting", plan: resolved, acts: sample.length };
   }
   const ids = sample.map((r) => r.id);
-  const unlabelled = sample.filter((r) => r.outcome === undefined).length;
-  if (unlabelled > 0) {
-    return { status: "awaiting-labels", plan: resolved, unlabelled, sample: ids };
+  const filter = { sources: resolved.sources, trust };
+  const unread = sample.filter((r) => r.outcome === undefined || !admits(filter, r.outcome.source));
+  if (unread.length > 0) {
+    const untrusted = unread.filter((r) => r.outcome !== undefined).length;
+    return {
+      status: "awaiting-labels",
+      plan: resolved,
+      unlabelled: unread.length,
+      ...(untrusted > 0 ? { untrusted } : {}),
+      sample: ids,
+    };
   }
   const errors = sample.filter((r) => !rightToAct(r)).length;
   const lowerBound = exactLowerBound(sample.length - errors, sample.length, resolved.confidence);

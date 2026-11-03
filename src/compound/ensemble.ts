@@ -2,7 +2,7 @@ import { rng, shuffled } from "../math.ts";
 import { neutralVerdict } from "../questions.ts";
 import type { Decision, Oracle, PickQuestion, Question, Verdict } from "../types.ts";
 import { type PoolOptions, pool } from "./aggregate.ts";
-import { type CompoundDecision, compoundOf } from "./compound.ts";
+import { type CompoundDecision, compoundOf, memberKey } from "./compound.ts";
 
 /** Rewrites the (state, question) pair a member sees. Used to manufacture independence. */
 export type Transform = (
@@ -12,6 +12,7 @@ export type Transform = (
 
 export interface Member {
   readonly oracle: Oracle;
+  /** Names the member in the ledger (its key) and the trail. Give each member a distinct one. */
   readonly label?: string;
   readonly transform?: Transform;
   /**
@@ -134,6 +135,7 @@ export async function ensemble(
   const result = compoundOf("ensemble", verdict, answers, {
     parallel: true,
     oracle,
+    memberKeys: opts.members.map((m, i) => memberKey(m.oracle.id, i, m.label)),
     detail: {
       pooled: live.length,
       dropped: answers.length - live.length,

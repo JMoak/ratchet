@@ -51,6 +51,78 @@ labelled acts arrive.
 `evaluateAcceptance`, `requiredActs`, `exactLowerBound` and `resolvePlan` are exported for use
 outside a controller, for example in a pilot's report.
 
+## The grade, and why only measured promotes
+
+Every `RolloutStatus` carries `grade`, the kind of evidence the current phase supports
+(`gradeOf` in `src/ledger/evidence.ts`, rendered the same way by `ratchet report`, `check` and
+`trail`; see [the CLI's evidence grades](cli.md#evidence-grades)):
+
+| grade | in a status | promotes |
+| --- | --- | --- |
+| `measured` | the planned sample was accepted: its exact lower bound, errors, sample size, labels by trust class, and the date of the label that completed the sample | yes, and nothing else does |
+| `estimated` | at least 30 labelled shadow rows (or, in enforce, blind audits) of trusted sources: accuracy and a 95% Wilson interval | no |
+| `borrowed` | evidence that is not this gate's labels | no; a rollout never builds one |
+| `none` | too few rows, with the reason; every phase starts here | no |
+
+Promotion is decided by the grade, not by reading the acceptance status: the controller's one
+way into enforce takes the measured variant of the grade (`MeasuredGrade`) and nothing wider, so
+promoting on an estimated, borrowed or absent grade is a compile error, and it refuses any other
+variant at run time, for a caller that casts past the type. There is no override flag and no
+provisional mode. An estimate is looked at again with every new label, so its nominal 95% is
+not its real coverage; that is exactly the optional stopping the planned test exists to avoid.
+A shadow gate whose estimate looks excellent while its planned acts await labels holds shadow,
+with `acceptance.status` `awaiting-labels` and `grade.kind` `estimated`.
+
+A grade is dated by its evidence, never by the evaluation: a promotion status read in October
+for a sample whose last label arrived in July says July, because a measured grade decays and
+is read as permanent unless its date says otherwise.
+
+In enforce the grade reads the phase's blind audits: it can say an enforcing gate's evidence is
+`none` or `estimated` (and the audits can demote it), but it never re-promotes anything. The
+grade adds a field to the status only: checkpoints, plan hashes and the controller's reason
+strings are unchanged.
+
+## Starting from a borrowed bar
+
+A new gate has no labels, so the lifecycle's first phase has no bar of its own to rule with,
+and a guessed one acts on nothing or on too much. A calibration profile
+([`ratchet profile`](cli.md#profile)) lends one: what the same model's confidence was worth on
+other gates' labelled rows, at the cautious end across them.
+
+```ts
+const profile = parseProfile(JSON.parse(await readFile("profiles/model.judge.json", "utf8")));
+const gate = engine.gate({
+  id: "tool.safe",
+  question,
+  policy: policyFromProfile(profile, 0.98), // the borrowed bar plus 0.05: act at the band's upper edge
+  barSource: { profileHash: profile.hash }, // written into every row's detail
+  evidenceVersion: "tool-safe-v1",
+  promisedAccuracy: 0.98,
+  mode: "shadow",
+});
+```
+
+Where it fits:
+
+- **Shadow only.** The borrowed bar decides what the gate *would* act on while it shadows; it
+  never enables act. `Rollout` is unchanged and never builds a borrowed grade, and promotion
+  still takes a measured grade and nothing else. Reports grade the gate `borrowed` (given the
+  profile) until its own labels estimate or measure anything.
+- **Measured still promotes.** The planned sample is the first acts of the shadow phase under the
+  gate's policy, so a borrowed bar chooses which rows are acts, never which labels count: the
+  sample is still fixed before any label is read, and the exact bound means what it always did.
+- **A new phase.** `policyFromProfile` returns an ordinary policy and the policy hash is part of the
+  rollout's scope, so a gate moved onto a borrowed bar, or onto another one, starts a fresh
+  phase; initialize the rollout before collecting, as for any configuration change. The bar's
+  source is not part of the scope: two profiles that lend the same bar give the same policy.
+- **Expiry.** A profile is keyed to an exact model pin and question kind. Once the gate's newest
+  answers come from another model, reports read it as `borrowed (stale)`; a pinned rollout
+  already holds shadow on that mismatch. Rebuild a profile for the new model (or let the gate's
+  own labels take over) and bump the evidence version.
+- **When the profile has no bar.** `policyFromProfile` throws rather than invent one: no donor
+  gate's confidence kept the promise, so there is nothing to borrow, and the gate starts from a
+  bar you choose and label its shadow rows as before.
+
 ## Initialize before collecting evidence
 
 ```ts

@@ -1,10 +1,17 @@
 import type { PoolOptions } from "./compound/aggregate.ts";
 import { type CascadeOptions, cascade } from "./compound/cascade.ts";
-import { type CompoundDecision, compoundOf, isCompound, single } from "./compound/compound.ts";
+import {
+  type CompoundDecision,
+  compoundOf,
+  isCompound,
+  memberKey,
+  single,
+} from "./compound/compound.ts";
 import { ensemble, type Member, replicate } from "./compound/ensemble.ts";
 import { sequential } from "./compound/sequential.ts";
 import { type BypassRule, bypassFor, type FloorRule, floorFor } from "./floors.ts";
 import { type Gate, GateImpl, type GateQuestion, type GateSpec, type GateVerdict } from "./gate.ts";
+import { borrowFor, parseProfile } from "./ledger/borrow.ts";
 import {
   brier,
   ece,
@@ -16,6 +23,7 @@ import {
   scoredFromLedger,
   shadowAgreement,
 } from "./ledger/calibration.ts";
+import { type EvidenceGrade, type FittedFrom, gradeOf } from "./ledger/evidence.ts";
 import {
   type DecisionRecord,
   decisionRows,
@@ -32,6 +40,13 @@ import {
   type Outcome,
   settledWithoutAnswer,
 } from "./ledger/ledger.ts";
+import type { CalibrationProfile } from "./ledger/profile.ts";
+import {
+  COUNTED_SOURCES,
+  type TrustClass,
+  type TrustRegistry,
+  trustRegistry,
+} from "./ledger/sources.ts";
 import { clamp, mean, type Rand, rng } from "./math.ts";
 import { type FailOpenOptions, failOpen } from "./oracles/oracle.ts";
 import { type GatePolicy, goProbability, hashPolicy, type Ruling, rule } from "./policy.ts";
@@ -115,6 +130,23 @@ export interface EngineOptions {
   readonly keepState?: boolean;
   readonly timeoutMs?: number;
   readonly tags?: readonly string[];
+  /**
+   * Trust classes for label sources, laid over `DEFAULT_TRUST` and keyed by `<channel>:<kind>`
+   * or `<channel>:*`. Reports, fits and every gate's acceptance test read labels through it:
+   * only blind, census and unsourced labels fit a bar or feed acceptance, and consequence
+   * labels are counted on their own. Reclassifying a source changes a gate's evidence, so
+   * bump its `evidenceVersion` when you do.
+   */
+  readonly labelTrust?: Readonly<Record<string, TrustClass>>;
+  /**
+   * Calibration profiles a report may borrow a bar from, shadow only (`borrowFor`). A gate with
+   * no fitted bar of its own is graded borrowed from the first one that matches its model pin
+   * (its rollout's pinned model, else the model its newest answered row recorded), question
+   * kind and rubric; a gate whose spec names a `barSource` reads only that profile, and reads it
+   * as stale once the gate has moved off its key. Each is checked as `parseProfile` checks a
+   * file. Without profiles nothing is borrowed.
+   */
+  readonly profiles?: readonly CalibrationProfile[];
 }
 
 export interface AskOptions {
@@ -156,8 +188,14 @@ export interface Asker {
 }
 
 export interface ReportOptions {
+  /**
+   * Accuracy the fitted bar must deliver, and the promise a gate's planned sample is read
+   * against for a measured grade (zero wrong acts, 95% confidence). Default 0.95.
+   */
   readonly targetAccuracy?: number;
   readonly minSupport?: number;
+  /** Labelled unselected rows an estimated grade needs. Default 30. */
+  readonly minEstimated?: number;
 }
 
 /**
@@ -167,17 +205,27 @@ export interface ReportOptions {
  */
 export interface QuestionReport {
   readonly n: number;
+  /** Labelled answers of every trust class but consequence; accuracy, Brier and ECE read these. */
   readonly labelled: number;
   readonly accuracy?: number;
   readonly brier?: number;
   readonly ece?: number;
-  /** Labelled shadow/audit rows; audits represent only the policy's acted population. */
+  /** Labelled shadow/audit rows of trusted sources; audits represent only the acted population. */
   readonly unselected: number;
+  /** Labelled answers inferred from what happened next: counted here, read by nothing else. */
+  readonly consequence: number;
   /** Label-free estimate: mean stated confidence. Its gap from `accuracy` is miscalibration. */
   readonly expectedAccuracy?: number;
   readonly fitted?: FittedThreshold;
   /** Fit source, not a guarantee of representative labels or independently validated accuracy. */
-  readonly fittedFrom?: "unselected" | "all";
+  readonly fittedFrom?: FittedFrom;
+  /**
+   * What kind of evidence stands behind these figures (`gradeOf`). A gate's decision rows can
+   * grade measured, against `targetAccuracy`; a battery member's rows are features of their
+   * battery's decision, so they grade no better than estimated. Per gate, with no fitted bar,
+   * a matching profile from `EngineOptions.profiles` grades it borrowed.
+   */
+  readonly grade: EvidenceGrade;
 }
 
 export interface Report {
@@ -188,6 +236,8 @@ export interface Report {
    * `labelled`, `brier`, `ece` and `reliability` also skip rows a floor or bypass settled.
    */
   readonly labelled: number;
+  /** Decision rows labelled from a consequence source, kept out of `labelled` and every figure. */
+  readonly consequence: number;
   readonly failedOpen: number;
   /** Spend over every row. A battery's members carry its cost; its combined row carries 0. */
   readonly cost: number;
@@ -214,6 +264,8 @@ export interface GateContext {
   readonly floors: readonly FloorRule[];
   readonly bypass: readonly BypassRule[];
   readonly tags: readonly string[];
+  /** The profile the gate's bar was borrowed from, written into every row's detail. */
+  readonly barSource?: { readonly profileHash: string };
 }
 
 /** One question in a request, the gate it belongs to, and how to rule on it. Internal. */
@@ -285,7 +337,8 @@ const ADMITTED: Admission = { refused: undefined, release: () => {} };
 /** Strategies whose rows need no member trail: one answer, no answer, or members that are rows. */
 const UNTRAILED: ReadonlySet<string> = new Set(["single", "floored", "bypass", "battery"]);
 
-const memberRecord = (d: Decision): MemberRecord => ({
+const memberRecord = (d: Decision, key: string, settled: boolean): MemberRecord => ({
+  key,
   oracle: d.oracle,
   ...(d.model !== undefined ? { model: d.model } : {}),
   verdict: d.verdict,
@@ -293,7 +346,15 @@ const memberRecord = (d: Decision): MemberRecord => ({
   latencyMs: d.latencyMs,
   ...(d.failedOpen === true ? { failedOpen: true as const } : {}),
   ...(d.error !== undefined ? { error: d.error } : {}),
+  ...(settled ? { settled: true as const } : {}),
 });
+
+/** The member whose answer settled the run, by the strategy's own account of it. */
+function settlingMember(d: CompoundDecision): number | undefined {
+  if (d.strategy === "cascade" && typeof d.detail.tier === "number") return d.detail.tier;
+  if (d.strategy === "sequential" && d.detail.settled === true) return d.members.length - 1;
+  return undefined;
+}
 
 /**
  * The part of a compound decision that is otherwise lost at the row: each member's answer
@@ -301,12 +362,33 @@ const memberRecord = (d: Decision): MemberRecord => ({
  * back from the ledger alone and member error correlation measured from it.
  */
 function trailOf(d: CompoundDecision): Pick<DecisionRecord, "members" | "detail"> {
-  const members = UNTRAILED.has(d.strategy) ? {} : { members: d.members.map(memberRecord) };
+  const at = settlingMember(d);
+  const members = UNTRAILED.has(d.strategy)
+    ? {}
+    : {
+        members: d.members.map((m, i) =>
+          memberRecord(m, d.memberKeys?.[i] ?? memberKey(m.oracle, i), i === at),
+        ),
+      };
   // A floor's or a bypass's detail only repeats its strategy; a battery's names its combiner
   // and an exhausted budget's says which budget, so those are worth the bytes.
   const skipDetail =
     d.strategy === "floored" || d.strategy === "bypass" || Object.keys(d.detail).length === 0;
   return { ...members, ...(skipDetail ? {} : { detail: d.detail }) };
+}
+
+/**
+ * A gate whose bar was borrowed from a profile says so on every row it writes, so replay and
+ * reports can tell borrowed traffic from fitted and notice when the gate outlives the profile.
+ * A single, floored or bypass row carries no detail otherwise and gains one only for this.
+ */
+function sourced(
+  trail: Pick<DecisionRecord, "members" | "detail">,
+  barSource: { readonly profileHash: string } | undefined,
+): Pick<DecisionRecord, "members" | "detail"> {
+  if (barSource === undefined) return trail;
+  const detail = { ...trail.detail, barSource: { profileHash: barSource.profileHash } };
+  return { ...trail, detail };
 }
 
 const refused = (budget: BudgetKind): Admission => ({ refused: budget, release: () => {} });
@@ -331,21 +413,58 @@ class AdhocGate implements GateContext {
   }
 }
 
-function summarize(rows: readonly DecisionRecord[], opts: ReportOptions): QuestionReport {
+/** What a gate's report may borrow from: the engine's profiles, and the gate's pin if it has one. */
+interface Lenders {
+  readonly profiles: readonly CalibrationProfile[];
+  readonly model?: string;
+}
+
+function summarize(
+  rows: readonly DecisionRecord[],
+  opts: ReportOptions,
+  trust: TrustRegistry,
+  measurable = true,
+  lenders?: Lenders,
+): QuestionReport {
   const target = opts.targetAccuracy ?? 0.95;
   const minSupport = opts.minSupport ?? 20;
   const graded = rows.filter((r) => !settledWithoutAnswer(r));
-  const s = scoredFromLedger(graded);
-  const unselected = scoredFromLedger(graded, { unselectedOnly: true });
+  // Moment labels grade the oracle but fit nothing; consequence labels are only counted.
+  const s = scoredFromLedger(graded, { sources: COUNTED_SOURCES, trust });
+  const consequence = scoredFromLedger(graded, { sources: ["consequence"], trust }).length;
+  const trusted = scoredFromLedger(graded, { trust });
+  const unselected = scoredFromLedger(graded, { unselectedOnly: true, trust });
   // Selected successes cannot overturn sufficient negative shadow evidence (selection bias).
   const useUnselected = unselected.length >= minSupport;
-  const fitted = fitThreshold(useUnselected ? unselected : s, target, minSupport);
-  const fittedFrom = fitted ? (useUnselected ? "unselected" : "all") : undefined;
+  const fitted = fitThreshold(useUnselected ? unselected : trusted, target, minSupport);
+  const fittedFrom: FittedFrom | undefined = fitted
+    ? useUnselected
+      ? "unselected"
+      : "all"
+    : undefined;
+  // A promise of 1 has no finite planned sample, so it can be fitted to but never measured.
+  const planned = measurable && target > 0 && target < 1;
+  // A profile lends a bar only to a gate with none of its own, and the grade still prefers this
+  // gate's own labels whenever they measure or estimate anything.
+  const borrowed =
+    fitted === undefined && lenders !== undefined && lenders.profiles.length > 0
+      ? borrowFor(rows, lenders.profiles, {
+          target,
+          ...(lenders.model !== undefined ? { model: lenders.model } : {}),
+        })
+      : undefined;
+  const grade = gradeOf(rows, {
+    ...(planned ? { plan: { target } } : {}),
+    trust,
+    ...(opts.minEstimated !== undefined ? { minEstimated: opts.minEstimated } : {}),
+    ...(borrowed !== undefined ? { borrowed: borrowed.via, stale: borrowed.stale } : {}),
+  });
   const expected = expectedAccuracy(graded);
   return {
     n: rows.length,
     labelled: s.length,
     unselected: unselected.length,
+    consequence,
     ...(expected !== undefined ? { expectedAccuracy: expected } : {}),
     ...(s.length > 0
       ? {
@@ -356,6 +475,7 @@ function summarize(rows: readonly DecisionRecord[], opts: ReportOptions): Questi
       : {}),
     ...(fitted ? { fitted } : {}),
     ...(fittedFrom ? { fittedFrom } : {}),
+    grade,
   };
 }
 
@@ -387,6 +507,10 @@ export class Engine implements Asker {
   mode: Mode;
   /** The default blind-audit rate for every gate that does not set its own. */
   readonly auditRate: number;
+  /** How label sources map to trust classes: `DEFAULT_TRUST` with `labelTrust` laid over it. */
+  readonly labelTrust: TrustRegistry;
+  /** Profiles a gate with no fitted bar may be graded borrowed from, each checked. */
+  readonly profiles: readonly CalibrationProfile[];
   private readonly floors: readonly FloorRule[];
   private readonly bypass: readonly BypassRule[];
   private readonly keepState: boolean;
@@ -411,6 +535,8 @@ export class Engine implements Asker {
     this.keepState = opts.keepState ?? false;
     this.tags = opts.tags ?? [];
     this.auditRate = clamp(opts.auditRate ?? 0, 0, 1);
+    this.labelTrust = trustRegistry(opts.labelTrust);
+    this.profiles = (opts.profiles ?? []).map(parseProfile);
     this.rand = rng(opts.seed ?? Date.now());
     this.budgetUsd = opts.budgetUsd;
     this.daily =
@@ -606,7 +732,7 @@ export class Engine implements Asker {
   private row(
     state: StateLike,
     requestId: string,
-    gateId: string,
+    gate: GateContext,
     q: Question,
     questionHash: string,
     d: CompoundDecision,
@@ -618,7 +744,7 @@ export class Engine implements Asker {
     return {
       id: newRecordId(),
       at: d.at,
-      gateId,
+      gateId: gate.id,
       requestId,
       ...(combined ? { combined: true as const } : {}),
       questionId: q.id,
@@ -638,7 +764,7 @@ export class Engine implements Asker {
       go,
       confidence: d.verdict.confidence,
       agreement: d.agreement,
-      ...trailOf(d),
+      ...sourced(trailOf(d), gate.barSource),
       soft: s.soft,
       action: s.action,
       mode: s.mode,
@@ -728,7 +854,7 @@ export class Engine implements Asker {
       const rec = this.row(
         state,
         requestId,
-        gate.id,
+        gate,
         question,
         hashQuestion(question),
         decision,
@@ -821,7 +947,7 @@ export class Engine implements Asker {
         this.row(
           state,
           requestId,
-          gate.id,
+          gate,
           q,
           hashQuestion(q),
           d,
@@ -834,7 +960,7 @@ export class Engine implements Asker {
     const rec = this.row(
       state,
       requestId,
-      gate.id,
+      gate,
       plan.question,
       plan.questionHash,
       decision,
@@ -963,25 +1089,44 @@ export class Engine implements Asker {
   /** The report for one gate's decision rows (a battery's combined rows; its members excluded). */
   async gateReport(gateId: string, opts: ReportOptions = {}): Promise<QuestionReport> {
     const rows = decisionRows(await this.ledger.all()).filter((r) => r.gateId === gateId);
-    return summarize(rows, opts);
+    return summarize(rows, opts, this.labelTrust, true, this.lendersFor(gateId));
+  }
+
+  /** The profiles a gate's report may borrow from, with the model its rollout pins, if any. */
+  private lendersFor(gateId: string): Lenders | undefined {
+    if (this.profiles.length === 0) return undefined;
+    const pin = this.registry.get(gateId)?.spec.rollout?.evidence?.model;
+    return { profiles: this.profiles, ...(pin !== undefined ? { model: pin } : {}) };
   }
 
   /** What the ledger says: calibration, shadow agreement, and a fitted bar per question and per gate. */
   async report(opts: ReportOptions = {}): Promise<Report> {
     const rows = await this.ledger.all();
     const decisions = decisionRows(rows);
-    const scored = scoredFromLedger(decisions.filter((r) => !settledWithoutAnswer(r)));
+    const graded = decisions.filter((r) => !settledWithoutAnswer(r));
+    const trust = this.labelTrust;
+    const scored = scoredFromLedger(graded, { sources: COUNTED_SOURCES, trust });
     const byQuestion: Record<string, QuestionReport> = {};
+    // A battery member's rows are features of its battery's decision, not decisions, so they
+    // hold no planned sample and grade no better than estimated.
+    const decided = new Set(decisions.map((r) => r.id));
     for (const [id, mine] of groupBy(rows, (r) => r.questionId)) {
-      byQuestion[id] = summarize(mine, opts);
+      byQuestion[id] = summarize(
+        mine,
+        opts,
+        trust,
+        mine.every((r) => decided.has(r.id)),
+      );
     }
     const byGate: Record<string, QuestionReport> = {};
+    // A profile is matched against a gate, so only the per-gate figures borrow from one.
     for (const [id, mine] of groupBy(decisions, (r) => r.gateId)) {
-      byGate[id] = summarize(mine, opts);
+      byGate[id] = summarize(mine, opts, trust, true, this.lendersFor(id));
     }
     return {
       records: rows.length,
       labelled: scored.length,
+      consequence: scoredFromLedger(graded, { sources: ["consequence"], trust }).length,
       failedOpen: decisions.filter((r) => r.failedOpen).length,
       cost: rows.reduce((s, r) => s + r.cost, 0),
       meanLatencyMs: mean(decisions.map((r) => r.latencyMs)),

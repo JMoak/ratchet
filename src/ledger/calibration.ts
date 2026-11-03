@@ -1,5 +1,6 @@
 import { clamp, mean } from "../math.ts";
 import { type DecisionRecord, settledWithoutAnswer } from "./ledger.ts";
+import { admits, type FitClass, type TrustFilter } from "./sources.ts";
 
 /** One scored answer: how confident the oracle was, and whether it was right. */
 export interface Scored {
@@ -119,6 +120,13 @@ export interface FitOptions {
   readonly confidence?: number;
   /** Default "accuracy". "recall" needs items from `scoredWithTruth`. */
   readonly mode?: FitMode;
+  /**
+   * Trust classes whose labels may fit the bar. Items arrive here already scored, so this is
+   * read where they are scored: pass the same options to `scoredFromLedger` or
+   * `scoredWithTruth`. Default `TRUSTED_SOURCES`: blind, census and unsourced labels. A
+   * consequence label cannot be named; it never fits a bar.
+   */
+  readonly sources?: readonly FitClass[];
 }
 
 /**
@@ -236,34 +244,66 @@ export function coverageAt(
  * enough rows to mean it rather than on a lucky point estimate.
  */
 export function wilsonLower(p: number, n: number, confidence = 0.95): number {
-  if (n === 0) return 0;
+  return wilsonInterval(p, n, confidence).lower;
+}
+
+/**
+ * Wilson score interval on a proportion: `wilsonLower` and its upper end, on the same coarse
+ * scale (z of 2.576 at 0.99 and above, 1.96 at 0.95 and above, else 1.645). Unlike the normal
+ * approximation it stays inside [0, 1] and does not collapse to a point at 0 or n successes,
+ * which is where a small labelled slice usually sits. With no rows it is the whole of [0, 1].
+ */
+export function wilsonInterval(
+  p: number,
+  n: number,
+  confidence = 0.95,
+): { readonly lower: number; readonly upper: number } {
+  if (n === 0) return { lower: 0, upper: 1 };
   const z = confidence >= 0.99 ? 2.576 : confidence >= 0.95 ? 1.96 : 1.645;
   const z2 = z * z;
   const denom = 1 + z2 / n;
   const centre = p + z2 / (2 * n);
   const spread = z * Math.sqrt((p * (1 - p)) / n + z2 / (4 * n * n));
-  return Math.max(0, (centre - spread) / denom);
+  return {
+    lower: Math.max(0, (centre - spread) / denom),
+    upper: Math.min(1, (centre + spread) / denom),
+  };
 }
 
-/** Score actual labelled answers; code-only placeholders cannot calibrate an oracle. */
+/** Which labelled rows a scorer reads: by the trust of the label's source, and by selection. */
+export type ScoreOptions = TrustFilter & {
+  /** Only rows the oracle's confidence did not select: shadow rows and blind audits. */
+  readonly unselectedOnly?: boolean;
+};
+
+/**
+ * Score actual labelled answers; code-only placeholders cannot calibrate an oracle. Only labels
+ * whose source passes the trust filter are read: by default blind, census and unsourced ones,
+ * the labels a bar may be fitted on.
+ */
 export function scoredFromLedger(
   records: readonly DecisionRecord[],
-  opts: { readonly unselectedOnly?: boolean } = {},
+  opts: ScoreOptions = {},
 ): Scored[] {
   return records.flatMap((r) => {
     if (!r.outcome || r.failedOpen || settledWithoutAnswer(r)) return [];
-    if (opts.unselectedOnly && !isUnselected(r)) return [];
+    if (!admits(opts, r.outcome.source)) return [];
+    if (opts.unselectedOnly && !unselectedRow(r)) return [];
     return [{ confidence: r.confidence, correct: r.outcome.correct }];
   });
 }
 
-/**
- * Historical fit-source classification: shadow rows and blind audits. Audits are random
- * only within the acted population; they cannot validate a lower bar. Shadow labels must
- * also be collected representatively. This predicate alone does not establish that.
- */
-export const isUnselected = (r: DecisionRecord): boolean =>
+const unselectedRow = (r: DecisionRecord): boolean =>
   r.mode === "shadow" || r.tags.includes("audit");
+
+/**
+ * Historical fit-source classification: shadow rows and blind audits, whose label (if any)
+ * comes from a source the trust filter admits (by default blind, census and unsourced). Audits
+ * are random only within the acted population; they cannot validate a lower bar. Shadow
+ * labels must also be collected representatively. This predicate alone does not establish that.
+ */
+export const isUnselected = (r: DecisionRecord, filter: TrustFilter = {}): boolean =>
+  unselectedRow(r) && admits(filter, r.outcome?.source);
 
 /**
  * Label-free accuracy estimate: for a calibrated oracle, the mean stated confidence is the
@@ -288,17 +328,18 @@ export function scoredForYes(records: readonly DecisionRecord[]): Scored[] {
 /**
  * Score labelled judge rows with their boolean truth and the oracle's leading answer, for
  * recall-mode fitting. Rows without a boolean truth, failed-open rows and non-judge rows are
- * skipped, as are code-only placeholders; `correct` is the label as recorded.
+ * skipped, as are code-only placeholders and labels the trust filter does not admit;
+ * `correct` is the label as recorded.
  */
 export function scoredWithTruth(
   records: readonly DecisionRecord[],
-  opts: { readonly unselectedOnly?: boolean } = {},
+  opts: ScoreOptions = {},
 ): ScoredTruth[] {
   return records.flatMap((r) => {
     if (!r.outcome || r.failedOpen || settledWithoutAnswer(r) || r.verdict.kind !== "judge")
       return [];
-    if (typeof r.outcome.truth !== "boolean") return [];
-    if (opts.unselectedOnly && !isUnselected(r)) return [];
+    if (typeof r.outcome.truth !== "boolean" || !admits(opts, r.outcome.source)) return [];
+    if (opts.unselectedOnly && !unselectedRow(r)) return [];
     return [
       {
         confidence: r.confidence,
@@ -390,6 +431,71 @@ export function pairwiseCorrelation(matrix: readonly (readonly boolean[])[]): nu
     }
   }
   return mean(vals);
+}
+
+/** Phi between two members' correctness, over the rows on which both answered. */
+export interface MemberPairCorrelation {
+  /** The two member keys, in sorted order. */
+  readonly keys: readonly [string, string];
+  readonly correlation: number;
+  readonly n: number;
+}
+
+export interface MemberCorrelation {
+  /** Every pair of member keys that answered together on at least one row read. */
+  readonly pairs: readonly MemberPairCorrelation[];
+  /** Mean over the pairs: the rho for `PoolOptions.correlation`. Absent when no pair exists. */
+  readonly mean?: number;
+  /** Rows read: labelled with a boolean truth, members recorded, not failed open. */
+  readonly n: number;
+}
+
+/**
+ * Member error correlation measured from the ledger: pairwise phi between members'
+ * correctness, paired by member key so a tier a cascade did not reach, or a member added
+ * later, never misaligns the columns. Each member is scored by its own lean against the row's
+ * boolean truth, as `inheritOutcome` scores a battery member; a failed-open answer has no lean
+ * and is skipped. This is the number the design effect needs in place of a guessed rho. With
+ * no pair `mean` is absent rather than 0, which would read as independence. Labels pass the
+ * trust filter as in every fit. Pass `unselectedOnly` when labels come from reviewing the
+ * unsure: rows chosen on the pooled confidence are chosen on both members at once, and that
+ * selection alone moves phi (Berkson's paradox).
+ */
+export function memberCorrelation(
+  rows: readonly DecisionRecord[],
+  opts: ScoreOptions = {},
+): MemberCorrelation {
+  const answered: Map<string, boolean>[] = [];
+  for (const r of rows) {
+    const truth = r.outcome?.truth;
+    if (typeof truth !== "boolean" || !r.members || r.failedOpen) continue;
+    if (!admits(opts, r.outcome?.source) || (opts.unselectedOnly && !unselectedRow(r))) continue;
+    const correct = new Map<string, boolean>();
+    for (const m of r.members) {
+      if (m.failedOpen || m.verdict.kind !== "judge" || correct.has(m.key)) continue;
+      correct.set(m.key, m.verdict.pYes >= 0.5 === truth);
+    }
+    answered.push(correct);
+  }
+  const keys = [...new Set(answered.flatMap((c) => [...c.keys()]))].sort();
+  const pairs: MemberPairCorrelation[] = [];
+  for (const [i, a] of keys.entries()) {
+    for (const b of keys.slice(i + 1)) {
+      const both = answered.flatMap((c) => {
+        const x = c.get(a);
+        const y = c.get(b);
+        return x === undefined || y === undefined ? [] : [[x, y]];
+      });
+      if (both.length > 0) {
+        pairs.push({ keys: [a, b], correlation: pairwiseCorrelation(both), n: both.length });
+      }
+    }
+  }
+  return {
+    pairs,
+    ...(pairs.length > 0 ? { mean: mean(pairs.map((p) => p.correlation)) } : {}),
+    n: answered.length,
+  };
 }
 
 /** In shadow mode: how often the engine's soft action matched what the application actually did. */

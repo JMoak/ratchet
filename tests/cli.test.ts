@@ -184,6 +184,10 @@ describe("ratchet check", () => {
   it("passes a kept promise with a one-line summary", async () => {
     const r = await check(args("--promise", "0.8"));
     expect(r.exitCode).toBe(0);
+    // Every row is a shadow row, so the default asks for an estimate and says so.
+    expect(r.output).toContain(
+      "requiring estimated: this gate is in shadow; pass --require measured to insist",
+    );
     expect(r.output.trim().split("\n")).toHaveLength(1);
     expect(r.output).toMatch(/^PASS /);
     expect(r.output).toMatch(/shadow acted rows/);
@@ -394,11 +398,17 @@ describe("gates, batteries and older rows", () => {
       "stop.done/tests",
       "stop.done/claims",
     ]);
-    // The pin is checked on the members, which are the rows a model answered.
+    // The pin is checked on the members, which are the rows a model answered. Nothing is
+    // labelled, so the grade fails the gate either way; only the pin's verdict differs.
     const pin = (model: string) =>
       check([batteryPath, "--gate", "stop.done", "--promise", "0.9", "--model", model]);
-    expect((await pin("m-1")).exitCode).toBe(0);
-    expect((await pin("m-2")).exitCode).toBe(1);
+    const kept = await pin("m-1");
+    expect(kept.exitCode).toBe(1);
+    expect(kept.output).toContain("requires estimated evidence, has none: 0 labelled unselected");
+    expect(kept.output).not.toContain("models other than the pinned");
+    const broken = await pin("m-2");
+    expect(broken.exitCode).toBe(1);
+    expect(broken.output).toContain("6 of 6 answered rows came from models other than the pinned");
   });
 
   it("groups rows without a gate id by question id", () => {

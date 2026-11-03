@@ -35,13 +35,18 @@ src/
   ledger/
     ledger.ts         DecisionRecord, Ledger, MemoryLedger, JsonlLedger; decisionRows, inheritOutcome
     calibration.ts    brier, ece, reliability, riskCoverage, fitThreshold (accuracy and recall modes),
-                      coverageAt, fitThresholdByCost, fitIsotonic, correlation
+                      coverageAt, fitThresholdByCost, fitIsotonic, correlation, memberCorrelation
+    sources.ts        label sources and their trust classes: parseSource, trustOf, DEFAULT_TRUST
+    evidence.ts       the evidence grade (measured, estimated, borrowed, none): gradeOf, describeGrade
+    profile.ts        calibration profiles: buildProfile, mergeProfiles, borrowedBar, profileMatches
+    profile-bins.ts   a profile's per-gate bins as integers, and the cautious-end bar they support
+    borrow.ts         parseProfile (a profile as untrusted data) and borrowFor (what a gate borrows)
   recipes/
     speculate.ts      decision-tree flattening: root pick plus every branch follow-up in one request
     screen.ts         relevance() for compaction, screenMany() map-reduce, locate() / locateWith() chunks
     loop.ts           Hysteresis and Freshness for decision models inside control loops
     digest.ts         band, compare, relativeTime, count, pruneFields, lines: arithmetic in code
-  cli/                ratchet report / check / replay / review / trail over a JSONL ledger (see bin/ratchet.ts)
+  cli/                ratchet report / check / replay / review / trail / profile over a JSONL ledger (see bin/ratchet.ts)
 bin/ratchet.ts        The CLI entry point
 sim/                  The thesis as runnable tables (bun run sim -> docs/sim-results.md)
 examples/tool-gate.ts PreToolUse gate: shadow -> label -> fit -> enforce -> audit, as registered gates
@@ -50,6 +55,8 @@ examples/arcade/      Four browser games with agent turns; loopback server, opti
 examples/trail/       The decision trail viewer: a loopback server over src/cli/trail.ts and one static page
 experiments/pilot/    Sourced shadow fixtures, frozen-policy evidence experiment, static chart report
 scripts/set-key.ps1   Hidden-input prompt that writes API keys to the gitignored .env
+scripts/profiles.ts   bun run profiles: profiles/*.json from the live ledgers, with profiles/README.md
+profiles/             Calibration profiles shipped with the package, one per model pin and kind
 tests/                Vitest; statistical tests are seeded and tolerance-bounded
 ```
 
@@ -175,6 +182,7 @@ interface GateSpec<Q extends Question | readonly JudgeQuestion[]> {
   readonly question: Q;                   // one question, or a battery of judge questions
   readonly combine?: Combiner;            // batteries: PoolMethod | PoolOptions | LogisticModel | fn
   readonly policy: GatePolicy;
+  readonly barSource?: { profileHash: string }; // a bar borrowed from a profile (policyFromProfile)
   readonly floors?: readonly FloorRule[];
   readonly bypass?: readonly BypassRule[];
   readonly strategy?: StrategySpec;       // single questions only
@@ -269,6 +277,72 @@ before gates as their own anonymous requests (`gateId = adhoc:<questionId>`,
 `decisionRows(rows)` drops battery members, leaving the rows that are decisions; rollout,
 shadow agreement and the per-gate report read those. Calibration figures in `report()` skip
 rows a floor or bypass settled, whose confidences are placeholders no oracle stated.
+
+Compound rows (ensemble, cascade, sequential) carry `members` and the strategy's `detail`. Each
+member has a `key`, its identity across rows (its `Member` or `Tier` label, else
+`<oracle>#<position>`; a sequential member sampled again is `<key>~<round>`), and the one whose
+answer settled a cascade or a sequential run has `settled`. `JsonlLedger` fills keys on older
+rows. `memberCorrelation(rows)` pairs members by key across labelled rows and returns the phi
+per pair and their mean: the measured correlation the pooling math asks for.
+
+### Label sources
+
+`src/ledger/sources.ts` sorts labels by the route they arrived by. `Outcome.source` is
+`<channel>:<kind>[:<name>]`; `trustOf(source, registry)` looks it up by `channel:kind`, then
+`channel:*`, in a `TrustRegistry` (`DEFAULT_TRUST`, extended by `EngineOptions.labelTrust` or
+the CLI's `--trust`) and returns `blind`, `census`, `moment`, `consequence` or `unknown`. Every
+reader of labels takes a `TrustFilter`: `isUnselected`, `scoredFromLedger`, `scoredWithTruth`
+and `memberCorrelation` default to blind, census and unknown, which is also what a bar is fitted
+on (`FitOptions.sources`) and what an acceptance test reads (`AcceptancePlan.sources`,
+`RolloutSettings.sources`); consequence cannot be named in either. Reports count moment labels
+in `labelled` and accuracy but never in a fit, and consequence labels only in their own
+`consequence` column. `unknown` (no source, or an unregistered one) reads as labels always
+have, so ledgers, fixtures and plan hashes from before sources do not move. The acceptance
+sample is still fixed without reading labels: an act whose only label is untrusted stays in it
+and counts as unlabelled, because dropping it would let a label's route choose the sample.
+
+### Evidence grades
+
+`src/ledger/evidence.ts` says what kind of evidence stands behind a gate's numbers, and it is
+the only place that does: `gradeOf(rows, opts)` returns the strongest `EvidenceGrade` the rows
+support. `measured` is an accepted planned sample (an `AcceptanceResult` a rollout evaluated,
+or a plan evaluated on the rows' current phase: the newest row's configuration, shadow rows
+since the last enforce row) with its exact bound, sample size and labels by trust class;
+`estimated` is a Wilson interval (`wilsonInterval` in `calibration.ts`) on at least
+`minEstimated` (30) labelled unselected rows of trusted sources; `borrowed` is evidence the
+caller supplies that is not this gate's labels (a profile, or two models' disagreement, as data);
+`none` carries its reason as a sentence. Every grade but `none` carries `at`, the age of its
+evidence (the label that completed the sample, the newest label estimated from, or the date
+borrowed evidence came with), never the time it was read. `describeGrade`
+renders the one sentence every surface prints, opening with the grade's word. Consumers:
+`RolloutStatus.grade`, `QuestionReport.grade` (engine), `GateReport.grade` (`ratchet report`),
+`CheckResult.grade` (`ratchet check --require`) and each graded bar of a `Trail`. `FittedFrom`
+(`"unselected" | "all"`) is the one spelling of where a fitted bar or a calibration figure came
+from, in reports and in `check`.
+
+### Calibration profiles
+
+`src/ledger/profile.ts` makes the borrowed grade's first source. `buildProfile(rows, key, opts)`
+reads, for one key (exact model pin, question kind, optional rubric hash), the labelled
+unselected rows of trusted sources that model answered alone, and keeps them as equal-width
+confidence bins per donor gate, `resolution` of them (100 by default; `profile-bins.ts` holds
+them as integer counts, so `mergeProfiles` is exact, commutative and associative, and equal to
+one build over every row, and it refuses profiles of different resolutions). The bar per target
+is the cautious end: the lowest bin edge at which every donor gate with `minSupport` (30) rows
+in its tail (every row at or above the edge) clears the target on that tail by a 95% Wilson lower
+bound. On one gate that is the bar `fitThreshold` keeps in its conservative mode, so a borrowed
+bar and a fitted bar mean the same thing; across gates it is the strictest donor's bar, not the
+average, because a profile is lent to a gate none of its donors is. `gateBars` keeps each gate's
+own bar for reading, and the default targets (`PROFILE_TARGETS`) start at 0.9. `profileHash` covers the key, levers, bars and
+bins, not where the rows were filed. `profileMatches(profile, gate)` is the expiry rule (an exact
+model and kind, and the rubric when keyed); `profileAge` dates it. `borrow.ts` reads a profile
+as untrusted data (`parseProfile`: shape, provenance counts, and bars and hash recomputed from
+the bins) and decides what a gate borrows (`borrowFor`, from the gate's newest answered row, or
+from the profile its `barSource` names, stale once the gate moves off its key). Consumption keeps
+policy explicit: `policyFromProfile` (in `policy.ts`) returns an ordinary, hashed `GatePolicy`
+acting at the bar plus 0.05, and `GateSpec.barSource` puts the profile's hash in every row's
+`detail`. `EngineOptions.profiles` and the CLI's `--profile` lend a bar only to a gate with no
+fitted bar of its own; `Rollout` never reads a profile.
 
 This is the artefact nothing else on the market has; everything the engine learns comes from it.
 
@@ -372,8 +446,10 @@ remain excluded. Gates derive their own hashes; engine-level controllers require
 
 Initialize with `evaluate()` **before** collecting evidence. Without a valid checkpoint,
 the first call sets shadow and excludes every row already present. Promotion runs one planned
-acceptance test (`acceptance.ts`) on the fresh phase's shadow rows; only the current enforce
-phase's blind audits can demote. Each transition moves a
+acceptance test (`acceptance.ts`) on the fresh phase's shadow rows and is decided by the grade
+it yields: the private promotion path takes a `MeasuredGrade` and nothing wider, so promoting
+on an estimate is a compile error, and it refuses any other variant at run time as well. Every
+status carries the phase's `grade`. Only the current enforce phase's blind audits can demote. Each transition moves a
 ledger-order boundary past all existing target rows, including unlabelled rows. Late labels
 cannot revive a consumed phase. No timestamp comparison decides eligibility.
 
@@ -415,8 +491,10 @@ coding agent's permission prompts: Claude Code and Codex hook events go to a jou
 the `agent.tool.<harness>` gate in shadow; `src/hook/`, design in
 `docs/design/agent-hook.md`), and `trail` (how each decision was reached: every member answer,
 the pooled verdict, floor, action and label, with the act bar inferred from the rulings; the
-viewer in `examples/trail/` renders the same `Trail`). It groups rows by `gateId` and reads a
-battery's combined rows as the gate's decisions and its members as their own groups.
+viewer in `examples/trail/` renders the same `Trail`), and `profile` (`build`, `show` and `merge`
+calibration profiles, which `report`, `check` and `trail` take as `--profile`). It groups rows by
+`gateId` and reads a battery's combined rows as the gate's decisions and its members as their
+own groups.
 
 ## Extension points
 

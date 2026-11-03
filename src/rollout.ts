@@ -9,6 +9,12 @@ import type { Engine } from "./engine.ts";
 import type { Gate } from "./gate.ts";
 import { actWasRight, recordedGoIsYes } from "./ledger/calibration.ts";
 import {
+  type EvidenceGrade,
+  type GradeOptions,
+  gradeOf,
+  type MeasuredGrade,
+} from "./ledger/evidence.ts";
+import {
   type DecisionRecord,
   decisionRows,
   hashState,
@@ -16,6 +22,7 @@ import {
   type Mode,
   settledWithoutAnswer,
 } from "./ledger/ledger.ts";
+import type { TrustRegistry } from "./ledger/sources.ts";
 import { hashPolicy } from "./policy.ts";
 
 /** Identity of evidence eligible for this deployment, never inferred from old successes. */
@@ -60,6 +67,11 @@ export interface RolloutSettings {
   readonly maxErrors?: number;
   /** Acceptance: rows sharing a tag with this prefix are one group, capped at `maxPerGroup` acts. */
   readonly group?: AcceptancePlan["group"];
+  /**
+   * Acceptance: trust classes whose labels count, read through the engine's `labelTrust`.
+   * Default blind, census and unsourced labels.
+   */
+  readonly sources?: AcceptancePlan["sources"];
   /** Demotion: the most recent audited rows of the current enforce phase that are read. */
   readonly window?: number;
   /** Demotion: audited rows needed before audits can demote. Default 30. */
@@ -93,6 +105,13 @@ export interface RolloutStatus {
   readonly acceptance?: AcceptanceResult;
   /** In enforce, the current phase's audited acts, which can demote the gate. */
   readonly audits?: AuditWindow;
+  /**
+   * What the current phase's evidence supports (`gradeOf`). In shadow: measured once the
+   * planned sample is accepted, which is the only grade that promotes, else estimated from the
+   * phase's labelled shadow rows, else none with its reason. In enforce: what the phase's blind
+   * audits support, which can demote but never promote. A phase that has just begun has none.
+   */
+  readonly grade: EvidenceGrade;
   readonly promisedAccuracy: number;
   readonly gateId?: string;
   readonly at: string;
@@ -100,6 +119,7 @@ export interface RolloutStatus {
 
 interface Target {
   readonly ledger: Ledger;
+  readonly trust: TrustRegistry;
   readonly gateId: string | undefined;
   readonly mode: () => Mode;
   readonly setMode: (m: Mode) => void;
@@ -121,8 +141,14 @@ type State = Extract<RolloutCheckpoint, { format: 2 }>;
 
 type Report = (
   reason: string,
-  evidence?: Pick<RolloutStatus, "acceptance" | "audits">,
+  evidence: Pick<RolloutStatus, "grade" | "acceptance" | "audits">,
 ) => RolloutStatus;
+
+/** Grade a phase's rows through the target's label trust; the labels date the grade. */
+type Grader = (
+  phase: readonly DecisionRecord[],
+  extra?: Pick<GradeOptions, "acceptance" | "sources">,
+) => EvidenceGrade;
 
 const nonempty = (value: unknown): value is string =>
   typeof value === "string" && value.trim().length > 0;
@@ -189,6 +215,7 @@ export class Rollout {
       const g = this.opts.gate;
       return {
         ledger: g.engine.ledger,
+        trust: g.engine.labelTrust,
         gateId: g.id,
         mode: () => g.mode,
         setMode: (m) => {
@@ -200,6 +227,7 @@ export class Rollout {
     const e = this.opts.engine;
     return {
       ledger: e.ledger,
+      trust: e.labelTrust,
       gateId: undefined,
       mode: () => e.mode,
       setMode: (m) => {
@@ -241,6 +269,7 @@ export class Rollout {
         ...(o.confidence !== undefined ? { confidence: o.confidence } : {}),
         ...(o.maxErrors !== undefined ? { maxErrors: o.maxErrors } : {}),
         ...(o.group !== undefined ? { group: o.group } : {}),
+        ...(o.sources !== undefined ? { sources: o.sources } : {}),
       });
     } catch (err) {
       return `invalid acceptance plan: ${err instanceof Error ? err.message : String(err)}`;
@@ -319,7 +348,7 @@ export class Rollout {
     const before = target.mode();
     const at = (this.opts.now ?? (() => new Date().toISOString()))();
     const promised = this.opts.promisedAccuracy;
-    const status: Report = (reason, evidence = {}) => {
+    const status: Report = (reason, evidence) => {
       const value: RolloutStatus = {
         mode: target.mode(),
         changed: before !== target.mode(),
@@ -332,6 +361,7 @@ export class Rollout {
       this.history.push(value);
       return value;
     };
+    const graded: Grader = (phase, extra = {}) => gradeOf(phase, { trust: target.trust, ...extra });
     const boundary = (mode: Mode, rejected = false): void => {
       target.setMode(mode);
       this.state =
@@ -349,7 +379,7 @@ export class Rollout {
     };
     if (typeof scope === "string") {
       boundary("shadow");
-      return status(`holding shadow: ${scope}`);
+      return status(`holding shadow: ${scope}`, { grade: graded([]) });
     }
     const state = this.state;
     let reset: string | undefined;
@@ -369,7 +399,7 @@ export class Rollout {
     }
     if (reset) {
       boundary("shadow");
-      return status(`holding shadow: ${reset}`);
+      return status(`holding shadow: ${reset}`, { grade: graded([]) });
     }
     // Only a fully validated checkpoint may restore enforce after a restart.
     if (state) target.setMode(state.mode);
@@ -388,57 +418,99 @@ export class Rollout {
       )
     ) {
       boundary("shadow");
-      return status("holding shadow: a new answer's recorded model differs from the pinned model");
+      return status("holding shadow: a new answer's recorded model differs from the pinned model", {
+        grade: graded([]),
+      });
     }
-    if (target.mode() === "enforce") return this.watch(fresh, scope, target, status, boundary);
+    if (target.mode() === "enforce") {
+      return this.watch(fresh, scope, target, status, boundary, graded);
+    }
     if (state?.rejected) {
+      const shadowRows = this.eligible(fresh, scope).filter((r) => r.mode === "shadow");
       return status(
         "holding shadow: this configuration was rejected; change its rubric, policy, model, plan or evidence version to test a new one",
+        { grade: graded(shadowRows, { sources: scope.plan.sources }) },
       );
     }
-    return this.accept(fresh, scope, target, status, boundary);
+    return this.accept(fresh, scope, target, status, boundary, graded);
   }
 
-  /** Shadow mode: run the planned acceptance test on the fresh phase's shadow rows. */
+  /**
+   * Shadow mode: run the planned acceptance test on the fresh phase's shadow rows. The grade
+   * decides promotion, not the acceptance status read here: only a measured grade has a way in.
+   */
   private accept(
     fresh: readonly DecisionRecord[],
     scope: Scope,
     target: Target,
     status: Report,
     boundary: (mode: Mode, rejected?: boolean) => void,
+    graded: Grader,
   ): RolloutStatus {
     const shadowRows = this.eligible(fresh, scope).filter((r) => r.mode === "shadow");
-    const acceptance = evaluateAcceptance(shadowRows, scope.plan);
+    const acceptance = evaluateAcceptance(shadowRows, scope.plan, target.trust);
     const plan = scope.plan;
     const promised = this.opts.promisedAccuracy;
+    const grade = graded(shadowRows, { acceptance, sources: plan.sources });
+    if (grade.kind === "measured") {
+      return this.promote(grade, acceptance, scope, target, status, boundary);
+    }
     switch (acceptance.status) {
       case "collecting":
         return status(`holding: ${acceptance.acts} of ${plan.sampleSize} planned acts collected`, {
+          grade,
           acceptance,
         });
-      case "awaiting-labels":
+      case "awaiting-labels": {
+        const untrusted =
+          acceptance.untrusted !== undefined
+            ? `; ${acceptance.untrusted} of them carry only labels from sources the plan does not read`
+            : "";
         return status(
-          `holding: the planned sample is complete; ${acceptance.unlabelled} of its ${plan.sampleSize} acts await labels before the one evaluation`,
-          { acceptance },
-        );
-      case "accepted": {
-        boundary("enforce");
-        const unwatched =
-          target.auditRate() > 0
-            ? ""
-            : "; audits are off, so no evidence can demote this gate: set an audit rate to watch it";
-        return status(
-          `promoted: ${acceptance.errors} wrong of ${plan.sampleSize} planned acts; exact ${pct(plan.confidence, 0)} lower bound ${pct(acceptance.lowerBound, 2)} >= promised ${pct(promised)}${unwatched}`,
-          { acceptance },
+          `holding: the planned sample is complete; ${acceptance.unlabelled} of its ${plan.sampleSize} acts await labels before the one evaluation${untrusted}`,
+          { grade, acceptance },
         );
       }
+      case "accepted":
+        // gradeOf measures every accepted sample, so this is a broken contract, not a verdict:
+        // refuse loudly rather than record a rejection the evidence does not hold.
+        throw new Error("an accepted planned sample did not grade measured");
       case "rejected":
         boundary("shadow", true);
         return status(
           `rejected: ${acceptance.errors} wrong of ${plan.sampleSize} planned acts; exact ${pct(plan.confidence, 0)} lower bound ${pct(acceptance.lowerBound, 2)} < promised ${pct(promised)}`,
-          { acceptance },
+          { grade, acceptance },
         );
     }
+  }
+
+  /**
+   * The one way into enforce. It takes the measured variant of the grade and nothing wider, so
+   * promoting on an estimate is a compile error, and it checks again at run time for a caller
+   * that cast its way past the type. There is no override and no provisional mode.
+   */
+  private promote(
+    grade: MeasuredGrade,
+    acceptance: AcceptanceResult,
+    scope: Scope,
+    target: Target,
+    status: Report,
+    boundary: (mode: Mode) => void,
+  ): RolloutStatus {
+    const kind = (grade as EvidenceGrade).kind;
+    if (kind !== "measured") throw new TypeError(`only a measured grade promotes; got ${kind}`);
+    if (grade.plan.hash !== scope.plan.hash) {
+      throw new TypeError("only a grade measured under this rollout's plan promotes");
+    }
+    boundary("enforce");
+    const unwatched =
+      target.auditRate() > 0
+        ? ""
+        : "; audits are off, so no evidence can demote this gate: set an audit rate to watch it";
+    return status(
+      `promoted: ${grade.errors} wrong of ${grade.sampleSize} planned acts; exact ${pct(grade.plan.confidence, 0)} lower bound ${pct(grade.lowerBound, 2)} >= promised ${pct(this.opts.promisedAccuracy)}${unwatched}`,
+      { grade, acceptance },
+    );
   }
 
   /** Enforce mode: demote when the current phase's audited acts break the promise. */
@@ -448,20 +520,22 @@ export class Rollout {
     target: Target,
     status: Report,
     boundary: (mode: Mode) => void,
+    graded: Grader,
   ): RolloutStatus {
     const audits = this.audits(fresh, scope);
+    const grade = graded(this.eligible(fresh, scope), { sources: scope.plan.sources });
     const promised = this.opts.promisedAccuracy;
     if (audits.n >= scope.minAuditRows && audits.accuracy < promised) {
       boundary("shadow");
       return status(
         `demoted: ${audits.acted} audited acts at ${pct(audits.accuracy)} below promised ${pct(promised)}`,
-        { audits },
+        { grade, audits },
       );
     }
     const watching =
       target.auditRate() > 0
         ? `need ${scope.minAuditRows} to judge`
         : "audits are off, so nothing can demote this gate";
-    return status(`live: ${audits.n} current-phase audited rows; ${watching}`, { audits });
+    return status(`live: ${audits.n} current-phase audited rows; ${watching}`, { grade, audits });
   }
 }

@@ -4,6 +4,8 @@
  * gate a typo that passes is worse than one that fails.
  */
 
+import { isTrustClass, TRUST_CLASSES, type TrustClass, trustRegistry } from "../ledger/sources.ts";
+
 /** A usage error or unreadable input: the command could not run. Exit code 2. */
 export class CliError extends Error {
   constructor(
@@ -21,21 +23,27 @@ export interface ArgSpec {
   readonly values?: readonly string[];
   /** Flags that are present or absent: `--name`. */
   readonly booleans?: readonly string[];
+  /** Flags that take a value and may repeat, each occurrence adding one: `--name a --name b`. */
+  readonly lists?: readonly string[];
 }
 
 export interface Parsed {
   readonly positionals: readonly string[];
   readonly values: ReadonlyMap<string, string>;
   readonly booleans: ReadonlySet<string>;
+  /** Every value of each repeatable flag given, in order. */
+  readonly lists: ReadonlyMap<string, readonly string[]>;
 }
 
 /** Parse argv against a spec. `--` ends flag parsing; `-h` is `--help`. */
 export function parseArgs(argv: readonly string[], spec: ArgSpec, command?: string): Parsed {
   const valueFlags = new Set(spec.values ?? []);
   const boolFlags = new Set(spec.booleans ?? []);
+  const listFlags = new Set(spec.lists ?? []);
   const positionals: string[] = [];
   const values = new Map<string, string>();
   const booleans = new Set<string>();
+  const lists = new Map<string, string[]>();
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i] as string;
     if (arg === "--") {
@@ -57,7 +65,8 @@ export function parseArgs(argv: readonly string[], spec: ArgSpec, command?: stri
       booleans.add(name);
       continue;
     }
-    if (!valueFlags.has(name)) throw new CliError(`unknown flag --${name}`, command);
+    const repeatable = listFlags.has(name);
+    if (!repeatable && !valueFlags.has(name)) throw new CliError(`unknown flag --${name}`, command);
     if (values.has(name)) throw new CliError(`--${name} given twice`, command);
     let value: string | undefined;
     if (eq >= 0) value = arg.slice(eq + 1);
@@ -69,9 +78,10 @@ export function parseArgs(argv: readonly string[], spec: ArgSpec, command?: stri
       }
     }
     if (value === undefined || value === "") throw new CliError(`--${name} needs a value`, command);
-    values.set(name, value);
+    if (!repeatable) values.set(name, value);
+    else lists.set(name, [...(lists.get(name) ?? []), value]);
   }
-  return { positionals, values, booleans };
+  return { positionals, values, booleans, lists };
 }
 
 export interface NumberRule {
@@ -90,7 +100,20 @@ export function numberFlag(
   command?: string,
 ): number | undefined {
   const raw = p.values.get(name);
-  if (raw === undefined) return undefined;
+  return raw === undefined ? undefined : numberValue(raw, name, rule, command);
+}
+
+/** Every value of a repeatable numeric flag, each checked as `numberFlag` checks one. */
+export function numberList(
+  p: Parsed,
+  name: string,
+  rule: NumberRule,
+  command?: string,
+): number[] | undefined {
+  return p.lists.get(name)?.map((raw) => numberValue(raw, name, rule, command));
+}
+
+function numberValue(raw: string, name: string, rule: NumberRule, command?: string): number {
   const x = Number(raw);
   if (raw.trim() === "" || !Number.isFinite(x)) {
     throw new CliError(`--${name} must be a number, got "${raw}"`, command);
@@ -134,6 +157,40 @@ export function booleanValue(p: Parsed, name: string, command?: string): boolean
   if (raw === "true") return true;
   if (raw === "false") return false;
   throw new CliError(`--${name} must be true or false, got "${raw}"`, command);
+}
+
+/**
+ * Every `--trust <prefix>=<class>` given, as the overrides `trustRegistry` lays over the
+ * defaults; undefined when there are none. A prefix given twice is a usage error rather than
+ * a silent last-one-wins, since either reading changes which labels fit a bar.
+ */
+export function trustFlag(
+  p: Parsed,
+  command?: string,
+): Readonly<Record<string, TrustClass>> | undefined {
+  const raw = p.lists.get("trust");
+  if (raw === undefined) return undefined;
+  const out = new Map<string, TrustClass>();
+  for (const entry of raw) {
+    const eq = entry.lastIndexOf("=");
+    const prefix = entry.slice(0, eq);
+    const cls = entry.slice(eq + 1);
+    if (eq <= 0 || !isTrustClass(cls)) {
+      throw new CliError(
+        `--trust must be <prefix>=<class> with a class of ${TRUST_CLASSES.join(", ")}, got "${entry}"`,
+        command,
+      );
+    }
+    if (out.has(prefix)) throw new CliError(`--trust ${prefix} given twice`, command);
+    out.set(prefix, cls);
+  }
+  const overrides = Object.fromEntries(out);
+  try {
+    trustRegistry(overrides);
+  } catch (e) {
+    throw new CliError(`--trust: ${e instanceof Error ? e.message : String(e)}`, command);
+  }
+  return overrides;
 }
 
 /** Exactly one positional argument: the ledger path. */

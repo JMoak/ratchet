@@ -39,6 +39,7 @@ export {
   askOne,
   type CompoundDecision,
   isCompound,
+  memberKey,
   type Strategy,
   single,
 } from "./compound/compound.ts";
@@ -116,6 +117,7 @@ export {
 export {
   HOOK_EVIDENCE,
   HOOK_PLAN,
+  type HookGateOptions,
   hookFloors,
   hookGateId,
   hookGateSpec,
@@ -126,6 +128,12 @@ export { hookPaths, readEvents } from "./hook/journal.ts";
 export { type PromptOutcome, type Resolution, resolvePrompts } from "./hook/resolve.ts";
 export { promptState } from "./hook/state.ts";
 export { type Subject, scrub, subjectOf } from "./hook/subject.ts";
+export {
+  type Borrowing,
+  type BorrowOptions,
+  borrowFor,
+  parseProfile,
+} from "./ledger/borrow.ts";
 export {
   brier,
   type Calibrator,
@@ -142,18 +150,38 @@ export {
   fitThreshold,
   fitThresholdByCost,
   isUnselected,
+  type MemberCorrelation,
+  type MemberPairCorrelation,
+  memberCorrelation,
   pairwiseCorrelation,
   type ReliabilityBin,
   reliability,
   riskCoverage,
   type Scored,
   type ScoredTruth,
+  type ScoreOptions,
   scoredForYes,
   scoredFromLedger,
   scoredWithTruth,
   shadowAgreement,
+  wilsonInterval,
   wilsonLower,
 } from "./ledger/calibration.ts";
+export {
+  atLeast,
+  type BorrowedVia,
+  describeGrade,
+  type EvidenceGrade,
+  type FittedFrom,
+  GRADE_KINDS,
+  type GradeKind,
+  type GradeOptions,
+  gradeOf,
+  gradeWord,
+  type MeasuredGrade,
+  type ProfileProvenance,
+  type SourceCounts,
+} from "./ledger/evidence.ts";
 // Ledger and learning
 export {
   type DecisionRecord,
@@ -171,6 +199,43 @@ export {
   type Outcome,
   parseJsonlLedger,
 } from "./ledger/ledger.ts";
+export {
+  borrowedBar,
+  buildProfile,
+  type CalibrationProfile,
+  coarseBins,
+  type GateBar,
+  gateBars,
+  mergeProfiles,
+  PROFILE_TARGETS,
+  type ProfileBar,
+  type ProfileBin,
+  type ProfileGate,
+  type ProfileKey,
+  type ProfileOptions,
+  type ProfileParts,
+  profileAge,
+  profileFrom,
+  profileHash,
+  profileMatches,
+  profileVia,
+} from "./ledger/profile.ts";
+export {
+  admits,
+  COUNTED_SOURCES,
+  DEFAULT_TRUST,
+  type FitClass,
+  isTrustClass,
+  type LabelSource,
+  parseSource,
+  TRUST_CLASSES,
+  TRUSTED_SOURCES,
+  type TrustClass,
+  type TrustFilter,
+  type TrustRegistry,
+  trustOf,
+  trustRegistry,
+} from "./ledger/sources.ts";
 // Math worth exporting
 export { effectiveN, majorityAccuracy, thresholdFromCosts } from "./math.ts";
 export {
@@ -208,7 +273,9 @@ export {
   type GatePolicy,
   goProbability,
   hashPolicy,
+  type ProfilePolicyOptions,
   policyFromCosts,
+  policyFromProfile,
   policyWithBand,
   type Ruling,
   rule,

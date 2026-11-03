@@ -6,8 +6,8 @@ import { sequential } from "../src/compound/sequential.ts";
 import { mean, rng } from "../src/math.ts";
 import { failOpen, withFallback } from "../src/oracles/oracle.ts";
 import { SimOracle, type Truth } from "../src/oracles/sim.ts";
-import { judge, pick } from "../src/questions.ts";
-import type { Decision, Oracle } from "../src/types.ts";
+import { judge, judgeVerdictFrom, pick } from "../src/questions.ts";
+import type { Decision, JudgeQuestion, Oracle } from "../src/types.ts";
 
 const N = 1500;
 const items = Array.from({ length: N }, (_, i) => `item-${i}`);
@@ -192,6 +192,51 @@ describe("chain (the ratchet)", () => {
     );
     expect(res.stopReason).toBe("refused");
     expect(res.trace[0]?.attempts.length).toBe(1);
+  });
+});
+
+describe("member keys", () => {
+  /** Answers every judge question with one fixed p(yes), so only the keys are under test. */
+  const says = (id: string, pYes: number): Oracle => ({
+    id,
+    decide: async (_state, qs) =>
+      qs.map((q) => ({
+        verdict: judgeVerdictFrom(q as JudgeQuestion, pYes),
+        oracle: id,
+        cost: 0,
+        latencyMs: 0,
+        at: "2026-10-30T00:00:00.000Z",
+      })),
+  });
+
+  it("an ensemble keys each member by its label, else by its oracle and 1-based position", async () => {
+    const e = await ensemble("item-0", jq, {
+      members: [{ oracle: says("a", 0.9), label: "fast" }, { oracle: says("b", 0.8) }],
+    });
+    expect(e.memberKeys).toEqual(["fast", "b#2"]);
+    expect(replicate(says("jev", 0.9), 2).map((m) => m.label)).toEqual(["jev#1", "jev#2"]);
+  });
+
+  it("a cascade keys only the tiers it asked, each by its own position", async () => {
+    const tiers = [
+      { oracle: says("cheap", 0.6), settleAbove: 0.9 },
+      { oracle: says("strong", 0.95), settleAbove: 0.9, label: "strong" },
+      { oracle: says("never", 0.5), settleAbove: 0.9 },
+    ];
+    const c = await cascade("item-0", jq, { tiers });
+    expect(c.detail.tier).toBe(1);
+    expect(c.memberKeys).toEqual(["cheap#1", "strong"]);
+  });
+
+  it("a sequential run gives a member's repeat samples their own key by round", async () => {
+    const s = await sequential("item-0", jq, {
+      members: [{ oracle: says("a", 0.6), label: "a" }, { oracle: says("b", 0.4) }],
+      settleAbove: 0.99,
+      maxSamples: 5,
+    });
+    expect(s.detail.settled).toBe(false);
+    expect(s.memberKeys).toEqual(["a", "b#2", "a~2", "b#2~2", "a~3"]);
+    expect(s.memberKeys).toHaveLength(s.members.length);
   });
 });
 

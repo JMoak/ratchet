@@ -59,6 +59,13 @@ export interface GateSpec<Q extends GateQuestion = GateQuestion> {
   /** For batteries: how members become one judge verdict. Default "logodds" at correlation 0. */
   readonly combine?: Combiner;
   readonly policy: GatePolicy;
+  /**
+   * Where the policy's bar came from, when it was borrowed (`policyFromProfile`): the profile's
+   * hash. The engine writes it into `detail` on every row of the gate, so replay and reports can
+   * tell borrowed traffic from fitted, and a report reads the gate as stale once its model pin
+   * no longer matches that profile.
+   */
+  readonly barSource?: { readonly profileHash: string };
   /** Bump when model/configuration, strategy, opaque rules or state semantics change. */
   readonly evidenceVersion?: string;
   /** Added to the engine's floors for this gate. */
@@ -174,6 +181,7 @@ export class GateImpl<V extends Verdict = Verdict> implements Gate<V>, GateConte
   readonly bypass: readonly BypassRule[];
   readonly tags: readonly string[];
   readonly isBattery: boolean;
+  readonly barSource?: { readonly profileHash: string };
   /** The single question this gate owns, or undefined for a battery. */
   readonly ownQuestion: Question | undefined;
   private readonly battery: BatteryPlan | undefined;
@@ -190,6 +198,14 @@ export class GateImpl<V extends Verdict = Verdict> implements Gate<V>, GateConte
     const promise = spec.promisedAccuracy;
     if (promise !== undefined && !(promise > 0 && promise <= 1)) {
       throw new Error(`gate ${id}: promisedAccuracy must be in (0, 1]`);
+    }
+    const source = spec.barSource;
+    if (source !== undefined) {
+      if (typeof source.profileHash !== "string" || source.profileHash.trim() === "") {
+        throw new Error(`gate ${id}: barSource must name the profile's hash`);
+      }
+      // Copied, so a later edit to the caller's object cannot relabel rows already promised.
+      this.barSource = { profileHash: source.profileHash };
     }
     this.id = id;
     this.auditRate = clamp(spec.auditRate ?? engine.auditRate, 0, 1);
