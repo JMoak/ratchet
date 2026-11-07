@@ -9,7 +9,7 @@
  * (bearer headers, `key=value` credentials, vendor token prefixes, long opaque blobs). It is not
  * a guarantee, which is why the dry run prints the exact text before anything is sent.
  */
-import { isAbsolute, relative, resolve } from "node:path";
+import { posix, win32 } from "node:path";
 
 export type Change =
   | { readonly kind: "write"; readonly lines: number }
@@ -156,10 +156,15 @@ const str = (o: Record<string, unknown>, key: string): string | undefined => {
 
 const lines = (text: string): number => (text === "" ? 0 : text.split(/\r\n|\r|\n/).length);
 
+const windowsVolume = /^(?:[a-z]:|[\\/]{2}[^\\/]+[\\/][^\\/]+)/i;
+
 function insideWorkspace(path: string, cwd: string | undefined): boolean | undefined {
   if (cwd === undefined) return undefined;
-  const rel = relative(resolve(cwd), resolve(cwd, path));
-  return rel === "" || (!rel.startsWith("..") && !isAbsolute(rel));
+  const paths = windowsVolume.test(cwd) ? win32 : posix;
+  if (paths === posix && windowsVolume.test(path) && !path.startsWith("//")) return false;
+  const root = paths.resolve(cwd);
+  const rel = paths.relative(root, paths.resolve(root, path));
+  return rel !== ".." && !rel.startsWith(`..${paths.sep}`) && !paths.isAbsolute(rel);
 }
 
 /** Parse the headers of a Codex `apply_patch` body: which files, and how many lines each way. */

@@ -10,6 +10,11 @@ policy, strategy, state builder or model pin) is called out so you know when to 
 The first version released through CI: a push to `main` with a new version runs the checks, builds, and stages the
 package on npm through trusted publishing, where it waits for a 2FA approval.
 
+### Fixed
+
+- Hook subjects derive workspace containment from the reported Windows or POSIX path syntax.
+  Windows drive and UNC paths keep their containment result when replayed on Linux.
+
 ### Added
 
 - `ratchet hook <claude-code|codex> event|install|status|replay`: shadow a coding agent's

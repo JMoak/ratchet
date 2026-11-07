@@ -111,6 +111,28 @@ describe("path subjects", () => {
     expect(s.kind === "path" && s.insideWorkspace).toBeUndefined();
   });
 
+  it.each([
+    [cwd, "c:/WORK/repo/src\\a.ts", true],
+    [cwd, "..\\repo2\\a.ts", false],
+    [cwd, "D:/work/repo/a.ts", false],
+    [cwd, "C:/work/repo", true],
+    [cwd, "..notes/a.ts", true],
+    ["\\\\server\\share\\work", "//SERVER/share/work/src/a.ts", true],
+    ["//server/share/work", "\\\\server\\other\\work\\a.ts", false],
+    ["/work/repo", "/work/repo-other/a.ts", false],
+    ["/work/repo", "../a.ts", false],
+    ["/work/repo", "/work/Repo/a.ts", false],
+    ["/work/repo", "C:\\work\\repo\\a.ts", false],
+    ["/work/repo", "\\\\server\\share\\a.ts", false],
+    ["/work/repo", "//work/repo/a.ts", true],
+    ["/work/repo", "..notes/a.ts", true],
+  ])(
+    "classifies %s with %s independently of the host OS",
+    (workspace, file_path, insideWorkspace) => {
+      expect(subjectOf("Read", { file_path }, workspace)).toMatchObject({ insideWorkspace });
+    },
+  );
+
   it("reads a Codex apply_patch body: files, line counts, deletes", () => {
     const patch = [
       "*** Begin Patch",
@@ -128,6 +150,11 @@ describe("path subjects", () => {
     });
     const s = subjectOf("apply_patch", { input: patch }, cwd);
     expect(s).toMatchObject({ kind: "path", destructive: true, insideWorkspace: true });
+  });
+
+  it("marks a patch outside the workspace when one of its Windows paths escapes", () => {
+    const input = "*** Add File: src/a.ts\n+new\n*** Delete File: C:/work/other/b.ts";
+    expect(subjectOf("apply_patch", { input }, cwd)).toMatchObject({ insideWorkspace: false });
   });
 });
 
