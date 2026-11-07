@@ -10,6 +10,7 @@ name: release
 # ordinary commits are free and a version bump is the whole release.
 
 on:
+  workflow_dispatch:
   push:
     branches: [main]
 
@@ -35,7 +36,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-          registry-url: https://registry.npmjs.org
 
       - run: bun install --frozen-lockfile
 
@@ -82,10 +82,11 @@ jobs:
 
       # Staged publishing needs npm 11.15+; do not rely on the npm that ships with Node.
       - if: steps.version.outputs.publish == 'true'
-        run: npm install -g npm@latest && npm --version
+        run: npm install -g npm@12.2.2 && npm --version
 
       # The trusted publisher allows only `npm stage publish`. The version is uploaded with
       # provenance but stays staged until Jordan approves it with 2FA on npmjs.com or via
       # `npm stage approve <stage-id>`. A one-way door keeps its human.
-      - if: steps.version.outputs.publish == 'true'
-        run: npm stage publish --access public --tag "${{ steps.tag.outputs.name }}"
+      - name: stage with trusted publishing
+        if: steps.version.outputs.publish == 'true'
+        run: npm stage publish --access public --tag "${{ steps.tag.outputs.name }}" --loglevel verbose
