@@ -9,6 +9,20 @@ permissions:
   contents: read
 
 jobs:
+  dependency-review:
+    name: dependency review
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Review introduced dependencies
+        uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
+        with:
+          fail-on-severity: high
+          fail-on-scopes: runtime, development, unknown
+          comment-summary-in-pr: never
+          license-check: false
+
   check:
     name: check (types, lint, tests, build, pack)
     runs-on: ubuntu-latest
@@ -24,6 +38,11 @@ jobs:
           node-version: 22
 
       - run: bun install --frozen-lockfile
+
+      # Dependency review cannot see all transitive packages in bun.lock.
+      - name: Audit locked dependencies
+        if: github.event_name == 'pull_request'
+        run: bun audit --audit-level high
 
       - run: bun run check
 

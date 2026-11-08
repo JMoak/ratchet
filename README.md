@@ -236,6 +236,9 @@ Checks and simulations need no network or keys; the demo uses a simulated oracle
 oracle has known accuracy, calibration and error correlation so every claim can be checked
 against the truth.
 
+The [dependency maintenance policy](docs/dependencies.md) describes update grouping,
+security checks, and the review process for dependency PRs.
+
 The [shadow pilot](docs/pilot.md) includes sourced application scenarios, separate fit and
 validation groups, persisted evidence, and exportable charts. Its authored labels exercise the
 workflow without claiming production accuracy. Read the
