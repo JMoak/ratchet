@@ -1,20 +1,20 @@
-# Publishing plan
+# Publishing
 
-Reviewed 2026-10-21; decisions and release tooling added 2026-10-24. **`0.2.0-alpha.1` was
-published by hand on 2026-10-24 and verified from the registry under Bun and Node. CI
-publishing starts once the trusted publisher is configured. The hosted arcade is still
-planning only.** The license is decided: Apache-2.0, recorded in `LICENSE`, `NOTICE` and
-`package.json`.
+Release configuration updated 2026-11-09. `0.3.0` promotes the functionality published as
+`0.3.0-alpha.1` on 2026-11-07 to npm's default `latest` channel. CI stages new versions
+through the configured trusted publisher; the owner completes npm's approval. The existing
+`alpha` tag remains available. The hosted arcade is still planning only. The license is
+Apache-2.0, recorded in `LICENSE`, `NOTICE` and `package.json`.
 
-## Decided 2026-10-24
+## Current release configuration
 
 | Decision | Outcome |
 | --- | --- |
 | Package identity | `@jmoak/ratchet`, CLI `ratchet`. The `@jmoak` scope is Jordan's (it already publishes `@jmoak/chrono-mcp`); the name was unclaimed on 2026-10-24. |
 | Runtime contract | ESM; Node 22.14+ and Bun 1.3+ (`engines`). `tsconfig.build.json` type-checks `src/` and `bin/` against Node types only, so Bun-only APIs cannot creep into the package. The CLI shebang is `node`; `bunx ratchet` also works. |
-| Version and tag | `0.2.0-alpha.1`, dist-tag `alpha`. The release workflow derives the dist-tag from the version suffix (`alpha`, `beta`, `rc` to `next`, otherwise `latest`). |
+| Version and tag | `0.3.0`, dist-tag `latest`. The release workflow derives the dist-tag from the version suffix (`alpha`, `beta`, `rc` to `next`, otherwise `latest`). |
 | Publishing route | GitHub Actions with npm trusted publishing (OIDC, no stored token): `.github/workflows/release.yml` on every push to `main`; the version in `package.json` is the release switch, and a push whose version is already on the registry builds, checks and skips the publish. npm configures a trusted publisher from an existing package's settings page, so the very first version is published once by hand. |
-| Package contents | `files: ["dist", "NOTICE", "CHANGELOG.md"]` plus the files npm always packs. Verified 2026-10-24: 81 files, 0.41 MB unpacked, nothing from tests, experiments, research, examples or `.env`. |
+| Package contents | `files: ["dist", "NOTICE", "CHANGELOG.md", "profiles"]` plus the files npm always packs. Tests, experiments, research, examples and `.env` are excluded. Inspect the current archive in the release run's pack dry run. |
 | Validation | Done 2026-10-24 from the packed tarball in fresh projects outside the checkout: Bun and Node each ran a gate, labelled, reopened a JSONL ledger, and exercised the installed `ratchet report` and `check`; the Bun consumer type-checked with `skipLibCheck: false`. |
 
 ### Release procedure
@@ -43,13 +43,12 @@ Owner steps are marked. Everything else is already in the tree or in CI.
    version waits for approval with 2FA on npmjs.com (Staged Packages) or
    `npm stage approve <stage-id>`. **Owner approves.** A release is therefore one commit
    that bumps the version and dates its changelog entry. Provenance is automatic because
-   the repository is public. The staged route is unproven until `0.3.0-alpha.1` lands.
+   the repository is public. The earlier alpha was published on 2026-11-07.
    A second push at the same version before the approval fails at the stage step, because
    the lookup cannot see staged versions; approve or bump, then push again.
-5. After each approval, install from the registry into an empty directory and run the smoke
-   in "Validation" above. Setting `--tag` at stage time is assumed to need only publish
-   access; if 0.3.0-alpha.1 is rejected on that flag, enable `npm dist-tag` on the trusted
-   publisher.
+5. After approval, verify `npm view @jmoak/ratchet dist-tags --json` shows the intended
+   channel and version, then smoke-test the published package in an empty directory.
+   For this release expect `latest: 0.3.0` and the existing `alpha: 0.3.0-alpha.1`.
 
 A published name and version can never be reused, even after unpublishing; a correction is a
 new version.
@@ -57,7 +56,13 @@ new version.
 Keep the engine and CLI in one small package. Treat the arcade as a separate deployment
 of the examples. Releasing the library does not require operating a paid model service.
 
-## Decisions for the owner
+## Original planning notes (2026-10-21)
+
+The sections below record the original pre-publication plan. Their private-package and
+missing-build descriptions are historical; use the current configuration and procedure
+above for package releases. Hosted arcade decisions remain separate.
+
+### Decisions for the owner
 
 | Decision | Proposed starting point | Still needed |
 | --- | --- | --- |
@@ -67,7 +72,7 @@ of the examples. Releasing the library does not require operating a paid model s
 | Release version | An explicit prerelease, published under an intentional dist-tag | Reconcile manifest `0.0.1` with the README's 0.2 feature milestone; choose the actual version and tag. |
 | Hosting | A Bun process serving the arcade and its API on the same origin, offline judges by default | Choose provider, domain, operating budget, and who operates it. Live Jev access needs a separate hosting decision. |
 
-## What blocks the package today
+### Original package blockers
 
 | Inspected area | Current state | Release work |
 | --- | --- | --- |

@@ -5,7 +5,14 @@ may change exported signatures, and every change that affects a gate's evidence 
 policy, strategy, state builder or model pin) is called out so you know when to bump an
 `evidenceVersion`.
 
-## 0.3.0-alpha.1 (unreleased)
+## 0.3.0 (2026-11-09)
+
+Promote the functionality in `0.3.0-alpha.1` to the default npm `latest` channel.
+Update installation guidance and package status documentation for the release. Gate,
+policy and evidence behavior is unchanged from the alpha; no `evidenceVersion` bump is
+needed for this promotion. The API remains experimental until 1.0.
+
+## 0.3.0-alpha.1 (2026-11-07)
 
 The first version released through CI: a push to `main` with a new version runs the checks, builds, and stages the
 package on npm through trusted publishing, where it waits for a 2FA approval.

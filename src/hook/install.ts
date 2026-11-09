@@ -59,7 +59,7 @@ export function installText(harness: Harness, paths: HookPaths): string {
     `ratchet hook ${harness}: shadow the permission prompts`,
     "",
     "1. Make sure `ratchet` is on the PATH of the shell the harness uses:",
-    "     npm install -g @jmoak/ratchet@alpha     (or: bun add -g @jmoak/ratchet@alpha)",
+    "     npm install -g @jmoak/ratchet     (or: bun add -g @jmoak/ratchet)",
     "",
     `2. Merge this into ${FILES[harness]}:`,
     "",

@@ -22,7 +22,7 @@
 A decision engine that compounds cheap, calibrated machine judgments
 into reliable automated decisions.
 
-[![npm](https://img.shields.io/npm/v/@jmoak/ratchet/alpha?style=flat-square&color=1f2937&label=npm%20%40alpha)](https://www.npmjs.com/package/@jmoak/ratchet)
+[![npm](https://img.shields.io/npm/v/@jmoak/ratchet?style=flat-square&color=1f2937)](https://www.npmjs.com/package/@jmoak/ratchet)
 [![ci](https://img.shields.io/github/actions/workflow/status/JMoak/ratchet/ci.yml?branch=main&style=flat-square&label=ci)](https://github.com/JMoak/ratchet/actions/workflows/ci.yml)
 [![TypeScript strict](https://img.shields.io/badge/TypeScript-strict-1f2937?style=flat-square&logo=typescript&logoColor=white)](tsconfig.json)
 [![Bun 1.3](https://img.shields.io/badge/Bun-1.3.x-1f2937?style=flat-square&logo=bun&logoColor=white)](package.json)
@@ -32,7 +32,7 @@ into reliable automated decisions.
 [![Shadow by default](https://img.shields.io/badge/default%20mode-shadow-6b7280?style=flat-square)](docs/rollout.md)
 [![Fail open means review](https://img.shields.io/badge/fail%20open-review-6b7280?style=flat-square)](docs/vision.md)
 [![One-way doors](https://img.shields.io/badge/one--way%20doors-never%20automated-6b7280?style=flat-square)](docs/vision.md)
-[![Alpha](https://img.shields.io/badge/status-alpha-b45309?style=flat-square)](docs/publishing.md)
+[![Pre-1.0 API](https://img.shields.io/badge/API-pre--1.0-b45309?style=flat-square)](CHANGELOG.md)
 
 [Arcade](#play-the-arcade) · [Install](#install) · [Vision](docs/vision.md) ·
 [Architecture](docs/architecture.md) · [Evidence](docs/pilot-results.md) ·
@@ -42,8 +42,8 @@ into reliable automated decisions.
 
 <br>
 
-*Working name; pre-release source checkout. Package and hosted arcade publishing are being
-[planned](docs/publishing.md).*
+*Available on npm as `@jmoak/ratchet`. The API remains experimental until 1.0;
+hosted arcade publishing is still [planned](docs/publishing.md).*
 
 Decision models (TypeSafe's Jev, launched September 2026, and the rivals that followed within
 weeks) answer typed questions in under half a second for hundredths of a cent, with a
@@ -174,7 +174,7 @@ Every permission prompt your agent shows you is a label. Two hook lines turn Cla
 Codex into a source of them, with no change to what you see and nothing enforced.
 
 ```sh
-npm install -g @jmoak/ratchet@alpha
+npm install -g @jmoak/ratchet
 ratchet hook claude-code install     # prints the settings to paste; or: ratchet hook codex install
 ```
 
@@ -200,7 +200,7 @@ exact text first. Design and the label inference: [docs/design/agent-hook.md](do
 ## Install
 
 ```sh
-bun add @jmoak/ratchet@alpha      # or: npm install @jmoak/ratchet@alpha
+bun add @jmoak/ratchet      # or: npm install @jmoak/ratchet
 ```
 
 ```ts
@@ -323,9 +323,10 @@ tests, simulation, demo. The adapter runs live against Jev through OpenRouter, w
 the same wire format at `/api/v1/systemone`; put `OPENROUTER_API_KEY` in `.env` with
 `scripts/set-key.ps1` ([docs/roadmap.md](docs/roadmap.md)).
 
-The package manifest is currently `0.0.1` and private. The [publishing plan](docs/publishing.md)
-tracks the remaining package, runtime, and hosting decisions; a feature milestone is not a
-published release or an accuracy guarantee.
+Version `0.3.0` brings the agent-harness hooks, decision trails and calibration profiles to
+the default npm release channel. See [CHANGELOG.md](CHANGELOG.md) for the full release
+history and [publishing](docs/publishing.md) for the release process. The API remains
+experimental until 1.0; a published release is not an accuracy guarantee.
 
 ## License and third-party services
 
