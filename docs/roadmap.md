@@ -1,6 +1,55 @@
 # Roadmap
 
-Reviewed 2026-10-21. Historical milestones below describe the existing tree.
+Reviewed 2026-10-21; the end-to-end evaluation entry added 2026-11-12. Historical milestones
+below describe the existing tree.
+
+## End-to-end evaluation (2026-11-12)
+
+Five tracks ran the real engine, ledger, review command and CLI live against Jev on new,
+authored corpora, with every label fixed before the first call
+([registry](e2e/findings.md), [T1](e2e/t1-toolgate.md), [T2](e2e/t2-verifier.md),
+[T3](e2e/t3-triage.md), [T4](e2e/t4-redteam.md), [T5](e2e/t5-compound.md)). What held: floors
+were never lowered (0 of 1,169 rows rechecked), one-way doors never acted, transport failures
+always reviewed, the planned exact test refused a gate whose 98% bar delivered 91.2% on held-out
+groups and kept the refusal across restarts, the CLI matched independent recomputation 20 of 20,
+the daily cap survived a restart, digesting numbers and dates in code was confirmed four times
+(66.7% to 99.1% on approvals), a verifier committed only correct outputs, and a cascade from Jev
+to a model of a different family reached 98.5% against 85.8%. What did not: a bar fitted on 180
+items did not transfer to held-out groups; the ratchet formula predicts the precision of
+commits, not whether chains finish (48% to 62% against 74% to 99.8%); a log-odds battery lost to
+one holistic question and inverted an any-of battery; replicas, framings and a second Jev pin
+added nothing; the disagreement sentence reads as a gate's error rate when it bounds only "at
+least one judge is wrong"; malformed adapter answers acted in 128 of 1,908 fault cells. Engine
+fixes are wave 2's work packages in the registry. The evaluation added these to the backlog:
+
+- **A sequential demotion test** (T1-07). At an audit rate of 0.2 and 30 audits to judge,
+  nothing demotes before about 150 acts, and 10 wrong acts executed before a demotion in T1. A
+  CUSUM or SPRT on audit errors with an explicit false-alarm rate, or a short recent window
+  beside the long one; at least print acts-to-first-judgement with every promotion. This is the
+  "guarded rollout" item under 0.4, now with a measured cost.
+- **Opt-in sampling of auto-mode runs for hook labels** (T1-03). In auto permission mode the
+  hook journaled 41,628 events and 4 prompts, so `ratchet hook replay` has nothing to learn from.
+  A seeded fraction of runs could keep a scrubbed subject for blind review.
+- **Floors over state entries** (T3-10). `FloorRule` sees only rendered text, so a business floor
+  on an amount parses a rendering that differs between raw and digested states, and a command
+  floor can fire on untrusted tool output (T4-14). Pass the `StateLike` or the builder's entries,
+  or add a `floorOn(field, predicate)` helper.
+- **Act-side calibration profiles** (wave 2, package C). Reported bars are now fitted on the act
+  side, but judge profiles still bin leading-answer confidence, so a borrowed bar and a fitted
+  bar mean the same thing only for gates whose go side is yes. Needs profile format 2 and
+  regenerated `profiles/`.
+- **Strong default: a cascade to a model of a different family** (T5). It connects to the
+  second opinion in [design/evidence-grades.md](design/evidence-grades.md). T5 gives the shape: Jev first with a
+  tier-1 bar fitted on labelled shadow rows, then a generative model of another family, with
+  the tiers' error correlation measured on an unselected sample where the upper tier answered
+  every item (a cascade's own rows pair tiers only when it escalated). Two pins of one family
+  must not count as a second opinion, and a blanket correlation of 0.5 for different models
+  raised log loss on T5's mixed panel (0.095 to 0.132), where per-pair weights did better than
+  any single correlation.
+- **The prompt-injection study** (T4). Planned and not run: a safety classifier stopped the
+  agent authoring the payloads and the study was not rerouted. The injection figures in
+  `vision.md` remain the literature's. Building the study from a published benchmark's
+  payloads is the next attempt.
 
 ## Current priority: prove one tool gate and verifier lifecycle
 
@@ -132,14 +181,19 @@ do not replace the tool-gate pilot or establish a production accuracy guarantee.
   `Freshness`, `digest` helpers and the `Rollout` controller. The prioritised backlog from the
   pattern catalogue is in `docs/idea-catalog.md`.
 - Finish the two-judge cascade run (`openai/gpt-6-luna` as a second upper tier) and test
-  Banking77 with intent descriptions as criteria.
+  Banking77 with intent descriptions as criteria. (The luna run is done, 2026-11-12, e2e T5:
+  97.7% alone and 97.7% as a cascade tier, its confidences too high to sort; Banking77 criteria
+  are still open.)
 - Report `posture` (underconfident / overconfident) per question from expected versus
   observed accuracy, and let a fitted bar sit below the nominal one when the ledger earns it.
 - Clef and a local Strands Decider through the same adapter; an OpenAI Decisions API adapter.
 - A `ratchet` CLI: `report` (calibration and fitted bars per question from a JSONL ledger),
   `label` (attach outcomes), `shadow-diff` (agreement between soft and actual).
 - Error-correlation estimation from paired member correctness in the ledger; feed it into
-  ensemble pooling automatically with a pessimistic prior when unmeasured.
+  ensemble pooling automatically with a pessimistic prior when unmeasured. (e2e T5: one scalar
+  is right for replicas and framings of one model and wrong for a mixed panel, where per-pair
+  weights from the measured matrix beat every scalar; explicit members of one model defaulted
+  to the optimistic 0.)
 - Live calibration run: the demo corpus against Jev and against a generative model, with
   reliability diagrams side by side.
 
@@ -159,7 +213,8 @@ do not replace the tool-gate pilot or establish a production accuracy guarantee.
   it improves on the unselected slice and holds out of sample (the ReAnchor idea applied to a
   live ledger instead of an offline program).
 - Guarded rollout: a sequential test that auto-reverts enforce to shadow when the audited
-  error rate exceeds the promised one.
+  error rate exceeds the promised one. (Measured need, 2026-11-12: see the end-to-end entry at
+  the top.)
 - Drift monitoring: expected accuracy (mean confidence) versus audited accuracy over time,
   per question and per backend.
 - Conformal abstention sets as an alternative to a single bar when costs are hard to state.

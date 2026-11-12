@@ -52,3 +52,19 @@ With the true passage removed and a 'none' option offered (40 items): answered '
 
 **Total spend: $0.0091 over 175 calls.**
 
+
+## 4. Recipes measured again in the end-to-end evaluation (2026-11-12)
+
+The end-to-end evaluation ([e2e/](e2e/findings.md)) ran on new, authored corpora with labels
+fixed before the first call. It did not re-run sections 1 to 3; it measured these:
+
+| recipe | result |
+| --- | --- |
+| digest: `compare`, `daysBetween`, `count` | The largest effect measured. Refund and expense approvals 66.7% raw to 99.1% digested (T3, jev-1.13, 219 paired items, 71 to 0 discordant); a two-condition policy check 83.3% to 100% on jev-1.13 and 89.6% to 100% on jev-1.14 (T4, 48 paired items). |
+| digest: `relativeTime` | Unsafe at a window. It read 31 to 44 days as "1 month ago" (fixed: it now floors, in days below 120 days); against a 30-day refund window 10 of 37 auto-approvals were wrong (T3). Use `compare(daysBetween(...), window)` for windows. |
+| digest: `compare` float noise | `compare` printed differences such as "by 4.200000000000003 USD" (fixed: it rounds to the inputs' precision). No measured cost: 98.9% against 99.2% on states with and without it (T3), and rounding it changed no answer (T4, 0 discordant). |
+| `shortlist()` | Top two held the truth for 100% of 256 routing tickets and 99.6% of urgency ratings (T3). |
+| `relevance` + `prune` | Offline, a failed-open item scored 0.5 and was pruned at a 0.6 bar, so a failure removed context (T4-07; fixed: `prune` keeps items with no bought answer). |
+| `sequential` with `settleLead` | With two Jev pins first, lead-by-2 stopped on their agreement on 178 of 260 items and lost 7.3 points against the fixed ensemble (T5). The lead now counts one vote per model family, so replicas or pins of one model (such as those two) never settle it. |
+| `speculate`, `screenMany`, `locateWith` | Not re-measured live. Offline, like every path, they acted on malformed adapter answers in the red team's fault matrix (T4-01; fixed in `failOpen`). |
+

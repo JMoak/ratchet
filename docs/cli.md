@@ -5,8 +5,8 @@ four questions about it without calling any oracle or touching the network, and 
 interactive session, `review`, that adds labels to it:
 
 - **`report`**: what does the record say about each gate? What kind of evidence stands behind
-  it (its [grade](#evidence-grades)), calibration, posture, the bar the labels support and how
-  much traffic it would cover, which models answered, what failed.
+  it (its [grade](#evidence-grades)), calibration, posture, the act bar the labels support and
+  how much traffic it would cover, which models answered, what failed.
 - **`check`**: has a gate broken its promise, or not yet earned it? Exits 1 when it has, so it
   can sit in CI.
 - **`replay`**: what would a different bar have done on the traffic already recorded?
@@ -48,7 +48,7 @@ Usage:
                  [--profile <file> ...] [--min-support 30]
   ratchet replay <ledger> --gate <id> --act-above <p> [--refuse-below <p>]
                  [--go-is-yes true|false] [--json]
-  ratchet review <ledger> --gate <id> [--sample 20] [--seed <n>] [--reviewer <name>] [--denied]
+  ratchet review <ledger> --gate <id> [--sample 20] [--seed <n>] [--reviewer <name>] [--denied | --audits]
   ratchet trail  <ledger> [--gate <id>] [--request <id>] [--last 10] [--target 0.98]
                  [--min-estimated 30] [--trust <prefix>=<class> ...]
                  [--profile <file> ...] [--min-support 30] [--json]
@@ -108,10 +108,17 @@ A label is only as good as the route it arrived by, so each label's `source`
 | `census` | a person answered every ask in the moment | `keywork:person`, `claude-code:person`, `codex:person` | yes | yes |
 | `moment` | a person answered after seeing the model's answer | `desk:assisted` | no | yes |
 | `consequence` | inferred from what happened next | `accepted:*`, `reverted:*`, `silence:*` | no | no: its own `consequence` column |
-| `unknown` | no source, or one no entry names | every row written before sources | yes, as before | yes |
+| `unknown` | no source at all | every row written before sources | yes, as before | yes |
+| `unregistered` | a source is present but malformed, or no entry names it | `Reverted:git`, `accepted:`, `hook:inferred`, `sms:reply` | no | no |
 
-A source is looked up by `channel:kind`, then `channel:*`. `unknown` reads exactly as an
-unsourced label always has, so a ledger written before sources reports the same numbers.
+A source is looked up by `channel:kind`, then `channel:*` (case matters). Only an absent source
+is `unknown`, which reads exactly as an unsourced label always has, so a ledger written before
+sources reports the same numbers. A present source that does not parse or that no entry names is
+`unregistered`: no fit, grade, `check` or acceptance test reads it, because a mistyped or
+invented route is not evidence that the label was given blind (e2e T4-09; before, such labels
+read as `unknown` and promoted a gate). Every source this repository writes is registered. To
+use labels from a new route, register it with `--trust <prefix>=<class>` here, or `labelTrust`
+in code, and bump the gate's `evidenceVersion`.
 
 `--trust <prefix>=<class>`, on `report`, `check` and `trail`, lays one entry over the defaults;
 the prefix is `channel:kind` or `channel:*`, and the flag may be repeated:
@@ -136,8 +143,8 @@ so no two of them can disagree about a gate:
 | grade | what it is | what it may do |
 | --- | --- | --- |
 | `measured` | the first acts of the gate's current shadow phase, fixed before their labels were read, reached the promise by an exact one-sided 95% (Clopper-Pearson) lower bound with no wrong act | promote a gate to enforce; nothing else can |
-| `estimated` | a 95% Wilson interval on at least `--min-estimated` (default 30) labelled unselected rows of trusted sources | raise a bar, demote, schedule a plan; never enable act, because it is read again with every new label |
-| `borrowed` | evidence that is not this gate's labels: a profile built from other ledgers, or the disagreement of two judges from different models | shadow only |
+| `estimated` | a 95% Wilson interval on at least `--min-estimated` (default 30) labelled unselected rows of trusted sources, recorded under the gate's current policy, rubric and evidence version | raise a bar, demote, schedule a plan; never enable act, because it is read again with every new label |
+| `borrowed` | evidence that is not this gate's labels: a profile built from other ledgers, or the disagreement of two judges from different model families | shadow only |
 | `none` | fewer rows than any grade needs | nothing; it says why |
 
 The grade is the strongest the rows support, and it reads the gate's whole history, never
@@ -150,9 +157,29 @@ demotion therefore starts a new sample, as it does in [Rollout](rollout.md). The
 command's promise (`report --target`, `check --promise`, `trail --target`) at 95% with no wrong
 act allowed, the default plan; a gate whose rollout uses another plan has its authoritative
 grade in `RolloutStatus.grade`. A battery member is never measured, since its rows are features
-of the battery's decision, and nothing bounds a promise of 1. Borrowed evidence comes from a
-[profile](#profile) offered with `--profile`, and only for a gate with no fitted bar of its own;
-disagreement is not built by any command yet, and `gradeOf` and `checkGate` take it as data.
+of the battery's decision, and nothing bounds a promise of 1. An estimate reads only the rows
+of the gate's current configuration: those recorded under its newest row's evidence version,
+under a policy its newest request used, and with each question under the newest policy and the
+newest rubric recorded for its own question id.
+Labels earned under an older configuration describe a gate that no longer answers, so they are
+counted (`older` in the JSON, and a clause at the end of the sentence) and never read, and a
+changed rubric or a looser policy starts from no evidence. Policy and rubric are matched per
+question so that a gate asking many (a `relevance` pass asks one question per item, and a gate
+may give each question a policy of its own) keeps every question's rows. A rubric edit that
+keeps its question id changes its hash, so it leaves the old rows behind, and a policy the
+newest request did not use retires its rows even on questions asked once each (a loosened
+`relevance` gate). A rubric edit that also renames the question is a new question, and the old
+one's rows stay current until the gate's `evidenceVersion` moves: bump it when you rename;
+`report` and `check` name such a question on a single-question gate (`question \`safe.v1\`:
+40 labels, last asked 2026-11-12, not in the newest request; bump evidenceVersion to retire
+it`). Two policies alternating on one question are two configurations, so the grade reads
+whichever the newest row used. Keep one evidence version per gate: evidence versions
+interleaved request by request make the grade flip with each request, and an evidence version
+given per question retires every question but the one asked last. Borrowed evidence comes from a
+[profile](#profile) offered with `--profile`, lent until the gate's own labels grade it
+estimated; disagreement is measured by `disagreement(rows)` in the library (two members of
+different model families on compound rows) and no command builds it yet, so `gradeOf` and
+`checkGate` take it as data.
 
 Each grade prints as one sentence that opens with its word, so no number is read before its kind,
 then says how old its evidence is, and the words never share a column with one another's numbers:
@@ -167,11 +194,17 @@ then says how old its evidence is, and the words never share a column with one a
   `borrowed as of 2026-10-17: bar 0.860 from profile 1d0adc40, donor 300 rows of gate bash.safe in ledger experiments/out/cli-example-ledger.jsonl, 2026-10-17 to 2026-10-17, 0 rows here`.
   A gate whose rows name that profile as their bar's source and no longer match its model or
   kind prints `borrowed (stale)`, in the sentence and in `report`'s grade column. Borrowed from
-  disagreement says `at least 25.0% wrong on this slice, 40 pairs` and names the two models,
-  never an accuracy.
+  disagreement says `model-a and model-b disagree on 25.0% of 40 pairs, so at least one of the
+  two judges is wrong on at least 25.0% of them; this is not this gate's error rate`: the rate bounds the share of
+  rows on which at least one judge is wrong, never the gate's own error, which can be 0 while the
+  second opinion is wrong on every disagreement. Two models of one family (the first token of
+  the name, with the owner prefix dropped: `typesafe/jev-1.13`, `jev-1.14-fp8` and `jev-router`
+  are all `jev`, every Claude is `claude`) are refused as a pair, since they share most of their
+  errors; families are coarse on purpose, because a false merge only adds caution.
 - **none** states what is missing: `none: 12 labelled unselected rows; estimated needs 30`, and
   when other labelled rows exist but were chosen by the oracle's own confidence, says to label
-  shadow rows or blind audits.
+  shadow rows or blind audits; when labels exist under an older configuration, it says how many
+  were not read.
 
 `labels:` counts the rows the grade read by trust class, leaving out empty classes; labels with
 no source (the `unknown` class, so named in the JSON) print as `unsourced`.
@@ -205,12 +238,16 @@ ratchet report <ledger> [--gate <id>] [--target 0.98] [--min-support 30] [--min-
 | flag | default | meaning |
 | --- | --- | --- |
 | `--gate <id>` | all | one gate, plus its battery members if it has any |
-| `--target <p>` | 0.98 | accuracy the fitted bar must deliver, and the promise a measured grade is read against |
+| `--target <p>` | 0.98 | what acting above the bar must deliver, and the promise a measured grade is read against |
 | `--min-support <n>` | 30 | labelled rows the bar needs at or above it |
-| `--min-estimated <n>` | 30 | labelled unselected rows an estimated grade needs |
+| `--min-estimated <n>` | 30 | labelled unselected rows of the current configuration an estimated grade needs |
 | `--trust <prefix>=<class>` | the defaults | read a label source as a trust class; repeatable (see above) |
-| `--profile <file>` | none | a [calibration profile](#profile) a gate with no fitted bar may be graded borrowed from; repeatable |
+| `--profile <file>` | none | a [calibration profile](#profile) a gate may be graded borrowed from until its own labels grade it estimated; repeatable |
 | `--json` | off | JSON instead of markdown |
+
+The defaults are `REPORT_DEFAULTS` (`src/ledger/evidence.ts`), the levers `Gate.report()` and
+`Engine.report()` read with too, so one ledger grades the same in code and on the command line;
+`QuestionReport.levers` carries the levers a report was read with.
 
 ```text
 $ bun run ratchet report experiments/out/cli-example-ledger.jsonl
@@ -219,19 +256,19 @@ $ bun run ratchet report experiments/out/cli-example-ledger.jsonl
 ```text
 # ratchet report: experiments/out/cli-example-ledger.jsonl
 
-1286 rows in 6 gates. Bar target 98.0% accuracy with at least 30 labelled rows at or above it.
-Grades: measured on a planned sample for a 98.0% promise (exact 95% bound, no wrong act allowed); estimated on at least 30 labelled unselected rows (95% Wilson interval).
+1286 rows in 6 gates. Act bars keep a 98.0% promise at the lower end of a 95% Wilson interval, with at least 30 labelled rows at or above them.
+Grades: measured on a planned sample for a 98.0% promise (exact 95% bound, no wrong act allowed); estimated on at least 30 labelled unselected rows of the current configuration (95% Wilson interval).
 
 ## Calibration and fitted bar
 
-| gate                      | grade     | rows | labelled | unselected | consequence | observed | expected | posture        | ECE   | Brier | bar   | coverage     | fitted on        |
-| ------------------------- | --------- | ---- | -------- | ---------- | ----------- | -------- | -------- | -------------- | ----- | ----- | ----- | ------------ | ---------------- |
-| bash.safe                 | measured  | 436  | 420      | 420        | 0           | 94.0%    | 91.7%    | underconfident | 0.030 | 0.055 | 0.962 | 43.8% (184)  | unselected (420) |
-| ticket.route              | estimated | 250  | 250      | 250        | 0           | 77.6%    | 91.1%    | overconfident  | 0.152 | 0.194 | 0.998 | 12.0% (30)   | unselected (250) |
-| stop.done                 | estimated | 150  | 150      | 150        | 0           | 99.3%    | 98.5%    | calibrated     | 0.018 | 0.007 | 0.502 | 100.0% (150) | unselected (150) |
-| stop.done/tests (member)  | estimated | 150  | 150      | 150        | 0           | 94.0%    | 91.4%    | underconfident | 0.063 | 0.044 | 0.749 | 92.0% (138)  | unselected (150) |
-| stop.done/claims (member) | estimated | 150  | 150      | 150        | 0           | 93.3%    | 90.1%    | underconfident | 0.056 | 0.068 | 0.961 | 38.0% (57)   | unselected (150) |
-| stop.done/scope (member)  | estimated | 150  | 150      | 150        | 0           | 88.0%    | 90.4%    | overconfident  | 0.026 | 0.096 | 0.953 | 43.3% (65)   | unselected (150) |
+| gate                      | grade     | rows | older | labelled | unselected | consequence | observed | expected | posture        | ECE   | Brier | act bar | point | coverage | fitted on        |
+| ------------------------- | --------- | ---- | ----- | -------- | ---------- | ----------- | -------- | -------- | -------------- | ----- | ----- | ------- | ----- | -------- | ---------------- |
+| bash.safe                 | measured  | 436  | 0     | 420      | 420        | 0           | 94.0%    | 91.7%    | underconfident | 0.030 | 0.055 | none    | 0.368 | -        | unselected (420) |
+| ticket.route              | estimated | 250  | 0     | 250      | 250        | 0           | 77.6%    | 91.1%    | overconfident  | 0.152 | 0.194 | none    | 0.998 | -        | unselected (250) |
+| stop.done                 | estimated | 150  | 0     | 150      | 150        | 0           | 99.3%    | 98.5%    | calibrated     | 0.018 | 0.007 | none    | 0.040 | -        | unselected (150) |
+| stop.done/tests (member)  | estimated | 150  | 0     | 150      | 150        | 0           | 94.0%    | 91.4%    | underconfident | 0.063 | 0.044 | none    | 0.768 | -        | unselected (150) |
+| stop.done/claims (member) | estimated | 150  | 0     | 150      | 150        | 0           | 93.3%    | 90.1%    | underconfident | 0.056 | 0.068 | none    | 0.866 | -        | unselected (150) |
+| stop.done/scope (member)  | estimated | 150  | 0     | 150      | 150        | 0           | 88.0%    | 90.4%    | overconfident  | 0.026 | 0.096 | none    | 0.931 | -        | unselected (150) |
 
 ## Operations
 
@@ -253,8 +290,40 @@ Grades: measured on a planned sample for a 98.0% promise (exact 95% bound, no wr
 - stop.done/claims (member): estimated as of 2026-10-17: 93.3% right on 150 labelled unselected rows (labels: unsourced 150), 95% interval 88.2% to 96.3%, 8.2 points wide, not a planned sample
 - stop.done/scope (member): estimated as of 2026-10-17: 88.0% right on 150 labelled unselected rows (labels: unsourced 150), 95% interval 81.8% to 92.3%, 10.4 points wide, not a planned sample
 
-Grade is the kind of evidence behind a gate: measured (a planned sample reached the promise by an exact bound, the only grade that can promote a gate), estimated (an interval on labelled unselected rows, looked at again with every label, so not a promise), borrowed (evidence that is not this gate's labels, shadow only) or none. Observed is accuracy on labelled rows; expected is their mean stated confidence. Bar is the lowest confidence that delivered the target with enough support, and coverage is the share of the fitted rows at or above it; "none" means no bar did. Rows fitted on "all" were selected by the engine's own confidence, so treat that bar as a fallback. Only blind, census and unsourced labels fit a bar; consequence counts labels inferred from what happened next, which no other column reads. Fixed rows were decided by a floor or an allowlist without a call; they remain in operational counts but never in calibration or fitted thresholds. A battery's spend is recorded on its member rows; its own row carries the ruling.
+## Act bars
+
+- bash.safe: no act bar: too few rows for one at 98.0%; the point estimate clears it above 0.368 (98.2% of 325 rows) but the lower end of its 95% interval is 96.0%, so label more before acting on it (fitted on 420 unselected rows)
+- ticket.route: no act bar: too few rows for one at 98.0%; the point estimate clears it above 0.998 (100.0% of 30 rows) but the lower end of its 95% interval is 88.6%, so label more before acting on it (fitted on 250 unselected rows)
+- stop.done: no act bar: too few rows for one at 98.0%; the point estimate clears it above 0.040 (98.0% of 102 rows) but the lower end of its 95% interval is 93.1%, so label more before acting on it (fitted on 150 unselected rows)
+- stop.done/tests (member): no act bar: too few rows for one at 98.0%; the point estimate clears it above 0.768 (98.9% of 90 rows) but the lower end of its 95% interval is 94.0%, so label more before acting on it (fitted on 150 unselected rows)
+- stop.done/claims (member): no act bar: too few rows for one at 98.0%; the point estimate clears it above 0.866 (98.6% of 72 rows) but the lower end of its 95% interval is 92.5%, so label more before acting on it (fitted on 150 unselected rows)
+- stop.done/scope (member): no act bar: too few rows for one at 98.0%; the point estimate clears it above 0.931 (98.1% of 53 rows) but the lower end of its 95% interval is 90.1%, so label more before acting on it (fitted on 150 unselected rows)
+
+## Batteries
+
+- stop.done: 67.3% of 150 combined verdicts saturated (beyond 0.001 or 0.999): pooling in log-odds treats members as evidence for one answer, and members that ask different questions drive it to the ends. Combine a disjunction ("does any apply?") with "any", a conjunction ("do all hold?") with "all", or fit a learned combiner on labelled member rows
+
+Grade is the kind of evidence behind a gate: measured (a planned sample reached the promise by an exact bound, the only grade that can promote a gate), estimated (an interval on labelled unselected rows of the current policy, rubric and evidence version, looked at again with every label, so not a promise), borrowed (evidence that is not this gate's labels, shadow only) or none. Observed is accuracy of the leading answer on labelled rows; expected is their mean stated confidence. The act bar is the actAbove to rule with: the lowest probability that acting is right at which acting was right often enough, by the lower end of a 95% Wilson interval (a one-sided 97.5% bound), on the rows at or above it; point is where the point estimate alone would put it, which is not a bar to act at; coverage is the share of the fitted rows at or above the act bar; "none" means no bar held. Rows fitted on "all" were selected by the engine's own confidence, so treat that bar as a fallback. Only blind, census and unsourced labels fit a bar; consequence counts labels inferred from what happened next, which no other column reads. Fixed rows were decided by a floor or an allowlist without a call; they remain in operational counts but never in calibration or fitted thresholds. A saturated verdict sits beyond 0.001 or 0.999, where no bar can tell one from another. A battery's spend is recorded on its member rows; its own row carries the ruling.
 ```
+
+At `--target 0.95` the same ledger has act bars where the rows can bound one:
+
+```text
+$ bun run ratchet report experiments/out/cli-example-ledger.jsonl --target 0.95
+...
+## Act bars
+
+- bash.safe: act above 0.319: acting was right on 97.6% of the 327 rows at or above it (77.9% of 420 unselected rows), lower end of the 95% interval 95.2% >= 95.0%; the point estimate alone would act above 0.181
+- ticket.route: no act bar: too few rows for one at 95.0%; the point estimate clears it above 0.995 (95.7% of 46 rows) but the lower end of its 95% interval is 85.5%, so label more before acting on it (fitted on 250 unselected rows)
+- stop.done: act above 0.230: acting was right on 100.0% of the 100 rows at or above it (66.7% of 150 unselected rows), lower end of the 95% interval 96.3% >= 95.0%; the point estimate alone would act above 0.014
+- stop.done/tests (member): act above 0.797: acting was right on 100.0% of the 85 rows at or above it (56.7% of 150 unselected rows), lower end of the 95% interval 95.7% >= 95.0%; the point estimate alone would act above 0.241
+- stop.done/claims (member): no act bar: too few rows for one at 95.0%; the point estimate clears it above 0.443 (95.9% of 97 rows) but the lower end of its 95% interval is 89.9%, so label more before acting on it (fitted on 150 unselected rows)
+- stop.done/scope (member): no act bar: too few rows for one at 95.0%; the point estimate clears it above 0.825 (95.1% of 81 rows) but the lower end of its 95% interval is 88.0%, so label more before acting on it (fitted on 150 unselected rows)
+```
+
+`bash.safe` acts above 0.319 because most of its commands are safe and acting at a moderate
+p(yes) was right 97.6% of the time; its leading-answer bar would have sat at 0.962, on a number
+that also counted its confident denials.
 
 How to read it:
 
@@ -263,6 +332,12 @@ How to read it:
   is measured: its first 149 shadow acts were all right, and that alone bounds its accuracy at
   98% or better. `stop.done` is right 99.3% of the time on 150 rows, but only 91 of them are
   acts, short of the 149 a 98% plan needs, so it is estimated, however good the estimate looks.
+- **older** counts the gate's rows recorded under an older configuration (policy, rubric or
+  evidence version). A single-question gate whose rows still hold another question its newest
+  request did not ask (a renamed question) lists it under **Questions not in the newest
+  request**, with what to do about it. The columns from **labelled** to **Brier**, the act bar and the grade read
+  only the current configuration, so a figure never mixes the gate that answers now with one
+  that no longer does; the operations table reads every row.
 - **labelled** counts actual oracle answers with an outcome that did not fail open, from any
   label source but a consequence one; every accuracy number is computed on them. **unselected**
   is the part of that the oracle's confidence did not select (shadow rows and blind audits) with
@@ -274,14 +349,37 @@ How to read it:
   `expectedAllRows`, the label-free estimate over every answered row.)
 - **posture** is `underconfident` when observed beats expected by more than 2 points,
   `overconfident` when it falls short by more than 2, `calibrated` otherwise. It says which way
-  a bar can move: `ticket.route` claims 91% and delivers 78%, so its bar has to sit near the top
-  (0.998, covering 12%), while `bash.safe` delivers more than it claims.
-- **bar** is `fitThreshold(rows, target, minSupport)`: the lowest confidence whose rows at or
-  above it reached the target, with at least `--min-support` of them. **coverage** is the share
-  of the fitted rows at or above the bar (with the count), which is the share of traffic the gate
-  could decide automatically at that promise. The bar is fitted on unselected rows when there
-  are at least `--min-support` of them, else on every labelled row from a trusted source, shown
-  as `all (n), biased`. `none` means no bar reached the target with enough support.
+  a bar can move: `ticket.route` claims 91% and delivers 78%, so even its point bar has to sit
+  near the top (0.998, on 30 rows, too few for an act bar), while `bash.safe` delivers more than
+  it claims.
+- **act bar** is the `actAbove` to rule with, and the **Act bars** lines say what each rests
+  on. It is fitted on the act side: on the probability that acting is right as the policy reads
+  it (for a judge gate, p(yes), or 1 - p(yes) when no is the go side, read from each row's own
+  `go`), against whether acting was right (`scoredForAct`, the scoring the acceptance test uses).
+  The leading answer's confidence would also count a confident "no" toward the promise, which
+  acting never makes: in an offline repro (T2-04) a bar read that way promised 95% and delivered
+  80% acting at it, and live (T1-06) the leading-answer bar delivered 89% act precision against
+  a 98% target. And it is conservative: the lowest bar at which the lower end of the 95% Wilson
+  interval of acting right (z 1.96, so a one-sided 97.5% bound), on the rows at or above it,
+  reaches `--target`, with at least `--min-support`
+  of them (`fitThreshold` with `conservative`, the rule a [profile](#profile)'s bar is read
+  with). At 98% that takes at least 189 rows above the bar with no wrong act, which is why
+  nothing in the example has one. **point** is the same fit on the point estimate: never above
+  the act bar, and not a bar to act at, since a lucky run on a few rows clears it (a bar fitted
+  at 98% on one set of templates delivered 91.2% on held-out ones). When only the point bar
+  exists, the line says the rows are too few and what the lower bound is. **coverage** is the
+  share of the fitted rows at or above the act bar (with the count), which is the share of
+  traffic the gate could decide automatically at that promise. Both bars read the current
+  configuration's unselected rows when there are at least `--min-support` of them, else every
+  labelled row from a trusted source, shown as `all (n), biased`. `none` means no bar held.
+  Observed, expected, ECE and Brier stay those of the leading answer.
+- **Batteries** reads, for a battery gate, how often its combined verdicts sit beyond 0.001 or
+  0.999, where no bar can tell one from another. At 20% or more, under any combiner but `any` or
+  `all`, it says what to combine with instead: log-odds pooling treats members as evidence for
+  one answer, so a disjunction ("does any apply?") wants `combine: "any"`, a conjunction ("do all
+  hold?") `combine: "all"`, and either can be fitted with a learned combiner on labelled member
+  rows. The example's `stop.done` pools three conjuncts in log-odds and saturates on 67% of its
+  verdicts.
 - **errors** groups failed-open rows by class: `HTTP <status>`, `timeout`, `aborted`,
   `short batch`, `malformed`, `unrecorded` (failed open with no message, as a budget cap does),
   or the message with numbers masked.
@@ -307,10 +405,13 @@ $ bun run ratchet report experiments/out/cli-example-ledger.jsonl --gate ticket.
     {
       "gate": "ticket.route",
       "rows": 250,
+      "older": 0,
       "requests": 250,
       "labelled": 250,
       "unselected": 250,
       "consequence": 0,
+      "unregistered": 0,
+      "unregisteredSources": [],
       "accuracy": 0.776,
       "expectedAccuracy": 0.91060259187894,
       "expectedAllRows": 0.91060259187894,
@@ -319,7 +420,7 @@ $ bun run ratchet report experiments/out/cli-example-ledger.jsonl --gate ticket.
       "brier": 0.19386210580839905,
       "fittedFrom": "unselected",
       "fitRows": 250,
-      "fitted": {
+      "pointFitted": {
         "threshold": 0.9980659352160888,
         "coverage": 0.12,
         "accuracy": 1,
@@ -356,11 +457,18 @@ $ bun run ratchet report experiments/out/cli-example-ledger.jsonl --gate ticket.
 }
 ```
 
-`grade` is the evidence-grade union exactly as `gradeOf` returns it, one shape per `kind`:
+`fitted` is the act bar and `pointFitted` the point estimate's (each `threshold`, `coverage`,
+`accuracy` of acting, `n`), present when they exist; `ticket.route` has only the point one.
+`older` counts the rows of older configurations; the counts and figures beside it read the
+current configuration. `grade` is the evidence-grade union exactly as `gradeOf` returns it, one
+shape per `kind`:
 `measured` carries `plan` (the resolved plan with its hash), `lowerBound`, `errors`,
 `sampleSize`, `sources` and `at`; `estimated` carries `accuracy`, `lower`, `upper`, `n`,
-`confidence`, `sources` and `at`; `borrowed` carries `via` and `at`; `none` carries `reason`,
-`labelled` and `unselected`, and a stale borrowed grade also carries `"stale": true`. A battery
+`confidence`, `sources` and `at`, and `older` when labels under an older configuration were not
+read; `borrowed` carries `via` and `at`; `none` carries `reason`, `labelled` and `unselected`
+(both of the current configuration) and `older`, and a stale borrowed grade also carries
+`"stale": true`. A battery gate carries `battery`: `combine` (when its rows record it),
+`verdicts`, `saturated` and `share`. A battery
 member's entry also carries `"memberOf": "<gate>"`, a report read with `--trust` carries
 `"labelTrust"`, the entries given, and one read with `--profile` carries `"profiles"`, each
 offered profile's `hash` and `key`.
@@ -375,36 +483,56 @@ ratchet check <ledger> --gate <id> --promise <p> [--require measured|estimated] 
 | --- | --- | --- |
 | `--gate <id>` | required | the gate to judge |
 | `--promise <p>` | required | accuracy promised on the rows the policy acts on, and the promise a measured grade is read against |
-| `--require <grade>` | by mode | the weakest [grade](#evidence-grades) that passes: `measured` or `estimated`; by default measured when any row in the window enforces, estimated while the gate is in shadow |
+| `--require <grade>` | by mode | the weakest [grade](#evidence-grades) that passes: `measured` or `estimated`; by default measured when the gate's newest row enforces, estimated while the gate is in shadow (after a demotion too) |
 | `--min-rows <n>` | 30 | rows needed before accuracy or ECE is judged |
-| `--min-estimated <n>` | 30 | labelled unselected rows an estimated grade needs |
+| `--min-estimated <n>` | 30 | labelled unselected rows of the current configuration an estimated grade needs |
 | `--max-ece <e>` | not checked | ECE bound |
 | `--model <id>` | not checked | the pinned model version |
 | `--window <n>` | 500 | most recent rows of the gate to judge, by timestamp |
 | `--trust <prefix>=<class>` | the defaults | read a label source as a trust class; repeatable |
-| `--profile <file>` | none | a [calibration profile](#profile) a gate with no fitted bar may be graded borrowed from, matched against `--model` when it is given; repeatable. Borrowed never passes, so this only says what the gate has |
-| `--min-support <n>` | 30 | with `--profile`: labelled rows a bar of the gate's own needs at or above it, as in `report` |
+| `--profile <file>` | none | a [calibration profile](#profile) a gate may be graded borrowed from until its own labels grade it estimated, matched against `--model` when it is given; repeatable. Borrowed never passes, so this only says what the gate has |
+| `--min-support <n>` | 30 | labelled rows the fitted act bar on the line needs at or above it, as in `report` |
 
 The check fails when the gate's grade is weaker than `--require`, or when, in the most recent
-`--window` rows of the gate, any of these holds:
+`--window` rows of the gate, any of these holds. Accuracy and calibration read only the rows
+recorded under the gate's current configuration (its newest row's evidence version, each
+question at its newest policy and rubric), as the grade does: a looser policy or a new rubric earns
+nothing from labels the old one collected, and the line ends by counting the window's rows under
+an older configuration (`window 50 of 50 rows, 40 of them under an older policy, rubric or
+evidence version and not read`; `olderRows` in `checkGate`'s result). On a single-question gate, a question its newest
+request did not ask but whose rows still read as current (a renamed one) is named on the line,
+never failed on: `question \`safe.v1\`: 40 labels, last asked 2026-11-12, not in the newest
+request; bump evidenceVersion to retire it` (`strays` in the result).
+
+The line also carries the gate's fitted act bar at `--promise`, as `report` fits it, with
+`--min-support` rows at or above it: `act bar 0.970: acting right 100.0% on the 80 rows at or
+above it, lower end of the 95% interval >= 95.0%`, or why there is none (`no act bar at 98.0%:
+the point estimate's 0.368 rests on 325 rows, too few for the lower end of a 95% interval to
+clear it`). It never fails the check;
+it says where the gate could act. `bar` in `checkGate`'s result carries it.
 
 0. **Grade.** The gate's [evidence grade](#evidence-grades), read from its whole history against
-   `--promise`, is weaker than the grade required. By default that depends on the gate: if any
-   row in the window enforces, the gate acts on its own and owes its promise an exact bound, so
-   `measured` is required; while it is in shadow the check asks whether it is on course, not
-   whether it has proven itself, so `estimated` (at least `--min-estimated` labelled
-   unselected rows) is enough. The line says which applied and why
-   (`requiring measured: this gate enforces`, or `requiring estimated: this gate is in shadow;
-   pass --require measured to insist`). `--require` overrides either way. Borrowed evidence and
-   none never pass. A promise of 1 cannot be measured: `--promise 1 --require measured` is a
-   usage error, and an enforcing gate held to it by default fails with that reason.
-1. **Accuracy.** Among labelled, unselected rows (shadow rows and blind audits, labelled from a
-   trusted source) on which the recorded policy said act, the share where acting was right is below `--promise`, and there are
-   at least `--min-rows` such rows. In shadow mode these are the acts the engine would have made;
-   in enforce mode they are the blind audits. Confidence-selected rows never count: they are the
-   engine grading its own homework.
-2. **Calibration.** ECE is above `--max-ece`, on the unselected labelled rows when there are at
-   least `--min-rows` of them, else on every labelled row, and only with at least `--min-rows`.
+   `--promise`, is weaker than the grade required. By default that depends on what the gate does
+   now, its newest row's mode: if that row enforces, the gate acts on its own and owes its promise
+   an exact bound, so `measured` is required; while it is in shadow, including after a demotion
+   that left enforce rows in the window, the check asks whether it is on course, not whether it
+   has proven itself, so `estimated` (at least `--min-estimated` labelled unselected rows) is
+   enough. The line says which applied and why (`requiring measured: this gate enforces`,
+   `requiring estimated: this gate is in shadow; pass --require measured to insist`, or after a
+   demotion `requiring estimated: this gate is in shadow now (enforce rows in the window predate
+   its newest row)`). `--require` overrides either way. Borrowed evidence and none never pass. A
+   promise of 1 cannot be measured: `--promise 1 --require measured` is a usage error, and an
+   enforcing gate held to it by default fails with that reason.
+1. **Accuracy.** Among labelled, unselected rows of the current configuration (shadow rows and
+   blind audits, labelled from a trusted source) on which the recorded policy said act, the share
+   where acting was right is below `--promise`, and there are at least `--min-rows` such rows. In
+   shadow mode these are the acts the engine would have made; in enforce mode they are the blind
+   audits. Confidence-selected rows never count: they are the engine grading its own homework,
+   and nor do a chain's retries (rows tagged `chain:attempt:<n>` with n of 2 or more), which
+   exist only because an earlier attempt was held back.
+2. **Calibration.** ECE is above `--max-ece`, on the current configuration's unselected labelled
+   rows when there are at least `--min-rows` of them, else on every labelled row of it, and only
+   with at least `--min-rows`.
 3. **Model pin.** Any row in the window that a model answered reports a model other than
    `--model`. Rows that failed open and rows a floor or an allowlist fixed are skipped; for a
    battery the members are checked, since they are the rows a model answered. A row that answered
@@ -419,27 +547,27 @@ behind it. In `checkGate`'s result, `grade` and `require` carry the same, and `e
 
 ```text
 $ bun run ratchet check experiments/out/cli-example-ledger.jsonl --gate bash.safe --promise 0.95
-PASS bash.safe: requiring estimated: this gate is in shadow; pass --require measured to insist; measured as of 2026-10-17: exact 95% lower bound 95.05% >= promised 95.0% on a planned sample of 59 acts, 0 wrong (labels: unsourced 59); acted accuracy 98.7% on 230 shadow acted rows (promise 95.0%); ECE 0.030 on 420 unselected rows; window 436 of 436 rows
+PASS bash.safe: requiring estimated: this gate is in shadow; pass --require measured to insist; measured as of 2026-10-17: exact 95% lower bound 95.05% >= promised 95.0% on a planned sample of 59 acts, 0 wrong (labels: unsourced 59); acted accuracy 98.7% on 230 shadow acted rows (promise 95.0%); ECE 0.030 on 420 unselected rows; act bar 0.319: acting right 97.6% on the 327 rows at or above it, lower end of the 95% interval >= 95.0%; window 436 of 436 rows
 $ echo $?
 0
 
 $ bun run ratchet check experiments/out/cli-example-ledger.jsonl --gate bash.safe --promise 0.95 --model sim-p0.93-rho0
-FAIL bash.safe: 120 of 420 answered rows came from models other than the pinned sim-p0.93-rho0: sim-p0.85-rho0 (120); requiring estimated: this gate is in shadow; pass --require measured to insist; measured as of 2026-10-17: exact 95% lower bound 95.05% >= promised 95.0% on a planned sample of 59 acts, 0 wrong (labels: unsourced 59); window 436 of 436 rows
+FAIL bash.safe: 120 of 420 answered rows came from models other than the pinned sim-p0.93-rho0: sim-p0.85-rho0 (120); requiring estimated: this gate is in shadow; pass --require measured to insist; measured as of 2026-10-17: exact 95% lower bound 95.05% >= promised 95.0% on a planned sample of 59 acts, 0 wrong (labels: unsourced 59); act bar 0.319: acting right 97.6% on the 327 rows at or above it, lower end of the 95% interval >= 95.0%; window 436 of 436 rows
 $ echo $?
 1
 
 $ bun run ratchet check experiments/out/cli-example-ledger.jsonl --gate ticket.route --promise 0.95 --max-ece 0.05
-FAIL ticket.route: acted accuracy 81.0% on 195 shadow acted rows is below the promise 95.0%; ECE 0.152 on 250 unselected rows exceeds 0.05; requiring estimated: this gate is in shadow; pass --require measured to insist; estimated as of 2026-10-17: 77.6% right on 250 labelled unselected rows (labels: unsourced 250), 95% interval 72.0% to 82.3%, 10.3 points wide, not a planned sample; window 250 of 250 rows
+FAIL ticket.route: acted accuracy 81.0% on 195 shadow acted rows is below the promise 95.0%; ECE 0.152 on 250 unselected rows exceeds 0.05; requiring estimated: this gate is in shadow; pass --require measured to insist; estimated as of 2026-10-17: 77.6% right on 250 labelled unselected rows (labels: unsourced 250), 95% interval 72.0% to 82.3%, 10.3 points wide, not a planned sample; no act bar at 95.0%: the point estimate's 0.995 rests on 46 rows, too few for the lower end of a 95% interval to clear it; window 250 of 250 rows
 $ echo $?
 1
 
 $ bun run ratchet check experiments/out/cli-example-ledger.jsonl --gate stop.done --promise 0.98 --max-ece 0.05 --model sim-p0.93-rho0
-PASS stop.done: requiring estimated: this gate is in shadow; pass --require measured to insist; estimated as of 2026-10-17: 99.3% right on 150 labelled unselected rows (labels: unsourced 150), 95% interval 96.3% to 99.9%, 3.6 points wide, not a planned sample; acted accuracy 100.0% on 91 shadow acted rows (promise 98.0%); ECE 0.018 on 150 unselected rows (max 0.05); model sim-p0.93-rho0 on all 450 answered rows; window 150 of 150 rows
+PASS stop.done: requiring estimated: this gate is in shadow; pass --require measured to insist; estimated as of 2026-10-17: 99.3% right on 150 labelled unselected rows (labels: unsourced 150), 95% interval 96.3% to 99.9%, 3.6 points wide, not a planned sample; acted accuracy 100.0% on 91 shadow acted rows (promise 98.0%); ECE 0.018 on 150 unselected rows (max 0.05); model sim-p0.93-rho0 on all 450 answered rows; no act bar at 98.0%: the point estimate's 0.040 rests on 102 rows, too few for the lower end of a 95% interval to clear it; window 150 of 150 rows
 $ echo $?
 0
 
 $ bun run ratchet check experiments/out/cli-example-ledger.jsonl --gate stop.done --promise 0.98 --max-ece 0.05 --model sim-p0.93-rho0 --require measured
-FAIL stop.done: requires measured evidence, has estimated as of 2026-10-17: 99.3% right on 150 labelled unselected rows (labels: unsourced 150), 95% interval 96.3% to 99.9%, 3.6 points wide, not a planned sample; requiring measured, as --require asks; window 150 of 150 rows
+FAIL stop.done: requires measured evidence, has estimated as of 2026-10-17: 99.3% right on 150 labelled unselected rows (labels: unsourced 150), 95% interval 96.3% to 99.9%, 3.6 points wide, not a planned sample; requiring measured, as --require asks; no act bar at 98.0%: the point estimate's 0.040 rests on 102 rows, too few for the lower end of a 95% interval to clear it; window 150 of 150 rows
 $ echo $?
 1
 
@@ -458,9 +586,13 @@ needs, so `--require measured` fails it, with the estimate on the line.
 
 Things to know before putting it in CI:
 
-- **The requirement follows the gate.** A shadow gate needs an estimate; once a row in the
-  window enforces, the gate needs a measured grade, so promoting it by hand without a planned
-  sample turns CI red. Pass `--require measured` to hold a shadow gate to the exact bound.
+- **The requirement follows the gate.** A shadow gate needs an estimate; once its newest row
+  enforces, the gate needs a measured grade, so promoting it by hand without a planned sample
+  turns CI red, and a demotion back to shadow turns the requirement back to an estimate. Pass
+  `--require measured` to hold a shadow gate to the exact bound.
+- **A changed configuration starts from nothing.** Edit the rubric, the policy or the evidence
+  version and the old labels stop counting: the grade reads none until the new configuration has
+  its own, so CI turns red rather than passing on another gate's evidence.
 - **Too few labels fails; too few rows to judge a figure passes, said out loud.** A gate with
   fewer than `--min-estimated` labelled unselected rows has no grade and fails. Below
   `--min-rows`, accuracy and ECE are reported as `not judged` and do not fail the check. Read
@@ -549,40 +681,60 @@ Semantics, precisely:
   with.
 - **Rows no answer decided** (strategy `floored` or `bypass`) keep their recorded action, since
   there is no answer to re-rule. Failed-open rows take the policy default, review.
-- **Floors on answered rows.** A floor that raised caution on a row the oracle did answer is not
-  stored separately on the row, so replay cannot reapply it; such rows are re-ruled on their
-  verdict alone.
+- **Floors on answered rows.** A floor that bounded a row the oracle did answer is stored on the
+  row (`floor`) and is reapplied: the row is re-ruled with `rule()` under that floor, so a new
+  bar never acts on a row a floor held back.
 - When the labelled slice contains confidence-selected rows (enforce mode outside audits), a
   second table repeats the comparison on unselected rows only, which is the slice to trust.
 
 ## `review`
 
 ```text
-ratchet review <ledger> --gate <id> [--sample 20] [--seed <n>] [--reviewer <name>] [--denied]
+ratchet review <ledger> --gate <id> [--sample 20] [--seed <n>] [--reviewer <name>] [--denied | --audits]
 ```
 
 Labels that arrive in the moment (an approval click, an accepted suggestion) are not the same
 evidence as a considered judgment. `review` measures the difference. It draws a seeded uniform
 sample of one judge gate's decision rows that kept their state (`Engine` `keepState`) and have
-not been reviewed, shows each state exactly as the oracle saw it, and asks for a verdict
-(`y`, `n`, `s` to skip, `q` to stop). Nothing about the model's answer or an earlier label is
-shown until the session ends, so neither can steer the next answer; the summary then reports how
-often your answers matched the model's lean and the earlier labels, and lists the rows whose
-label changed.
+not been reviewed, shows the question the gate asks (the row's `prompt`) and each state exactly
+as the oracle saw it, and asks for that question's answer: `Does this post need moderator
+action? [y]es / [n]o / [s]kip / [q]uit`, with `s` to skip and `q` to stop. A long rubric is
+printed in full once and asked by its first sentence. Your answer is the row's truth for the
+question as written, whichever side the gate acts on, so a gate that asks "does this need
+action?" is labelled in its own terms, not as an approval. Nothing about the model's answer or
+an earlier label is shown until the session ends, so neither can steer the next answer; the
+summary then reports how often your answers matched the model's lean (its answer to the same
+question) and the earlier labels, and lists the rows whose label changed.
 
 The sample is drawn by the seed, never chosen by hand, and the seed is printed so the draw can be
 repeated. Each answer becomes the row's label with source `review:blind` (or
 `review:blind:<name>`); a replaced label is kept in the note, and the append-only ledger keeps
-both outcome lines. A battery's members inherit the review through the battery's truth, as
-`Engine.label` does. Reviewed rows are not drawn again.
+both outcome lines. Reviewed rows are not drawn again.
+
+A battery is reviewed member by member. Each member's question is printed and asked in turn,
+and each answer is recorded as that member's own truth (`Outcome.memberTruths`); a skipped
+member stays unlabelled rather than inheriting the battery's answer. The battery's own truth
+follows from the answers for an `any` battery (their OR) and an `all` battery (their AND); for
+any other combiner, or when skips leave it open, one last question asks whether acting on the
+row was right ("Overall, should <gate> act on this (it acts when its combined answer is
+yes)?"), and the answer is read through the gate's polarity. One answer to one composite
+question used to become every member's truth, which mislabels an `any` battery's members.
 
 `--denied` reviews every unreviewed row whose current label is a denial, in ledger order, instead
-of a random sample (`--sample` and `--seed` are then ignored). Denials are rare and often judge
-the moment rather than the call, so each deserves a considered look. The rows are chosen by the
-person's label and never by the model's verdict, so the gate's measured accuracy stays unbiased;
-but a review of denials can only move labels toward approval, which flatters a gate that mostly
-approves, so it is paired with the uniform sample, whose disagreement rate bounds what the
-unreviewed approvals hide.
+of a random sample (`--sample` and `--seed` are then ignored). A denial is a label that says
+acting was wrong, read through the row's own polarity: the `go` it was ruled with, else (a
+failed-open or exactly-even row records none) the polarity of the rows ruled under the same
+policy (`policyHash`), else the gate's majority. So a `no` on an "approve?" gate, a `yes` on a
+"needs action?" gate, and each row of a gate that changed polarity by its own policy. Denials are rare and often judge the moment rather than the call, so each
+deserves a considered look. The rows are chosen by the person's label and never by the model's
+verdict, so the gate's measured accuracy stays unbiased; but a review of denials can only move
+labels toward acting, which flatters a gate that mostly acts, so it is paired with the uniform
+sample, whose disagreement rate bounds what the unreviewed rest hides.
+
+`--audits` reviews every unreviewed blind audit, in ledger order: the rows tagged `audit`, acts
+an enforcing gate diverted to review at random (`auditRate`). They are the labels that can
+demote an enforcing gate, and like the uniform sample they are unselected, so a review of them
+is evidence. `--denied` and `--audits` are separate queues; a session takes one.
 
 ## `trail`
 
@@ -598,8 +750,8 @@ ratchet trail <ledger> [--gate <id>] [--request <id>] [--last <n>] [--target 0.9
 | `--target <p>` | 0.98 | the promise each bar's grade is read against, as in `report` |
 | `--min-estimated <n>` | 30 | labelled unselected rows an estimated grade needs |
 | `--trust <prefix>=<class>` | the defaults | read a label source as a trust class; repeatable |
-| `--profile <file>` | none | a [calibration profile](#profile) a bar with no fitted bar under it may be graded borrowed from; repeatable |
-| `--min-support <n>` | 30 | with `--profile`: labelled rows a fitted bar needs at or above it |
+| `--profile <file>` | none | a [calibration profile](#profile) a bar may be graded borrowed from until the rows under it grade estimated; repeatable |
+| `--min-support <n>` | 30 | labelled rows an act bar needs at or above it, as in `report` |
 | `--json` | off | the `Trail` object instead of text |
 
 `report` says what a gate's record adds up to; `trail` shows the record itself. One section per
@@ -641,8 +793,9 @@ The act bar printed per gate is **inferred** from the rulings: it lies above the
 policy held back and at or below the lowest it acted on, over answered rows with no floor, one
 bar per policy hash. The ledger stores the policy only as a hash, so this is what the record can
 say about the bar, and when the rulings fit no single bar the line says so. Each bar line ends
-with the [grade](#evidence-grades) of the gate's rows under that policy, so a changed bar starts
-its own planned sample rather than inheriting the old one's; in `--json` each entry of `bars`
+with the [grade](#evidence-grades) of the gate's rows under that policy (and of those, the newest
+rubric and evidence version), so a changed bar starts its own planned sample and its own estimate
+rather than inheriting the old one's; in `--json` each entry of `bars`
 carries it as `grade`, and the `Trail` carries the levers it was read with (`target`,
 `minEstimated`, `labelTrust`, and with `--profile`, `profiles` and `minSupport`). A row of a gate
 whose bar was borrowed from a profile records it in `detail.barSource`, and its section says
@@ -669,7 +822,7 @@ command line. The server reuses `buildTrail`, so the page shows exactly what the
 ## `profile`
 
 ```text
-ratchet profile build <ledger...> --model <pin> --kind <judge|pick|rate> [--question-hash <h>] [--target 0.98 ...] [--min-support 30] [--trust <prefix>=<class> ...] [--out <file>]
+ratchet profile build <ledger...> --model <pin> --kind <judge|pick|rate> [--question-hash <h>] [--target 0.98 ...] [--min-support 30] [--resolution 100] [--trust <prefix>=<class> ...] [--out <file>]
 ratchet profile show <file> [--json]
 ratchet profile merge <a> <b> [<c> ...] --out <file>
 ```
@@ -687,9 +840,12 @@ labelled with its battery's truth), for `--kind` questions, and with `--question
 rubric. It keeps them as `--resolution` equal confidence bins per donor gate, 100 by default, so
 a bar can sit at any hundredth. The bar for each `--target` is the **cautious end**: the lowest
 bin edge at which every donor gate with at least `--min-support` rows in its tail (every row at
-or above the edge, not the bin's own rows) clears the target on that tail by a 95% Wilson lower
-bound, with at least one gate that well supported. On one gate that is how `report` fits a bar
-with the conservative bound, so a borrowed bar and a fitted bar mean the same thing. Across
+or above the edge, not the bin's own rows) clears the target on that tail at the lower end of a
+95% Wilson interval (a one-sided 97.5% bound), with at least one gate that well supported. On one gate that is how `report` fits its act
+bar, conservatively, so for pick and rate questions a borrowed bar and a fitted bar mean the same
+thing. A judge profile's bins are still read on the leading answer's confidence, where a gate's
+act bar is read on the side its policy acts on, so a borrowed judge bar is the cautious bar for a
+gate whose go side leads on the rows that matter, not an act bar in general. Across
 gates it is the strictest donor's bar, not the average: a profile is lent to a gate none of its
 donors is, so it must hold on every gate it was read from, and one gate whose questions the
 model is confidently wrong on holds the bar up, or leaves the promise with none, while a gate the
@@ -729,7 +885,7 @@ Profile 1d0adc408bcb2be0 of sim-p0.93-rho0 judge questions, from 300 rows of gat
 | 95.0%   | 0.670 | 298     | 0.720     |
 | 98.0%   | 0.860 | 228     | 0.910     |
 
-Bars sit on the edges of 100 equal bins. A bar is the lowest edge at which every donor gate with at least 30 rows in its tail (every row at or above the edge) keeps the promise on that tail by a 95% Wilson lower bound: the strictest donor's bar, since a profile is lent to gates it has not seen. "support" is the fewest tail rows among the gates that kept it; "none" means no edge held on every such gate. Each gate's own bar is below, for reading. "act above" is what policyFromProfile puts in a policy: the bar plus a 0.05 half-band.
+Bars sit on the edges of 100 equal bins. A bar is the lowest edge at which every donor gate with at least 30 rows in its tail (every row at or above the edge) keeps the promise on that tail at the lower end of a 95% Wilson interval (a one-sided 97.5% bound): the strictest donor's bar, since a profile is lent to gates it has not seen. "support" is the fewest tail rows among the gates that kept it; "none" means no edge held on every such gate. Each gate's own bar is below, for reading. "act above" is what policyFromProfile puts in a policy: the bar plus a 0.05 half-band up to a bar of 0.9, and above that the same band in log-odds, so it stays below 1.
 
 ## Donor gates
 
@@ -766,20 +922,22 @@ and equals one build over every row. Profiles that name the same ledger are refu
 rows would count twice, and so are profiles of different resolutions, whose bars sit on
 different edges.
 
-**Borrowing.** `report`, `check` and `trail` take `--profile <file>` (repeatable). A gate with no
-fitted bar of its own (at `--target` or `--promise`, with `--min-support` rows) is matched by the
-model of its newest answered row (or `check --model`, a pin) and its question kind against each
-profile's key, a profile keyed to the gate's rubric first; the first that matches lends its bar
-for the command's promise, and the grade, when nothing stronger exists, is `borrowed`. A gate
-that pools answers (a battery, an ensemble) matches nothing, and no profile is shopped past for
-one with a bar. On the example ledger nothing borrows: every gate has a fitted bar, and
-`bash.safe`'s newest answers come from `sim-p0.85-rho0`, so a `sim-p0.93-rho0` profile has
-expired for it. The report says what it was offered:
+**Borrowing.** `report`, `check` and `trail` take `--profile <file>` (repeatable). A gate whose
+own labels do not yet grade it estimated or measured is matched by the model of its newest
+answered row (or `check --model`, a pin) and its question kind against each profile's key, a
+profile keyed to the gate's rubric first; the first that matches lends its bar for the command's
+promise, and the grade is `borrowed`. Lending lasts until the gate's own labels grade it, not
+until they first fit a bar: a gate with 20 to 29 labels used to fit a point-estimate bar, lose
+the borrowed one, and grade none. A gate that pools answers (a battery, an ensemble) matches
+nothing, and no profile is shopped past for one with a bar. On the example ledger nothing
+borrows: every gate has an estimate or better, and `bash.safe`'s newest answers come from
+`sim-p0.85-rho0`, so a `sim-p0.93-rho0` profile has expired for it. The report says what it
+was offered:
 
 ```text
 $ bun run ratchet report experiments/out/cli-example-ledger.jsonl --profile sim-judge.json
 ...
-Profiles offered with --profile: 1d0adc40 (sim-p0.93-rho0 judge questions). A gate with no fitted bar borrows from the first that matches it, shadow only.
+Profiles offered with --profile: 1d0adc40 (sim-p0.93-rho0 judge questions). A gate borrows from the first that matches it until its own labels grade it estimated, shadow only.
 ```
 
 A gate built from a profile in code (`policyFromProfile` and `GateSpec.barSource`) records
@@ -808,9 +966,27 @@ atLeast(grade: EvidenceGrade, kind: GradeKind): boolean
 rows' current phase (with `model` to pin it), `minEstimated` (30), `confidence` (0.95), the trust
 filter (`sources`, default blind, census and unsourced; `trust`), an optional `borrowed` input
 with `borrowedAt` (its date, when it does not carry one), and `now`, the clock used only for
-evidence nothing else can date. `gradeGroup` in `src/cli/common.ts` is how the commands call it, and
-`wilsonInterval(p, n, confidence)` in `calibration.ts` is the estimate's interval, with
-`wilsonLower` as its lower end. `stale` marks a borrowed profile the gate has moved off.
+evidence nothing else can date. `wilsonInterval(p, n, confidence)` in `calibration.ts` is the
+estimate's interval, with `wilsonLower` as its lower end. `stale` marks a borrowed profile the
+gate has moved off. `currentConfiguration(rows)` splits rows into the current configuration
+(the newest row's evidence version, each question at its newest policy and rubric) and the
+rest: the scope an estimate, a fitted bar, `check` and the report's calibration columns read.
+
+`src/ledger/bars.ts` is how every surface reads a gate, `Gate.report()` and `Engine.report()` as
+much as the commands (through `groupEvidence` in `src/cli/common.ts`):
+
+```ts
+gateEvidence(rows, opts?: GateEvidenceOptions): GateEvidence  // { levers, bar, grade, battery? }
+fitActBar(rows, { trust?, target, minSupport }): ActBar       // { fitted?, pointFitted?, fittedFrom?, fitRows? }
+describeActBar(bar: ActBar, levers: ReportLevers): string      // the "Act bars" line
+batteryReadout(rows): BatteryReadout | undefined               // saturated combined verdicts
+REPORT_DEFAULTS                                                // in evidence.ts: 0.98, 30, 30
+```
+
+`scoredForAct(rows, opts?)` in `calibration.ts` scores labelled rows on the act side (the
+probability acting is right against whether it was), which is what the act bar is fitted on;
+`disagreement(rows, { keys? })` measures two members of different model families
+(`modelFamily`) on compound rows and returns borrowed evidence ready for `gradeOf`.
 
 `src/ledger/profile.ts` and `src/ledger/borrow.ts` hold the profile `ratchet profile` writes:
 
@@ -822,12 +998,12 @@ profileMatches(profile, gate: ProfileGate): boolean   // same model, kind, and r
 profileAge(profile, now: Date): number                // days since the newest row read
 parseProfile(data: unknown): CalibrationProfile       // checks a file's shape, bars and hash
 borrowFor(rows, profiles, { target, model? }): Borrowing | undefined
-policyFromProfile(profile, target, opts?): GatePolicy // in policy.ts: the bar plus 0.05
+policyFromProfile(profile, target, opts?): GatePolicy // in policy.ts: the bar plus 0.05, in log-odds above 0.9
 ```
 
 `ProfileOptions` carries `ledgers` (named in the donor), `targets` (`PROFILE_TARGETS`: 0.9, 0.95, 0.98, 0.99), `minSupport` (30)
 and the trust filter. `borrowFor` is what `report`, `check`, `trail` and `Engine.report` (with
-`EngineOptions.profiles`) call for a gate with no fitted bar.
+`EngineOptions.profiles`) call for a gate until its own labels grade it estimated.
 
 `src/ledger/calibration.ts` gained the fitting modes the design asks for:
 
@@ -842,7 +1018,8 @@ coverageAt(items: readonly Scored[], threshold: number): { coverage: number; acc
 ```
 
 - `mode: "accuracy"` (the default) is unchanged: the lowest bar whose rows reach the target
-  accuracy with `minSupport` of them.
+  accuracy with `minSupport` of them. The reports call it on act-side items (`scoredForAct`)
+  with `conservative: true` for the act bar, and without it for the point bar.
 - `mode: "recall"` is for screening, where a missed include costs more than a wasted read. Rows
   at or above the bar are decided by their leading answer and the rest go to review; recall is
   the share of truly positive rows that automation did not answer "no". It returns the lowest

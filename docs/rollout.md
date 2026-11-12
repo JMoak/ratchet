@@ -51,6 +51,42 @@ labelled acts arrive.
 `evaluateAcceptance`, `requiredActs`, `exactLowerBound` and `resolvePlan` are exported for use
 outside a controller, for example in a pilot's report.
 
+## Fitting a bar the test will accept
+
+*Added 2026-11-12 from the end-to-end evaluation (e2e T1, [report](e2e/t1-toolgate.md)), run on
+authored tool calls.* The test did its job there and the bar did not earn its promise. A bar
+fitted at 98% act precision on 180 fit items (71 template groups) was right on 99 of 100 fit
+acts and on 93 of 102 acts from held-out groups of the same families (91.2%, exact lower bound
+85.1%). The planned sample of 59 acts at a 95% promise held 5 wrong; the rollout rejected it
+(lower bound 83.0%) and kept the rejection across a fresh process. All nine held-out wrong acts
+were "routine-looking, not routine" commands at pYes 0.62 to 0.89, a band the fit split had
+few denials in, so the point-estimate fit placed the bar inside it. Post hoc a bar of 0.8 was
+right on 79 of 80, 31 of 31 and 12 of 12 acts across three held-out slices at 70% to 78% of
+approvals, so the sort existed; the fit procedure did not find it. What to do instead:
+
+- **Fit on rows from many groups.** Sessions, templates, projects or customers share errors, so
+  a hundred rows from ten groups are closer to ten observations than to a hundred. Spread the fit
+  rows over as many groups as you can, and read how many distinct groups sit above a candidate
+  bar, not just how many rows.
+- **Prefer the conservative bar.** `fitThreshold(rows, target, minSupport, { conservative:
+  true })` accepts a bar only when the lower end of a 95% Wilson interval (a one-sided 97.5%
+  bound) of the precision above it clears the target; a gate's reported act bar is fitted this
+  way. When it returns no bar, that is the answer: too few rows for that target. On T1's 180
+  fit items it returned none at 98%, and on T5's 200 fit items no strategy got one at 98%. A
+  point-estimate bar on a small fit set is the one that failed here.
+- **Fit the act side.** For a judge gate, fit on whether acting was right (the go probability
+  against the truth), which is what the acceptance test scores, not on the leading answer's
+  confidence; a leading-answer bar counts confident denials as successes (e2e T1-06, T2-04).
+- **Validate on groups the fit never saw**, once, before spending the planned sample: deal whole
+  groups to fit and validation, never items of one group to both. T1's evidence split was built
+  that way, which is why it exposed the gap the fit split hid.
+- **Plan for the sample size.** A zero-error plan needs 149 clean acts for a 98% promise and 59
+  for 95%. T1's 158-item evidence split produced 102 acts, 87 after the group cap, so 98% could
+  not be tested at all. Know where 149 acts will come from before promising 98%.
+- **Size the review band from measured spread.** The act bar plus a band wide enough to cover
+  the pinned model's run-to-run movement (jev-1.13: median 0.01, max 0.11; jev-1.14: 11.4% of
+  repeated requests moved more than 0.12; see [live findings](live-findings.md)).
+
 ## The grade, and why only measured promotes
 
 Every `RolloutStatus` carries `grade`, the kind of evidence the current phase supports
@@ -173,6 +209,12 @@ single error reads below 98%, so table 8 shows a gate that is really 99% accurat
 about half the time within 2,000 acts. That costs review work, not safety. A sequential test
 with an explicit false-alarm rate would be the refinement; it is not built.
 
+The other side is speed, measured live in e2e T1. At an audit rate of 0.2 with 30 audits to
+judge, nothing can demote before about 150 acts, and the window covers the whole enforce phase
+up to 200 audits, so early clean audits dilute later errors. A gate promoted on an openly weak
+plan was demoted after 420 enforce asks and 53 audits (94.3% against a 95% promise), and 10
+wrong acts executed first. The sequential test is on the roadmap for both reasons.
+
 Audits monitor allowed acts only. They cannot promote a shadow phase, and failed-open or
 code-only rows cannot dilute audit errors.
 
@@ -210,12 +252,46 @@ may span gate ids, but unrelated policies and rubrics are excluded. Gate-level u
 
 ## Checkpoints and restart
 
-`checkpoint()` returns `{ format: 2, scopeHash, mode, afterId, rejected }`, or `undefined`
-before initialization or while configuration is invalid. Save the latest returned checkpoint
-after each evaluation that changes it. Start the application in shadow, restore the checkpoint
-through the constructor setting, and evaluate before admitting live traffic. The controller
-restores enforce only after checking its shape, scope and ledger anchor. A format 1 checkpoint
-from an earlier release still loads, as one that was never rejected.
+`checkpoint()` returns `{ format: 3, scopeHash, mode, afterId, rejected }`, plus
+`accepted: { from, sample }` on an enforce checkpoint, or `undefined` before initialization or
+while configuration is invalid. `accepted` is the planned sample that promoted the gate: the
+ids of its acts, and `from`, the row its phase began after (`null`: the target's first row);
+the phase ends at `afterId`. Save the latest returned checkpoint after each evaluation that
+changes it. Start the application in shadow, restore the checkpoint through the constructor
+setting, and evaluate before admitting live traffic. The controller restores enforce only after
+checking its shape, scope and ledger anchor, and, for a format 3 checkpoint, after re-deriving
+the planned sample from that phase of the ledger and evaluating it again: the ledger must still
+hold the same acts, labelled by sources the plan reads, and they must still pass. Otherwise it
+holds shadow and says why (no accepted sample, the phase is gone, the sample changed, or its
+labels no longer pass), so editing a saved checkpoint's `mode` to `enforce` promotes nothing.
+
+A rejection outlasts its checkpoint. Whatever phase start a checkpoint claims, enforce is
+honoured, and a promotion made, only if no complete planned sample of the configuration up to
+the anchor has already failed on the ledger, before the accepted one or after it. The
+candidates are the configuration's shadow rows since its last enforce row, each act taken as a
+possible phase start. A controller that lost its checkpoint after a rejection therefore holds
+the configuration rejected on its next test instead of promoting on a luckier sample.
+
+The cost is conservative, and deliberate:
+- Labelled shadow rows of the same configuration written before the controller was initialized
+  count too, so a planned-size stretch of them with a wrong act keeps the configuration
+  rejected.
+- Acts collected while the planned sample awaited its last labels count too. If one of them is
+  labelled wrong and completes a failed window, the gate does not promote even though its
+  planned sample passed. A label that arrives later on such an act can also make an honest
+  enforce checkpoint hold shadow on restore.
+
+Initialize before collecting evidence, as above, or bump `evidenceVersion` to start clean.
+
+Older checkpoints (migration). A format 1 checkpoint loads as one that was never rejected. A
+format 1 or 2 checkpoint in shadow loads as before. A format 1 or 2 checkpoint in enforce names
+no sample, so the restore looks for one: the earliest planned sample, drawn from an act of the
+configuration's shadow rows before the anchor, that the ledger accepts. It applies the same
+failed-sample check and, if both pass, restores enforce and writes the checkpoint back as format
+3 with that sample. Otherwise it holds shadow and says why. A gate promoted honestly under an
+older release restores to enforce. A gate whose ledger no longer passes, or which was rejected,
+does not. (Before e2e V1, older enforce checkpoints were honoured unverified, so rewriting a
+checkpoint as format 2 restored a rejected configuration.)
 
 An incompatible scope, malformed checkpoint, missing/foreign anchor, or mode change outside an
 initialized controller starts a fresh shadow phase with a human-readable reason. A null anchor
@@ -226,9 +302,23 @@ ledgers must preserve stable decision insertion order across reads, labels and r
 Checkpoints are trusted application state, not signed evidence or a tamper-proof journal.
 Ratchet does not save them, coordinate processes, detect a deliberately rolled-back checkpoint,
 or recover an unsaved mode transition after a crash. A controller started without its
-checkpoint begins a new phase, so a rejection is only as durable as the checkpoint that
-records it. Do not run multiple controllers for one target. Calls on one controller are
+checkpoint begins a new phase, though a configuration whose planned sample failed on the ledger
+stays rejected (above). Do not run multiple controllers for one target. Calls on one controller are
 serialized.
+
+The red team measured both edges of this (e2e T4). Six kinds of damaged or stale checkpoint (a
+wrong scope hash, a foreign or missing anchor, an extra key, an unknown format, a mangled mode,
+a null anchor in a nonempty ledger) all held shadow, and policy, rubric and evidence-version
+changes after a promotion returned shadow. A saved shadow checkpoint whose `mode` was edited to
+`enforce` restored enforce with no accepted sample behind it (T4-10); a format 3 checkpoint now
+holds shadow in that case, because enforce is honoured only with a sample the ledger still
+accepts. Wave 3 (V1) then restored a rejected configuration by rewriting the checkpoint as format 2,
+or by moving `accepted.from` past the failed act. Both now hold shadow: older formats are
+verified too, and a failed planned sample before the claimed one keeps the configuration
+rejected. What a forged checkpoint can still do is name which complete, fully labelled, passing
+planned sample of an unrejected configuration it rests on (skipping an act whose label is still
+missing, say). Flipping `rejected` to false re-opens a configuration only while its ledger
+holds no failed planned sample. Store checkpoints where only the deployment can write them.
 
 ## Migration from the point-estimate controller
 
@@ -239,7 +329,8 @@ serialized.
 - Promotion needs the planned sample: 149 distinct acts at 98% rather than 20. Test fixtures
   that need a small sample should state a weak plan openly (for example `confidence: 0.5`
   gives a one-act plan at a 50% promise) rather than hide it.
-- Checkpoints are format 2. Changing the plan invalidates a saved checkpoint.
+- Checkpoints were format 2 at that change; they are format 3 now (see Checkpoints and restart).
+  Changing the plan invalidates a saved checkpoint.
 
 ## Assumptions and limits
 

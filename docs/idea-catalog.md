@@ -7,6 +7,8 @@ what to do. Status legend: **have**, **partial**, **missing**, **won't**.
 
 Numbers are as reported by their sources; most are builder-reported on small sets. Where a
 pattern was tried and removed, that is recorded too, because removals teach more than launches.
+Patterns our own end-to-end evaluation measured live are listed with their results at the end
+([measured 2026-11-12](#measured-in-the-end-to-end-evaluation-2026-11-12)).
 
 ## A. Interception points inside agent loops
 
@@ -37,7 +39,7 @@ pattern was tried and removed, that is recorded too, because removals teach more
 
 | Pattern | Evidence | Status | Engine |
 | --- | --- | --- | --- |
-| Decompose, then pool softly | Thresholded-AND lost on 9 of 10 benchmarks (median -0.137 AUROC); max, product, difference and ratio pools tied or won; TypeSafe cookbooks use min (function calls, dates), any-fires at 0.7, geometric mean (beam search) | have | `pool` methods: logodds, majority, mean, max, min, geomean |
+| Decompose, then pool softly | Thresholded-AND lost on 9 of 10 benchmarks (median -0.137 AUROC); max, product, difference and ratio pools tied or won; TypeSafe cookbooks use min (function calls, dates), any-fires at 0.7, geometric mean (beam search) | have | `pool` methods: logodds, majority, mean, max, min, geomean, any (noisy-OR), all (noisy-AND); a per-pair correlation matrix for mixed members |
 | Questions as features, learned composition | Phishing single verdict 62.6% to 95% with five signal questions plus logistic regression; wine RMSE 2.47 to 1.77; AutoResearch 18 questions with a tree model beat a direct score | have | `fitLogistic`, `batteryFeatures`, `poolLearned` |
 | Listwise choice over the pool | Hindsight: recall at 1 of 0.94 vs 0.87 pointwise at a thirtieth of the calls; escape options inside ranked lists emptied results | have | `locate`, `pick`; keep `none` for absence detection, not inside rankings |
 | Lines as options, paired exists question; two-stage above 255 | TypeSafe two-stage "score independently then choose"; beam K=3; coarse fallback 65% to 80% | partial | `locate`; **missing**: a `twoStage` helper for more than 255 options |
@@ -74,7 +76,7 @@ pattern was tried and removed, that is recorded too, because removals teach more
 | Isotonic recalibration | 8,801 labels: ECE 0.117 to 0.008; n=20 gives 0.089, n=100 0.048, n=500 0.026 | have | `fitIsotonic` with `minSupport` 30 |
 | Per-question thresholds from tiny label sets | ten labels lift F1 0.706 to 0.793; optimal bar near 0.35 | have | `fitThreshold`, `report()` per question |
 | CI threshold lock and drift gate | jevcal `check` exits 1 on accuracy, coverage or model-version drift | have | `ratchet check` (exit 1 on broken promise, ECE bound or foreign model) and `ratchet replay` |
-| Shadow-to-live state machine | stuntd: 24 h shadow, auto-demotion when rolling agreement drops below 0.99, 2% continuous audit, novelty gate | partial | `Rollout`: minimum shadow rows, promote when the would-be acted slice meets the promise, demote when audited acts fall below it; novelty gate still missing |
+| Shadow-to-live state machine | stuntd: 24 h shadow, auto-demotion when rolling agreement drops below 0.99, 2% continuous audit, novelty gate | partial | `Rollout`: promote only through a planned exact acceptance test on fresh shadow acts, demote when audited acts fall below the promise; novelty gate still missing (revised 2026-11-12: this cell described the earlier point-estimate rule) |
 | Heterogeneous voting | flock: majority, unanimous and mean across different decision models; a refusal is no vote | have | `ensemble` with members on different oracles; failed-open members are dropped |
 | Rotation budget early stop | AnyJev: 7.2 of 18 rotations at a 1% target | have | `sequential` with `settleLead` |
 | Outcome-joined ledger, signed receipts | jev-trust: outcome-joined JSONL, 10-bin ECE, ed25519-signed logs | partial | ledger joins outcomes; signatures later |
@@ -115,3 +117,34 @@ pattern was tried and removed, that is recorded too, because removals teach more
 **P2.** Images and Box in the adapter; streaming token gates; signed receipts.
 
 **Won't.** A loop runner or agent framework; distillation on Jev outputs; automated consequential decisions about people; prompt-only injection defences (typed markers and warnings did nothing in three independent studies; only controls outside the model helped).
+
+## Measured in the end-to-end evaluation (2026-11-12)
+
+Five tracks ran the engine live on new, authored corpora with labels fixed before the first call
+([registry](e2e/findings.md)). One line per catalogued pattern they measured:
+
+| Pattern (section) | Result |
+| --- | --- |
+| Pre-execution tool gate (A1) | T1: a bar fitted at 98% delivered 91.2% on held-out template groups and the planned test refused promotion; floors never lowered (0 of 1,169 rows); a 3-member battery did not beat the single question (AUC 0.943 against 0.964). |
+| Stop-hook "done" verifier (A2) | T2, output verification with jev-1.14: held-out AUC 0.998, 135 commits all correct, 16.7% of correct outputs held back; a learned combiner over 8 members tied the holistic question and was best calibrated (ECE 0.036). |
+| Loop abort, verified chains (A4) | T2: `runChain` committed 1,132 of 1,132 steps correctly, but chains finished 48% to 62% where independent retries predicted 74% to 99.8% (correlated false alarms); through a gate verifier it dropped the gate's floors and mode (T2-01). |
+| Reversible compaction (A10) | T4, offline: `prune` drops failed-open items, which score 0.5 (24 transport-fault cells) (T4-07). |
+| Budget and effort routing (A14) | T5: a cascade from jev-1.13 to haiku-5.5 reached 98.5% against 85.8% at 69% of haiku's cost per decision. |
+| Engine infrastructure: spend caps (A20) | T4: the daily cap held across a restart; at concurrency 64 the caps overshot 13.6x (instance) and 13.2x (daily, default reservation on a fresh ledger), 1.0x with a covering `reserveUsd`; NaN or negative costs and timeouts defeat them (T4-05, T4-06). |
+| Decompose, then pool softly (B) | T2: a soft pool beat AND-at-0.5 by 0.107 AUC, but eight conjuncts in log-odds lost to one holistic question (AUC -0.006, ECE 0.198 against 0.082); T3: log-odds inverted an any-of battery (48.1% held out), where `max` scored 94.4% and isotonic 99.1%. |
+| Questions as features, learned composition (B) | T2: learned combiner ECE 0.036, the best transferring; T3: 93.5% held out, 107 of 108 when `fitLogistic` is run to convergence (T3-06). |
+| State engineering (B) | Confirmed four times: approvals 66.7% to 99.1% (T3), a policy check 83.3% to 100% (T4), numeric catches 11 to 15 of 15 (T2), raw-number items 79% to 84% against 100% (T5); `relativeTime` is unsafe at windows (27% of auto-approvals wrong, T3). |
+| Option order and shuffled replicas (B) | T5: framings, shuffled options included, erred together (phi 0.71 to 0.91) and gained no accuracy; pooled at correlation 0 they were overconfident (ECE 0.099 against 0.056 for one call). |
+| Confidence engineering, isotonic (B, D) | T3: isotonic on a log-odds battery pool was the best combiner held out, 99.1% at ECE 0.003. |
+| Quirks: identical requests move (B) | Per pin: jev-1.13 at most 0.11 over 414 repeated pairs (T1); jev-1.14 up to 0.51, with 5.5% of 924 repeated requests flipping lean (T2). |
+| Multilingual rubrics (B) | T3: inconclusive, leaning against the 13-point cost: routing identical on 180 translated-vs-English pairs, urgency 7 to 3 in the translated rubric's favour (p = 0.34). Invariant 9 stands until a larger test. |
+| Jev 1.14 versions (B) | T5: jev-1.14 is not a second opinion for jev-1.13 (error phi 0.785, 33 of 37 errors shared); T3: a profile keyed to jev-1.13 read `borrowed (stale)` on a jev-1.14 gate, as designed. |
+| Per-question thresholds (D) | T3: proved in its setting (with the approvals questions included); one global bar was too low for raw approvals (76.7% at a 90% promise) and too high for routing (4.7 points of coverage lost at 95%). |
+| CI threshold lock, `ratchet check` (D) | T1: 20 of 20 CLI figures matched independent recomputation; T4: `check` passed on the old configuration's labels after a rubric change (T4-20). |
+| Shadow-to-live state machine (D) | T1: rejected a gate at 83.0% against 95% and kept the rejection across restarts; demotion took 420 asks and 53 audits, with 10 wrong acts executed first (T1-07). |
+| Heterogeneous voting (D) | T5: jev-1.13 + jev-1.14 gained nothing; adding haiku-5.5 gained 10.8 points (28 fixed, 0 broken); T4: a failed cautious member is dropped and the rest act (T4-04). |
+| Rotation budget early stop, `settleLead` (D) | T5: lead-by-2 lost 7.3 points with two correlated Jev pins first; the confidence bar alone used 2.10 samples against 3 at -1.2 points (not significant). |
+| Outcome-joined ledger (D) | T4: two processes appended 600 of 600 whole lines; one torn, BOM or non-object line stops every engine read (T4-02). |
+| Feedback-loop hygiene (D) | T4: the State builder refused 8 of 16 ways to carry a verdict back; the 8 it accepted (strings, digests, untrusted text) are documented limits (T4-15). |
+| Business decisions (E, counter-evidence) | T3: approvals, routing and moderation ran on the stock engine; routing 98.4%, digested approvals decided 206 of 219 with no error. |
+| Prompt-only injection defences (won't) | Not measured: T4's injection study was not run. T2's 30 wrong outputs carrying a planted "approve this" note were all held back. |
