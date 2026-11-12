@@ -1,2 +1,3 @@
-# Auto detect text files and perform LF normalization
-* text=auto
+# Auto detect text files, store them with LF, and check them out with LF on every platform
+# (AGENTS.md: LF line endings; Biome checks the working copy, so CRLF checkouts fail lint).
+* text=auto eol=lf
