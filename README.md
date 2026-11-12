@@ -1,354 +1,194 @@
-<div align="center">
+<p align="center">
+  <img src="https://raw.githubusercontent.com/JMoak/ratchet/main/docs/assets/ratchet-hero.svg" alt="Ratchet — an engraved brass-and-steel wordmark beside a toothed wheel and pawl." width="100%">
+</p>
 
-```text
+<p align="center">
+  <a href="https://www.npmjs.com/package/@jmoak/ratchet"><img src="https://img.shields.io/npm/v/@jmoak/ratchet?style=flat-square&amp;color=cda66f&amp;labelColor=25231e" alt="npm package version"></a>
+  <a href="https://github.com/JMoak/ratchet/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/JMoak/ratchet/ci.yml?branch=main&amp;style=flat-square&amp;label=ci&amp;labelColor=25231e" alt="CI status"></a>
+  <a href="package.json"><img src="https://img.shields.io/badge/runtime_dependencies-0-8da79d?style=flat-square&amp;labelColor=25231e" alt="Zero runtime dependencies"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-e9ddc3?style=flat-square&amp;labelColor=25231e" alt="Apache 2.0 license"></a>
+</p>
 
+<p align="center">
+  <strong>The model proposes. Code decides.</strong><br>
+  A decision engine for composing machine judgments, enforcing policy, and keeping the evidence.
+</p>
 
+<p align="center">
+  <a href="#put-it-to-work">Install</a> ·
+  <a href="#one-gate-no-api-key">First gate</a> ·
+  <a href="#the-proving-ground">Arcade</a> ·
+  <a href="#inspect-the-evidence">Evidence</a> ·
+  <a href="docs/architecture.md">Blueprints</a>
+</p>
 
+---
 
-                        ┬─┐ ┌─┐ ┌┬┐ ┌─┐ ┬ ┬ ┌─┐ ┌┬┐
-                        ├┬┘ ├─┤  │  │   ├─┤ ├┤   │
-                        ┴└─ ┴ ┴  ┴  └─┘ ┴ ┴ └─┘  ┴
+## Small judgments. Deliberate moves.
 
-                                     ▼
-        ────/|────/|────/|────/|────/|────/|────/|────/|────/|────▶
+A model can give you an answer and a confidence score. Your application still needs to decide when to act, when to ask, what must never happen, and whether yesterday's policy deserves today's trust.
 
-                    small judgments.  deliberate moves.
+Ratchet is that machinery. It wraps typed judgments in deterministic policy, hard floors, a decision ledger, and a measured path from **shadow** to **enforcement**. New engines start in shadow. The application remains responsible for executing the returned action.
 
+| Part | Job |
+| :--- | :--- |
+| **Gate** | One decision point: its question, policy, floors, evidence, and rollout. |
+| **Oracle** | Supplies a typed `pick`, `rate`, or `judge` answer. Swap models without replacing the engine. |
+| **Policy + floors** | Turn a judgment into `act`, `review`, or `refuse`. Hard rules can only raise caution. |
+| **Ledger** | Records the answers bought, confidence, cost, latency, recommendation, application action, and later labels. |
+| **Rollout** | Uses scoped evidence to decide whether a gate may leave shadow, then monitors it with blind audits. |
 
+## Put it to work
 
-
+```sh
+npm install @jmoak/ratchet
+# or: bun add @jmoak/ratchet
 ```
 
-A decision engine that compounds cheap, calibrated machine judgments
-into reliable automated decisions.
+**ESM · Node 22.14+ or Bun 1.3+ · TypeScript declarations · zero runtime dependencies.**
 
-[![npm](https://img.shields.io/npm/v/@jmoak/ratchet?style=flat-square&color=1f2937)](https://www.npmjs.com/package/@jmoak/ratchet)
-[![ci](https://img.shields.io/github/actions/workflow/status/JMoak/ratchet/ci.yml?branch=main&style=flat-square&label=ci)](https://github.com/JMoak/ratchet/actions/workflows/ci.yml)
-[![TypeScript strict](https://img.shields.io/badge/TypeScript-strict-1f2937?style=flat-square&logo=typescript&logoColor=white)](tsconfig.json)
-[![Bun 1.3](https://img.shields.io/badge/Bun-1.3.x-1f2937?style=flat-square&logo=bun&logoColor=white)](package.json)
-[![Zero runtime dependencies](https://img.shields.io/badge/runtime%20deps-0-1f2937?style=flat-square)](package.json)
-[![License Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-1f2937?style=flat-square)](LICENSE)
-<br>
-[![Shadow by default](https://img.shields.io/badge/default%20mode-shadow-6b7280?style=flat-square)](docs/rollout.md)
-[![Fail open means review](https://img.shields.io/badge/fail%20open-review-6b7280?style=flat-square)](docs/vision.md)
-[![One-way doors](https://img.shields.io/badge/one--way%20doors-never%20automated-6b7280?style=flat-square)](docs/vision.md)
-[![Pre-1.0 API](https://img.shields.io/badge/API-pre--1.0-b45309?style=flat-square)](CHANGELOG.md)
+The package includes the engine and the `ratchet` CLI. Games, simulations, and experiments live in the repository. The API remains experimental before 1.0; see the [changelog](CHANGELOG.md).
 
-[Arcade](#play-the-arcade) · [Install](#install) · [Vision](docs/vision.md) ·
-[Architecture](docs/architecture.md) · [Evidence](docs/pilot-results.md) ·
-[Publishing](docs/publishing.md)
+## One gate, no API key
 
-</div>
-
-<br>
-
-*Available on npm as `@jmoak/ratchet`. The API remains experimental until 1.0;
-hosted arcade publishing is still [planned](docs/publishing.md).*
-
-Decision models (TypeSafe's Jev, launched September 2026, and the rivals that followed within
-weeks) answer typed questions in under half a second for hundredths of a cent, with a
-calibrated probability attached. They are right about 80% of the time on mixed work. Every
-vendor leaves the same things to "your code": when to act on an answer, how to combine
-answers, when to escalate, and how to know whether any of it is working.
-
-This is that code, done once, carefully, with the mathematics in the comments and a
-simulation that shows where it breaks.
-
-> A calibrated cheap decider does not make 80%-good decisions. It sorts decisions into the
-> ones it can make at 98% and the ones it should hand off. The sort, the hand-off, and the
-> loop that keeps the sort honest are the product.
-
-<br>
-
-## Votes climb. Chains fall.
-
-```text
-   a majority of n independent 80% votes
-
-                               ┌─────  99.6%   15 votes
-                         ┌─────┘  98.0%    9 votes
-                   ┌─────┘  94.2%    5 votes
-             ┌─────┘  89.6%    3 votes
-       ──────┘  80.0%    1 vote
-
-
-   n dependent 80% steps, nothing checking the work
-
-       80.0%    1 step  ──────┐
-                              └─────┐  64.0%    2 steps
-                                    └─────┐  51.2%    3 steps
-                                          └─────┐  32.8%    5 steps
-                                                └─────┐  10.7%   10 steps
-                                                      └──────   ~0%   50 steps
-```
-
-The engine gives you the first staircase and defends you from the second: pooling with a
-correlation correction, sequential sampling that stops when the evidence clears a bar,
-cascades that escalate only the unsure cases, and a verify-then-commit runner that puts a
-tooth between every step of a chain. One caveat governs all of it. The same model asked five
-times is not five voters; at pairwise error correlation 0.5, five calls are worth 1.7. So the
-correlation is a parameter the ledger measures, never an assumption. The numbers above come
-from the engine's own code in [docs/sim-results.md](docs/sim-results.md).
-
-<br>
-
-## One decision
-
-```text
-   state ───▶ oracle ───▶ p(go) 0.991 ───┐
-                                         ├──▶ moreCautious ───▶ act · review · refuse ───▶ ledger
-   state ───▶ floors ───▶ refuse ────────┘
-```
-
-The model proposes; code decides. Floors are regular expressions and predicates evaluated by
-the harness, and a floor can only raise caution. An oracle that times out or returns garbage
-contributes nothing, and the policy's answer to nothing is review. One-way doors are never
-automated. Every decision lands in the ledger with its confidence, cost, latency, what the
-policy recommended, what the application did, and later, what was true.
-
-<br>
-
-## Five clicks
-
-```text
-        shadow          label            fit           enforce          audit
-   ───────/|──────────────/|──────────────/|──────────────/|──────────────/|───▶
-     nothing acts   truth arrives   bar is fitted     acts begin   blind re-checks
-```
-
-A gate starts by changing nothing and earns the right to act from its own record. Promotion
-goes through one planned acceptance test: the first acts of a fresh shadow phase, fixed
-before their labels are read, must reach the promise by an exact one-sided 95% bound (149
-consecutive correct acts for 98%). A failed configuration stays in shadow until it changes.
-Blind audits demote a promoted gate; with audits off nothing can, and Rollout says so.
-Thresholds are fitted only on rows the oracle's own confidence did not select. The test is
-sound under its stated assumptions, not a certification of future traffic; evidence is scoped
-to its rubric, policy, plan, configuration version and model pin, and every promotion,
-rejection or demotion starts a fresh ledger phase. [Boundaries and migration](docs/rollout.md).
-
-<br>
-
-## In code
+This runnable example uses a deterministic rule oracle so you can inspect the machinery without sending data to a provider. Save it as `first-gate.ts` in a project with Ratchet installed, then run `bun first-gate.ts`.
 
 ```ts
-import { Engine, judge, jevViaOpenRouter, oneWayDoor, policyWithBand, refuseIf, State } from "@jmoak/ratchet";
+import {
+  Engine, RuleOracle, State, judge, judgeIf, policyWithBand,
+} from "@jmoak/ratchet";
 
-const engine = new Engine({ oracle: jevViaOpenRouter(), budgetUsd: 5, auditRate: 0.05 });
-
-// A gate is one decision point: its question, policy, floors, rollout contract and ledger slice.
-const safe = engine.gate({
-  id: "bash.safe",
-  question: judge("Is this command safe to run without asking the user?"),
-  policy: policyWithBand(0.85, 0.1),           // act at 0.95 and above; the band below it is reviewed
-  floors: [refuseIf(/rm -rf \/(\s|$)/), oneWayDoor((s) => /--force|DROP TABLE/.test(s))],
-  promisedAccuracy: 0.98,                        // observed-accuracy target; see rollout limits above
-  evidenceVersion: "shell-gate-v1",              // bump for model/config, rules, strategy or state changes
-  rollout: { evidence: { version: "shell-gate-v1", model: "typesafe/jev-1.13" } },
+// A scripted demonstration, not a learned confidence estimate.
+const engine = new Engine({
+  oracle: new RuleOracle([judgeIf(/git status/, 0.99)]),
 });
-await safe.rollout.evaluate();                   // initialize BEFORE collecting evidence; holds shadow
 
-// State is built in code: trusted fields, digests, and untrusted spans kept apart.
-const state = State.create("Shell command proposed by the coding agent")
-  .field("command", command)
-  .field("cwd", cwd)
-  .untrusted("tool_output", lastOutput, { maxChars: 2000 })
+const gate = engine.gate({
+  id: "shell.read-only",
+  question: judge("Is this command read-only?"),
+  policy: policyWithBand(0.85, 0.1),
+});
+
+const state = State.create("Proposed shell command")
+  .field("command", "git status")
   .build();
 
-const r = await safe.ask(state);        // shadow by default: recorded, nothing acted
-r.action;                               // "act" | "review" | "refuse"
-r.ruling.reason;                        // "go 0.991 >= actAbove 0.95"
-
-await engine.label(r.recordId, { correct: true, truth: true });
-await safe.rollout.evaluate();          // empirical rollout; not statistical certification
+const result = await gate.ask(state);
+console.log(result.mode, result.ruling.action, result.action);
+// shadow act review
 ```
 
-Save `safe.rollout.checkpoint()` yourself for restart; without a valid checkpoint the
-controller starts in shadow again. Three question shapes (pick, rate, judge) cover what every
-decision model on the market answers. The oracle interface is one method.
+The policy recommends `act`; the gate stays in shadow and returns `review` as the application action. It executes no shell command. The rule above is a fixture, not a shell-security policy. A real gate needs task-specific hard floors, measured evidence, and an application that honors the result.
 
-<br>
+For a hosted model, use an [oracle adapter](docs/architecture.md) such as `jevViaOpenRouter()` with your own provider key. The [tool-gate demo](examples/tool-gate.ts) adds floors, labels, fitting, enforcement, and audits. It uses a simulated oracle unless `TYPESAFE_API_KEY` is set.
+
+## The teeth that hold
+
+```text
+                         ┌───────────────┐
+  state ──▶ oracle ─────▶│               │
+                         │  deterministic├──▶ act / review / refuse ──▶ ledger
+  state ──▶ hard floors ▶│     policy    │
+                         └───────────────┘
+```
+
+- **Floors only raise caution.** A confident model cannot lower a refusal or review floor.
+- **Fail-open means review by default.** Timeouts and malformed answers contribute no permission.
+- **One-way doors stay with the human.** `oneWayDoor` places a review floor on irreversible actions.
+- **Confidence has to earn its keep.** Threshold fitting prefers shadow rows and blind audits, where the oracle's confidence did not select the labels.
+- **Every decision leaves a trail.** Inspect the recommendation, what the application did, and the evidence behind each.
+
+Soft judgments are never a sufficient security boundary. Read the [binding principles](docs/vision.md) and [rollout limits](docs/rollout.md).
+
+## Five clicks to a working policy
+
+```text
+  SHADOW ─────▶ LABEL ─────▶ FIT ─────▶ ENFORCE ─────▶ AUDIT
+  observe       learn       set        act within     check and
+  quietly       the truth   the bar    the policy     demote
+```
+
+A gate earns promotion through a planned acceptance test scoped to its configuration, model, and evidence phase. Changing those inputs starts a new phase. Blind audits can demote a promoted gate; disabling audits removes that monitoring path.
+
+Save and restore the rollout checkpoint in your application. Without a valid checkpoint, the controller starts in shadow again. The acceptance test depends on stated sampling assumptions and does not certify future traffic. [Rollout and migration →](docs/rollout.md)
+
+### Compose judgments without inventing independence
+
+Ratchet supports ensembles, sequential sampling, cascades, verify-then-commit chains, and learned composition. Each strategy buys a different kind of evidence. Repeating the same model's answer does not make independent voters; correlation stays explicit in pooling and can be estimated from the ledger.
+
+The [simulations](docs/sim-results.md) show where aggregation helps, where chains lose reliability, and where calibration or correlation breaks the premise. The [recipe catalogue](docs/idea-catalog.md) maps practical uses to the primitives.
 
 ## Shadow your coding agent
 
-Every permission prompt your agent shows you is a label. Two hook lines turn Claude Code or
-Codex into a source of them, with no change to what you see and nothing enforced.
-
 ```sh
 npm install -g @jmoak/ratchet
-ratchet hook claude-code install     # prints the settings to paste; or: ratchet hook codex install
+ratchet hook claude-code install
+# or: ratchet hook codex install
 ```
 
-```text
-   prompt ──▶ journal ──▶ did it run? ──▶ allowed · denied · open
-                                │
-                 ratchet hook claude-code replay --live
-                                │
-                                ▼
-                 gate agent.tool.claude-code, in shadow, labelled with your answer
-```
+`install` prints configuration for you to apply. Hooks journal prompts and subsequent events; they do not enforce decisions. Replay can evaluate settled prompts in shadow and label them from what happened afterward. An inferred denial still needs blind review to distinguish a rejected action from a change of plans.
 
-The hooks append one line per prompt, run and session end; they run in the background and
-never decide anything. `replay` asks the gate about each settled prompt under a spend cap and
-labels the row with what you did: a prompted call that ran was approved, one that never ran
-before the turn moved on was denied, and `ratchet review --denied` is where you say whether a
-denial judged the call or the moment. What leaves the machine is a scrubbed command or a path
-with line counts, never file contents, tool output or the conversation; the dry run prints the
-exact text first. Design and the label inference: [docs/design/agent-hook.md](docs/design/agent-hook.md).
+Dry runs show the scrubbed subject before any live request. Live replay uses your provider and a spend cap. See the [hook guide](docs/design/agent-hook.md) for payload handling, label inference, and setup.
 
-<br>
+## The proving ground
 
-## Install
-
-```sh
-bun add @jmoak/ratchet      # or: npm install @jmoak/ratchet
-```
-
-```ts
-import { Engine, judge, policyWithBand, refuseIf, State } from "@jmoak/ratchet";
-```
-
-ESM only. Node 22.14 or later, or Bun 1.3 or later. Zero runtime dependencies. The package
-ships the engine and the `ratchet` CLI; the arcade, simulations and experiments stay in the
-repository. See [CHANGELOG.md](CHANGELOG.md) for what each version ships and the limitations
-to read first.
-
-## Run it from source
-
-```sh
-bun install
-bun run check     # types, lint, tests
-bun run sim       # the thesis as six tables, from the engine's own code
-bun run demo      # a PreToolUse gate: shadow -> label -> fit -> enforce -> audit
-bun run arcade    # four local browser games using the engine; no keys needed
-bun run pilot     # source-inspired shadow pilot + fixed-policy evidence experiment
-bun run pilot --live  # same pilot through Jev; keeps every application action in review
-bun run keywork --export decisions.jsonl  # keywork tool gate: dry run; --live replays answered asks in shadow (fit phase, then evidence after the freeze); --smoke for the pre-fit history
-bun run ratchet review <ledger> --gate <id>  # blind labels for a seeded sample, before the model is shown; --denied reviews every denial
-bun run ratchet trail <ledger> --last 10     # how each decision was reached: every answer bought, verdict, floor, action, label
-bun run ratchet profile build <ledger> --model <pin> --kind judge  # a calibration profile: a shadow bar a new gate can borrow
-bun run trail <ledger>                       # the same trail as a local page on 127.0.0.1:3211; drops a .jsonl too
-bun run quickstart  # live: triage one message with Jev via OpenRouter (needs a key in .env)
-bun run live        # live: the five calibration, routing, cascade and cost experiments (< $0.10)
-```
-
-Checks and simulations need no network or keys; the demo uses a simulated oracle unless
-`TYPESAFE_API_KEY` is set. Quick start and live experiments call paid backends. The simulated
-oracle has known accuracy, calibration and error correlation so every claim can be checked
-against the truth.
-
-The [dependency maintenance policy](docs/dependencies.md) describes update grouping,
-security checks, and the review process for dependency PRs.
-
-The [shadow pilot](docs/pilot.md) includes sourced application scenarios, separate fit and
-validation groups, persisted evidence, and exportable charts. Its authored labels exercise the
-workflow without claiming production accuracy. Read the
-[first live results and graphs](docs/pilot-results.md).
-
-<br>
-
-## Play the arcade
-
-Four small browser games, each a toy world where every move goes through a real `Engine`
-and `Gate` with a `MemoryLedger`. There is no hosted version yet; it runs on your machine
-from the source checkout, with no API key, network service or build step.
+Four local browser games make the engine visible: every move passes through real `Engine` and `Gate` instances, with an inspectable in-memory ledger. No API key is needed for the arcade.
 
 ```sh
 git clone https://github.com/JMoak/ratchet.git
 cd ratchet
-bun install
+bun install --frozen-lockfile
 bun run arcade
 ```
 
-Open **http://127.0.0.1:3210**. Stop with Ctrl+C. Set `ARCADE_PORT` to use another port.
+Open **http://127.0.0.1:3210**. Stop with Ctrl+C; set `ARCADE_PORT` to change the port. The server binds to loopback. Every game begins in shadow; **Play** or **Step** explicitly enables its reversible game actions.
 
-```text
-   Signal Orchard    guide Pip through a twelve-day harvest      ensembles and abstention
-   Bridge Builder    cross five spans before supplies run out    choose, verify, commit
-   Parcel Patrol     share a conveyor shift with Dot             trusted vs untrusted, floors
-   Treasure Survey   train Scout, freeze a bar, then dig         practice labels, calibration
+| Game | What you can feel working |
+| :--- | :--- |
+| **Signal Orchard** | Ensembles and abstention across a twelve-day harvest. |
+| **Bridge Builder** | Choose, verify, and commit before the supplies run out. |
+| **Parcel Patrol** | Trusted inputs, untrusted inputs, and hard floors on a conveyor shift. |
+| **Treasure Survey** | Practice labels, freeze a threshold, then put it to use. |
+
+[Arcade controls and design](docs/arcade.md) · [Decision-trail viewer](docs/cli.md)
+
+## Inspect the evidence
+
+The repo includes seeded simulations, authored application scenarios, and recorded live-model runs. Those answer different questions.
+
+The [first live shadow pilot](docs/pilot-results.md) used 54 authored scenarios and 43 model requests. Every actual application action remained `review`. Its results demonstrate the end-to-end workflow; those small, related samples do not establish production accuracy.
+
+| Read | Learn |
+| :--- | :--- |
+| [Live findings](docs/live-findings.md) | What the model did across the recorded calibration and composition experiments. |
+| [Pilot results](docs/pilot-results.md) | Frozen recommendations, case counts, failures, and limits. |
+| [Live recipes](docs/live-recipes.md) | Which application patterns were actually measured. |
+| [Ledger CLI](docs/cli.md) | Report, check, replay, review, trace, and calibration profiles. |
+| [Architecture](docs/architecture.md) | The public API, execution paths, and source ownership. |
+
+## At the workbench
+
+From the source checkout:
+
+```sh
+bun run check       # types, lint, tests
+bun run sim         # seeded simulation tables
+bun run demo        # full gate lifecycle; simulated unless a live key is set
+bun run pilot       # offline shadow pilot and acceptance experiment
+bun run pack:check  # inspect the distributable; does not publish
 ```
 
-Every game opens in shadow: manual controls work at once, and **Play** or **Step** is an
-explicit request to let the agent take its reversible game actions. You can inspect the
-decision trail and download the ledger as JSONL. The server binds to loopback only; see
-[docs/arcade.md](docs/arcade.md) for the controls and each game's design.
+Live quickstarts and experiments call paid backends. Keep them explicit. See [development dependencies](docs/dependencies.md), [agent conventions](AGENTS.md), [the roadmap](docs/roadmap.md), and [publishing](docs/publishing.md).
 
-<br>
+## License & providers
 
-## Where things live
+Apache 2.0: [LICENSE](LICENSE) and [NOTICE](NOTICE). Quoted third-party material in the research notes and reports belongs to its respective owners.
 
-```text
-   src/
-     engine.ts      facade and gate registry
-     gate.ts        one decision point: question, policy, floors, rollout, ledger slice
-     state.ts       trusted fields, digests and untrusted spans, kept apart
-     policy.ts      probability to act, review or refuse, bounded below by floors
-     floors.ts      refuseIf, oneWayDoor and friends: regexes and predicates, not prompts
-     rollout.ts     shadow, label, fit, enforce, audit, per gate
-     acceptance.ts  the planned exact bound that Rollout promotes through
-     compound/      ensemble, sequential, cascade, chain, learned composition
-     oracles/       System One wire format (Jev, Clef, Strands Decider), LLM-JSON, rules, sim
-     ledger/        records, labels, calibration, correlation, threshold fitting
-     recipes/       screen, digest, loop, speculate; each takes an Engine or a Gate
-     cli/           ratchet report, check, replay, review
-   sim/             the thesis as tables
-   examples/        tool-gate demo, quickstart, the arcade
-   experiments/     live runs, the shadow pilot, the keywork tool gate
-   docs/            vision, architecture, rollout, results, idea catalogue
-```
+Ratchet is independent of the model providers it supports and ships no model. Hosted adapters send the state you supply to your chosen provider under your own account. Read [third-party services and terms](docs/third-party-terms.md) before using or hosting a provider-backed integration.
 
-| If you want | Go to |
-| --- | --- |
-| The argument, stated carefully | [docs/vision.md](docs/vision.md) |
-| A map of the code and its contracts | [docs/architecture.md](docs/architecture.md) |
-| The six simulated tables | [docs/sim-results.md](docs/sim-results.md) |
-| What Jev actually did on 1,800 live calls | [docs/live-findings.md](docs/live-findings.md) |
-| Recipes measured live | [docs/live-recipes.md](docs/live-recipes.md) |
-| Rollout boundaries and migration | [docs/rollout.md](docs/rollout.md) |
-| The ledger CLI | [docs/cli.md](docs/cli.md) |
-| Every community pattern mapped to a primitive, and the deliberate "won't" list | [docs/idea-catalog.md](docs/idea-catalog.md) |
-| What is next | [docs/roadmap.md](docs/roadmap.md) |
+---
 
-The research that shaped the design lives in `research_notes/` and `reports/`.
-
-<br>
-
-## Status
-
-The 0.2 feature milestone includes gates as the unit of configuration and rollout, a State
-builder, recipes routed through the engine, a CLI (`ratchet report | check | replay`), four
-compounding strategies, learned composition, recalibration, a System One adapter (Jev wire
-format, also spoken by Cloudflare Clef and Amazon Strands Decider), an LLM-backed oracle,
-tests, simulation, demo. The adapter runs live against Jev through OpenRouter, which serves
-the same wire format at `/api/v1/systemone`; put `OPENROUTER_API_KEY` in `.env` with
-`scripts/set-key.ps1` ([docs/roadmap.md](docs/roadmap.md)).
-
-Version `0.3.0` brings the agent-harness hooks, decision trails and calibration profiles to
-the default npm release channel. See [CHANGELOG.md](CHANGELOG.md) for the full release
-history and [publishing](docs/publishing.md) for the release process. The API remains
-experimental until 1.0; a published release is not an accuracy guarantee.
-
-## License and third-party services
-
-Apache License 2.0; see [LICENSE](LICENSE) and [NOTICE](NOTICE). Material quoted in
-`research_notes/` and `reports/` belongs to its owners and is not covered by that license.
-
-Ratchet is independent and not affiliated with or endorsed by TypeSafe, OpenRouter or any
-other model provider. It ships no model: hosted backends run on your own key, under your own
-agreement with each provider, and every state you ask about is sent to them. Those terms
-forbid reselling access and distilling from model output, which rules out hosting a
-pass-through service on your key or training a lookalike model on exported ledgers. Nothing
-here is an accuracy or safety guarantee, and it should not be the sole basis for
-consequential decisions about people. Read [third-party services and terms](docs/third-party-terms.md)
-before using a hosted backend or hosting anything built on one.
-
-<br>
-
-<div align="center">
-
-```text
-        ────/|────/|────/|────/|────/|────/|────/|────/|────/|────▶
-                         click.  check.  advance.
-```
-
-</div>
+<p align="center">
+  <strong>Click. Check. Advance.</strong><br>
+  <sub>ratchet · small judgments, deliberate moves</sub>
+</p>
