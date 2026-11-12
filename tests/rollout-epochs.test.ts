@@ -189,7 +189,7 @@ describe("rollout evidence epochs", () => {
     }
     for (const invalid of [
       null,
-      { ...checkpoint, format: 3 },
+      { ...checkpoint, format: 4 },
       { ...checkpoint, rejected: "no" },
       { ...checkpoint, afterId: 7 },
       { ...checkpoint, mode: "active" },
@@ -387,7 +387,7 @@ describe("rollout acceptance", () => {
     for (let i = 0; i < 10; i++) await label(gate);
     expect((await gate.rollout.evaluate()).reason).toContain("was rejected");
     const checkpoint = gate.rollout.checkpoint();
-    expect(checkpoint).toMatchObject({ format: 2, rejected: true });
+    expect(checkpoint).toMatchObject({ format: 3, rejected: true });
 
     const restarted = new Engine({ oracle: oracle(), ledger }).gate({
       ...spec,
@@ -410,8 +410,7 @@ describe("rollout acceptance", () => {
     const gate = new Engine({ oracle: oracle() }).gate(spec);
     await gate.rollout.evaluate();
     const pending = await gate.ask("unlabelled first act");
-    for (let i = 0; i < 9; i++) await label(gate);
-    await label(gate, false);
+    for (let i = 0; i < 10; i++) await label(gate);
     expect(await gate.rollout.evaluate()).toMatchObject({
       mode: "shadow",
       acceptance: { status: "awaiting-labels", unlabelled: 1 },
@@ -421,6 +420,25 @@ describe("rollout acceptance", () => {
       mode: "enforce",
       acceptance: { status: "accepted", errors: 0 },
     });
+  });
+
+  it("does not promote past a planned-size window that failed after the sample (e2e V1)", async () => {
+    // The conservative cost of a rejection the ledger keeps: an act collected while the sample
+    // awaited its last label, labelled wrong, completes a failed window, and no sample is
+    // honoured while one is on the ledger (it used to be ignored, and the gate promoted).
+    const gate = new Engine({ oracle: oracle() }).gate(spec);
+    await gate.rollout.evaluate();
+    const pending = await gate.ask("unlabelled first act");
+    for (let i = 0; i < 9; i++) await label(gate);
+    await label(gate, false);
+    expect(await gate.rollout.evaluate()).toMatchObject({
+      mode: "shadow",
+      acceptance: { status: "awaiting-labels", unlabelled: 1 },
+    });
+    await gate.engine.label(pending.recordId, { correct: true, truth: true });
+    const s = await gate.rollout.evaluate();
+    expect(s.mode).toBe("shadow");
+    expect(s.reason).toMatch(/^rejected: this configuration already failed a planned sample/);
   });
 
   it("counts a retried state once", async () => {
@@ -452,7 +470,12 @@ describe("rollout acceptance", () => {
     const ledger = new MemoryLedger();
     const gate = new Engine({ oracle: oracle(), ledger }).gate(spec);
     const current = await promote(gate);
-    const { rejected: _rejected, ...rest } = current as Extract<RolloutCheckpoint, { format: 2 }>;
+    // A format 1 checkpoint predates `rejected` and the accepted sample (format 3).
+    const {
+      rejected: _rejected,
+      accepted: _accepted,
+      ...rest
+    } = current as Extract<RolloutCheckpoint, { format: 3 }>;
     const legacy = { ...rest, format: 1 } as RolloutCheckpoint;
     const restored = new Engine({ oracle: oracle(), ledger }).gate({
       ...spec,

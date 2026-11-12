@@ -98,6 +98,14 @@ export interface Decision<V extends Verdict = Verdict> {
   readonly failedOpen?: boolean;
   /** Why it failed open (HTTP status, timeout, malformed answer), kept short. */
   readonly error?: string;
+  /**
+   * True when the call may have been billed but its cost is not known: a timeout or an abort
+   * stopped waiting for an answer that may still have been bought, or a rejected answer stated
+   * no valid cost (`failOpen`). `cost` is then 0 only because nothing was reported; a budget
+   * should count such a decision conservatively, never as free. A compound decision carries it
+   * when any member does.
+   */
+  readonly costUnknown?: true;
   /** Small vendor-specific extras worth keeping for audit, e.g. the vendor's own confidence figure. */
   readonly vendor?: Readonly<Record<string, unknown>>;
 }

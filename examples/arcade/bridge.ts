@@ -209,7 +209,9 @@ export async function play(input: unknown, liveOracle?: Oracle) {
                   return {
                     verdict: pickVerdictFrom(
                       q,
-                      q.options.map((option) => (option === preferred ? 0.95 : 0.01)),
+                      q.options.map((option) =>
+                        option === preferred ? 0.95 : 0.05 / (q.options.length - 1),
+                      ),
                     ),
                     oracle: "bridge.scripted-builder",
                     model: "visible-load-stock-script-v2",

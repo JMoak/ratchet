@@ -56,16 +56,28 @@ export function recipeAskOptions(recipe: string, opts: RecipeOptions): (q: Quest
 
 const exhaustedByBudget = (r: AskResult): boolean => r.decision.detail.budgetExhausted === true;
 
+const SPAN = "[untrusted ";
+
 /**
- * Append trusted text (an item listing the harness wrote) to a built state. The whole
- * rendering is re-hashed; the trusted hash folds the addition into the base's trusted hash.
+ * Add trusted text (an item listing the harness wrote) to a built state, after its trusted
+ * block and before its first untrusted span. `State` renders nothing trusted after an
+ * untrusted span, so everything from the first `[untrusted` marker on reads as untrusted; text
+ * appended after it would read as part of the span, and the span could pose as the listing.
+ * Without a marker to find, the listing goes first. The whole rendering is re-hashed; the
+ * trusted hash folds the listing into the base's trusted hash.
  */
-function appendTrusted(base: StateLike, suffix: string): StateLike {
-  const text = `${base.text}${suffix}`;
+function insertTrusted(base: StateLike, block: string): StateLike {
+  let text: string;
+  if (base.untrusted.length === 0) text = `${base.text}\n\n${block}`;
+  else {
+    const at = base.text.startsWith(SPAN) ? 0 : base.text.indexOf(`\n${SPAN}`) + 1;
+    const head = at > 0 ? base.text.slice(0, at).trimEnd() : "";
+    text = `${head === "" ? "" : `${head}\n\n`}${block}\n\n${base.text.slice(at)}`;
+  }
   return {
     text,
     hash: hashState(text),
-    trustedHash: hashState(`${base.trustedHash}${suffix}`),
+    trustedHash: hashState(`${base.trustedHash}\n\n${block}`),
     untrusted: base.untrusted,
   };
 }
@@ -83,8 +95,14 @@ export interface RelevanceOptions extends RecipeOptions {
 }
 
 export interface Relevance {
-  /** Probability each item is still needed; 0.5 where the answer failed open. */
+  /** Probability each item is still needed; 0.5 where no answer was bought. */
   readonly scores: ReadonlyMap<string, number>;
+  /**
+   * Items no answer was bought for (failed open, or a floor settled the ask). Their 0.5 is a
+   * placeholder, not evidence, so `prune` keeps them. Optional only so hand-built results
+   * still type; `relevance()` always sets it.
+   */
+  readonly unanswered?: ReadonlySet<string>;
   /** Every ruled, ledgered answer, in item order. */
   readonly results: readonly AskResult[];
   /** One per request, in order. */
@@ -104,15 +122,16 @@ export async function relevance(
     opts.prompt ?? ((it: Item) => `Is item \`${it.id}\` still needed to continue the task?`);
   const askOpts = recipeAskOptions("relevance", opts);
   const scores = new Map<string, number>();
+  const unanswered = new Set<string>();
   const results: AskResult[] = [];
   const requestIds: string[] = [];
   let cost = 0;
   let requests = 0;
   for (let i = 0; i < items.length; i += per) {
     const slice = items.slice(i, i + per);
-    const listing = `\n\nItems:\n${slice.map((it) => `- ${it.id}: ${it.summary}`).join("\n")}`;
+    const listing = `Items:\n${slice.map((it) => `- ${it.id}: ${it.summary}`).join("\n")}`;
     const state =
-      typeof context === "string" ? `${context}${listing}` : appendTrusted(context, listing);
+      typeof context === "string" ? `${context}\n\n${listing}` : insertTrusted(context, listing);
     const qs = slice.map((it) => judge(prompt(it), { id: it.id }));
     const rs = await asker.askAll(state, qs, askOpts);
     requests++;
@@ -122,20 +141,28 @@ export async function relevance(
       if (!it) return;
       results.push(r);
       cost += r.decision.cost;
-      scores.set(it.id, r.decision.failedOpen ? 0.5 : (r.decision.verdict as JudgeVerdict).pYes);
+      const answered = wasAnswered(r);
+      if (!answered) unanswered.add(it.id);
+      scores.set(it.id, answered ? (r.decision.verdict as JudgeVerdict).pYes : 0.5);
     });
   }
-  return { scores, results, requestIds, cost, requests };
+  return { scores, unanswered, results, requestIds, cost, requests };
 }
 
-/** Split a relevance result into keep and drop lists at a bar. */
+/**
+ * Split a relevance result into keep and drop lists at a bar. An item no answer was bought
+ * for is kept whatever the bar: dropping context needs evidence that it is not needed, and a
+ * failed call is none (fail open means the cautious side, which here is keeping).
+ */
 export function prune(
   rel: Relevance,
   keepAbove: number,
 ): { readonly keep: string[]; readonly drop: string[] } {
   const keep: string[] = [];
   const drop: string[] = [];
-  for (const [id, p] of rel.scores) (p >= keepAbove ? keep : drop).push(id);
+  for (const [id, p] of rel.scores) {
+    (p >= keepAbove || rel.unanswered?.has(id) === true ? keep : drop).push(id);
+  }
   return { keep, drop };
 }
 

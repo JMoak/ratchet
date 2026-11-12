@@ -156,7 +156,8 @@ describe("floored asks, bands and conservative fitting", () => {
   it("review bands follow the bar by the half-width", () => {
     const p = policyWithBand(0.8, 0.1, { refuse: true, goIsYes: false });
     expect(p).toMatchObject({ actAbove: 0.9, refuseBelow: 0.7, goIsYes: false });
-    expect(policyWithBand(0.95, 0.1).actAbove).toBe(1);
+    // Past the knee (bar > 1 - 2 * halfWidth) the band is applied in log-odds: below 1 (e2e T1-05).
+    expect(policyWithBand(0.95, 0.1).actAbove).toBe(0.9771429);
     expect(policyWithBand(0.95, 0.1).refuseBelow).toBeUndefined();
   });
   it("conservative fitting needs more rows to promise the same accuracy", () => {

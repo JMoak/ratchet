@@ -48,7 +48,7 @@ describe("ensemble", () => {
     for (const s of items) if (correctPick(s, await ensemble(s, pq, { members }))) right++;
     expect(right / N).toBeGreaterThan(0.92);
   });
-  it("members that fail open are dropped, all failing is flagged", async () => {
+  it("members that fail open are dropped under minMembers, all failing is flagged", async () => {
     const dead: Oracle = {
       id: "dead",
       decide: async () => {
@@ -58,9 +58,15 @@ describe("ensemble", () => {
     const live = new SimOracle({ accuracy: 0.9, seed: 3 }, truthOf);
     const mixed = await ensemble("item-0", jq, {
       members: [{ oracle: failOpen(dead) }, { oracle: live }],
+      minMembers: 1,
     });
     expect(mixed.failedOpen).toBeUndefined();
     expect(mixed.detail).toMatchObject({ pooled: 1, dropped: 1 });
+    // By default every member must answer (e2e T4-04): one failure fails the ensemble open.
+    const strict = await ensemble("item-0", jq, {
+      members: [{ oracle: failOpen(dead) }, { oracle: live }],
+    });
+    expect(strict.failedOpen).toBe(true);
     const all = await ensemble("item-0", jq, { members: [{ oracle: failOpen(dead) }] });
     expect(all.failedOpen).toBe(true);
   });

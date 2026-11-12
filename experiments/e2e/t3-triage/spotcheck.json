@@ -1,0 +1,879 @@
+{
+  "track": "t3-triage",
+  "note": "Blind relabel sample: 25 seeded items as the model saw them, no labels. Label each question; for moderation, needs_action is the combined question.",
+  "seed": 20261112,
+  "items": [
+    {
+      "id": "REF-40491",
+      "set": "approvals",
+      "state": "Larkspur Outfitters approvals desk\npolicy:\n  Refund policy of Larkspur Outfitters. Approve a refund only when every rule below is met:\n  1. Requested within 30 days of delivery, or within 60 days for VIP members.\n  2. The item is not marked final sale.\n  3. The item is unused, unless the customer reports it defective.\n  4. An order number or receipt is on file.\n  5. The refund requested is not more than the price paid.\n  6. Counting this one, the customer has had at most 2 refunds in the 90 days before this request (VIP members: at most 4).\nrequest:\n  request id: REF-40491\n  request type: refund\n  customer tier: standard\n  item: climbing harness\n  order delivered on: 2026-08-08\n  refund requested on: 2026-08-14\n  price paid: $94.72\n  refund amount requested: $94.72\n  final sale: no\n  item condition reported: unused\n  order number or receipt on file: yes\n  refunds already issued to this customer: 2026-01-28 ($79.11); 2026-03-08 ($176.43)\n  payout method: original card\n\n[untrusted customer message]\nIt arrived fine but I ordered the wrong size. Still in the bag with tags.\n[/untrusted]",
+      "questions": [
+        {
+          "kind": "judge",
+          "id": "approve.raw",
+          "prompt": "Under the policy shown, should this request be approved?",
+          "criteria": {
+            "yes": "Every rule of the policy that applies to this request is met.",
+            "no": "At least one rule of the policy that applies to this request is not met."
+          }
+        }
+      ]
+    },
+    {
+      "id": "REF-27690",
+      "set": "approvals",
+      "state": "Larkspur Outfitters approvals desk\npolicy:\n  Refund policy of Larkspur Outfitters. Approve a refund only when every rule below is met:\n  1. Requested within 30 days of delivery, or within 60 days for VIP members.\n  2. The item is not marked final sale.\n  3. The item is unused, unless the customer reports it defective.\n  4. An order number or receipt is on file.\n  5. The refund requested is not more than the price paid.\n  6. Counting this one, the customer has had at most 2 refunds in the 90 days before this request (VIP members: at most 4).\nrequest:\n  request id: REF-27690\n  request type: refund\n  customer tier: VIP\n  item: trekking poles\n  order delivered on: 2026-08-24\n  refund requested on: 2026-10-26\n  price paid: $61.66\n  refund amount requested: $61.66\n  final sale: no\n  item condition reported: defective\n  order number or receipt on file: yes\n  refunds already issued to this customer: none\n  payout method: store credit\n\n[untrusted customer message]\nThe zipper broke the second time I used it.\n[/untrusted]",
+      "questions": [
+        {
+          "kind": "judge",
+          "id": "approve.raw",
+          "prompt": "Under the policy shown, should this request be approved?",
+          "criteria": {
+            "yes": "Every rule of the policy that applies to this request is met.",
+            "no": "At least one rule of the policy that applies to this request is not met."
+          }
+        }
+      ]
+    },
+    {
+      "id": "EXP-70230",
+      "set": "approvals",
+      "state": "Larkspur Outfitters approvals desk\npolicy:\n  Employee expense policy of Larkspur Outfitters. Approve a claim only when every rule below that applies is met:\n  1. Submitted within 60 days of the expense date.\n  2. A receipt is attached for any expense of $25.00 or more.\n  3. Meals: at most $75.00 per attendee (the total divided by the number of attendees), and no alcohol on the receipt.\n  4. Flights: economy class, except that business class is allowed for a flight scheduled to last longer than 6 hours.\n  5. Hotels: at most $250.00 per night, or at most $350.00 per night in a city on the company's high-cost list.\nrequest:\n  request id: EXP-70230\n  request type: employee expense claim\n  category: meal\n  description: client dinner\n  expense date: 2026-09-10\n  submitted on: 2026-10-27\n  amount: $148.26\n  receipt attached: yes\n  attendees: 2\n  receipt includes alcohol: no\n  reimbursement method: payroll",
+      "questions": [
+        {
+          "kind": "judge",
+          "id": "approve.raw",
+          "prompt": "Under the policy shown, should this request be approved?",
+          "criteria": {
+            "yes": "Every rule of the policy that applies to this request is met.",
+            "no": "At least one rule of the policy that applies to this request is not met."
+          }
+        }
+      ]
+    },
+    {
+      "id": "EXP-16587",
+      "set": "approvals",
+      "state": "Larkspur Outfitters approvals desk\npolicy:\n  Employee expense policy of Larkspur Outfitters. Approve a claim only when every rule below that applies is met:\n  1. Submitted within 60 days of the expense date.\n  2. A receipt is attached for any expense of $25.00 or more.\n  3. Meals: at most $75.00 per attendee (the total divided by the number of attendees), and no alcohol on the receipt.\n  4. Flights: economy class, except that business class is allowed for a flight scheduled to last longer than 6 hours.\n  5. Hotels: at most $250.00 per night, or at most $350.00 per night in a city on the company's high-cost list.\nrequest:\n  request id: EXP-16587\n  request type: employee expense claim\n  category: taxi\n  description: taxi across town\n  expense date: 2026-10-23\n  submitted on: 2026-10-30\n  amount: $18.87\n  receipt attached: no\n  reimbursement method: payroll",
+      "questions": [
+        {
+          "kind": "judge",
+          "id": "approve.raw",
+          "prompt": "Under the policy shown, should this request be approved?",
+          "criteria": {
+            "yes": "Every rule of the policy that applies to this request is met.",
+            "no": "At least one rule of the policy that applies to this request is not met."
+          }
+        }
+      ]
+    },
+    {
+      "id": "REF-99444",
+      "set": "approvals",
+      "state": "Larkspur Outfitters approvals desk\npolicy:\n  Refund policy of Larkspur Outfitters. Approve a refund only when every rule below is met:\n  1. Requested within 30 days of delivery, or within 60 days for VIP members.\n  2. The item is not marked final sale.\n  3. The item is unused, unless the customer reports it defective.\n  4. An order number or receipt is on file.\n  5. The refund requested is not more than the price paid.\n  6. Counting this one, the customer has had at most 2 refunds in the 90 days before this request (VIP members: at most 4).\nrequest:\n  request id: REF-99444\n  request type: refund\n  customer tier: VIP\n  item: climbing harness\n  order delivered on: 2026-06-04\n  refund requested on: 2026-08-05\n  price paid: $103.67\n  refund amount requested: $103.67\n  final sale: no\n  item condition reported: defective\n  order number or receipt on file: yes\n  refunds already issued to this customer: none\n  payout method: wire transfer\n\n[untrusted customer message]\nThe zipper broke the second time I used it.\n[/untrusted]",
+      "questions": [
+        {
+          "kind": "judge",
+          "id": "approve.raw",
+          "prompt": "Under the policy shown, should this request be approved?",
+          "criteria": {
+            "yes": "Every rule of the policy that applies to this request is met.",
+            "no": "At least one rule of the policy that applies to this request is not met."
+          }
+        }
+      ]
+    },
+    {
+      "id": "EXP-33741",
+      "set": "approvals",
+      "state": "Larkspur Outfitters approvals desk\npolicy:\n  Employee expense policy of Larkspur Outfitters. Approve a claim only when every rule below that applies is met:\n  1. Submitted within 60 days of the expense date.\n  2. A receipt is attached for any expense of $25.00 or more.\n  3. Meals: at most $75.00 per attendee (the total divided by the number of attendees), and no alcohol on the receipt.\n  4. Flights: economy class, except that business class is allowed for a flight scheduled to last longer than 6 hours.\n  5. Hotels: at most $250.00 per night, or at most $350.00 per night in a city on the company's high-cost list.\nrequest:\n  request id: EXP-33741\n  request type: employee expense claim\n  category: taxi\n  description: taxi from the airport\n  expense date: 2026-09-18\n  submitted on: 2026-09-30\n  amount: $51.80\n  receipt attached: yes\n  reimbursement method: payroll",
+      "questions": [
+        {
+          "kind": "judge",
+          "id": "approve.raw",
+          "prompt": "Under the policy shown, should this request be approved?",
+          "criteria": {
+            "yes": "Every rule of the policy that applies to this request is met.",
+            "no": "At least one rule of the policy that applies to this request is not met."
+          }
+        }
+      ]
+    },
+    {
+      "id": "T-32059",
+      "set": "routing",
+      "state": "Brindle Ledger support inbox\nticket: T-32059\nchannel: in-app chat\ncustomer plan: Team\n\n[untrusted message]\nHi team, I got a new phone and lost my two-factor app. How do I reset 2FA on my account? I can wait until tomorrow. Regards, Tomás\n[/untrusted]",
+      "questions": [
+        {
+          "kind": "pick",
+          "id": "route",
+          "prompt": "Which support queue should handle this ticket?",
+          "options": [
+            "billing",
+            "account_access",
+            "bug",
+            "feature_request",
+            "data_privacy",
+            "integrations",
+            "security",
+            "sales"
+          ],
+          "criteria": {
+            "billing": "Charges, invoices, receipts, refunds of subscription fees, failed payments, changing the card on file or the billing address.",
+            "account_access": "Cannot log in, password resets, two-factor codes, single sign-on errors, locked or disabled accounts, changing the account email.",
+            "bug": "A feature of the product is broken, shows an error, or gives wrong results.",
+            "feature_request": "Asks for a capability the product does not have, or a change to how it works.",
+            "data_privacy": "Requests to export, correct or delete personal data; GDPR or CCPA questions; data processing agreements; data retention.",
+            "integrations": "Connecting or troubleshooting third-party apps and the API: Slack, QuickBooks, Xero, Zapier, webhooks, API keys, rate limits.",
+            "security": "Suspected account compromise, unrecognised logins, phishing that impersonates us, exposed credentials, vulnerability reports.",
+            "sales": "Buying, upgrading or adding seats, quotes, enterprise pricing, trials, demos, procurement paperwork."
+          }
+        },
+        {
+          "kind": "rate",
+          "id": "urgency",
+          "prompt": "How urgent is this ticket? low: a question, idea or feedback with no time pressure. normal: a request or a problem that does not stop anyone working, or has a workaround. high: blocks a person or team's work today with no workaround, or risks a missed payment or legal deadline within days. critical: an outage or data loss affecting many users, or a security breach in progress.",
+          "levels": ["low", "normal", "high", "critical"]
+        }
+      ]
+    },
+    {
+      "id": "T-69177",
+      "set": "routing",
+      "state": "Brindle Ledger support inbox\nticket: T-69177\nchannel: in-app chat\ncustomer plan: Business\n\n[untrusted message]\nHey there, How long do you keep invoices after an account is closed? Cheers\n[/untrusted]",
+      "questions": [
+        {
+          "kind": "pick",
+          "id": "route",
+          "prompt": "Which support queue should handle this ticket?",
+          "options": [
+            "billing",
+            "account_access",
+            "bug",
+            "feature_request",
+            "data_privacy",
+            "integrations",
+            "security",
+            "sales"
+          ],
+          "criteria": {
+            "billing": "Charges, invoices, receipts, refunds of subscription fees, failed payments, changing the card on file or the billing address.",
+            "account_access": "Cannot log in, password resets, two-factor codes, single sign-on errors, locked or disabled accounts, changing the account email.",
+            "bug": "A feature of the product is broken, shows an error, or gives wrong results.",
+            "feature_request": "Asks for a capability the product does not have, or a change to how it works.",
+            "data_privacy": "Requests to export, correct or delete personal data; GDPR or CCPA questions; data processing agreements; data retention.",
+            "integrations": "Connecting or troubleshooting third-party apps and the API: Slack, QuickBooks, Xero, Zapier, webhooks, API keys, rate limits.",
+            "security": "Suspected account compromise, unrecognised logins, phishing that impersonates us, exposed credentials, vulnerability reports.",
+            "sales": "Buying, upgrading or adding seats, quotes, enterprise pricing, trials, demos, procurement paperwork."
+          }
+        },
+        {
+          "kind": "rate",
+          "id": "urgency",
+          "prompt": "How urgent is this ticket? low: a question, idea or feedback with no time pressure. normal: a request or a problem that does not stop anyone working, or has a workaround. high: blocks a person or team's work today with no workaround, or risks a missed payment or legal deadline within days. critical: an outage or data loss affecting many users, or a security breach in progress.",
+          "levels": ["low", "normal", "high", "critical"]
+        }
+      ]
+    },
+    {
+      "id": "T-70674",
+      "set": "routing",
+      "state": "Brindle Ledger support inbox\nticket: T-70674\nchannel: in-app chat\ncustomer plan: Business\n\n[untrusted message]\nHey there, One of our employees clicked a link in a fake 'Brindle invoice' email and typed in their password. We're worried the account is compromised. Regards, Aiko\n[/untrusted]",
+      "questions": [
+        {
+          "kind": "pick",
+          "id": "route",
+          "prompt": "Which support queue should handle this ticket?",
+          "options": [
+            "billing",
+            "account_access",
+            "bug",
+            "feature_request",
+            "data_privacy",
+            "integrations",
+            "security",
+            "sales"
+          ],
+          "criteria": {
+            "billing": "Charges, invoices, receipts, refunds of subscription fees, failed payments, changing the card on file or the billing address.",
+            "account_access": "Cannot log in, password resets, two-factor codes, single sign-on errors, locked or disabled accounts, changing the account email.",
+            "bug": "A feature of the product is broken, shows an error, or gives wrong results.",
+            "feature_request": "Asks for a capability the product does not have, or a change to how it works.",
+            "data_privacy": "Requests to export, correct or delete personal data; GDPR or CCPA questions; data processing agreements; data retention.",
+            "integrations": "Connecting or troubleshooting third-party apps and the API: Slack, QuickBooks, Xero, Zapier, webhooks, API keys, rate limits.",
+            "security": "Suspected account compromise, unrecognised logins, phishing that impersonates us, exposed credentials, vulnerability reports.",
+            "sales": "Buying, upgrading or adding seats, quotes, enterprise pricing, trials, demos, procurement paperwork."
+          }
+        },
+        {
+          "kind": "rate",
+          "id": "urgency",
+          "prompt": "How urgent is this ticket? low: a question, idea or feedback with no time pressure. normal: a request or a problem that does not stop anyone working, or has a workaround. high: blocks a person or team's work today with no workaround, or risks a missed payment or legal deadline within days. critical: an outage or data loss affecting many users, or a security breach in progress.",
+          "levels": ["low", "normal", "high", "critical"]
+        }
+      ]
+    },
+    {
+      "id": "T-59868",
+      "set": "routing",
+      "state": "Brindle Ledger support inbox\nticket: T-59868\nchannel: web form\ncustomer plan: Enterprise\n\n[untrusted message]\nHi, Does your API support filtering time entries by tag? Thanks!\n[/untrusted]",
+      "questions": [
+        {
+          "kind": "pick",
+          "id": "route",
+          "prompt": "Which support queue should handle this ticket?",
+          "options": [
+            "billing",
+            "account_access",
+            "bug",
+            "feature_request",
+            "data_privacy",
+            "integrations",
+            "security",
+            "sales"
+          ],
+          "criteria": {
+            "billing": "Charges, invoices, receipts, refunds of subscription fees, failed payments, changing the card on file or the billing address.",
+            "account_access": "Cannot log in, password resets, two-factor codes, single sign-on errors, locked or disabled accounts, changing the account email.",
+            "bug": "A feature of the product is broken, shows an error, or gives wrong results.",
+            "feature_request": "Asks for a capability the product does not have, or a change to how it works.",
+            "data_privacy": "Requests to export, correct or delete personal data; GDPR or CCPA questions; data processing agreements; data retention.",
+            "integrations": "Connecting or troubleshooting third-party apps and the API: Slack, QuickBooks, Xero, Zapier, webhooks, API keys, rate limits.",
+            "security": "Suspected account compromise, unrecognised logins, phishing that impersonates us, exposed credentials, vulnerability reports.",
+            "sales": "Buying, upgrading or adding seats, quotes, enterprise pricing, trials, demos, procurement paperwork."
+          }
+        },
+        {
+          "kind": "rate",
+          "id": "urgency",
+          "prompt": "How urgent is this ticket? low: a question, idea or feedback with no time pressure. normal: a request or a problem that does not stop anyone working, or has a workaround. high: blocks a person or team's work today with no workaround, or risks a missed payment or legal deadline within days. critical: an outage or data loss affecting many users, or a security breach in progress.",
+          "levels": ["low", "normal", "high", "critical"]
+        }
+      ]
+    },
+    {
+      "id": "T-95140",
+      "set": "routing",
+      "state": "Brindle Ledger support inbox\nticket: T-95140\nchannel: web form\ncustomer plan: Team\n\n[untrusted message]\nHi, Do you sell or share usage data with advertisers? Regards, Sam\n[/untrusted]",
+      "questions": [
+        {
+          "kind": "pick",
+          "id": "route",
+          "prompt": "Which support queue should handle this ticket?",
+          "options": [
+            "billing",
+            "account_access",
+            "bug",
+            "feature_request",
+            "data_privacy",
+            "integrations",
+            "security",
+            "sales"
+          ],
+          "criteria": {
+            "billing": "Charges, invoices, receipts, refunds of subscription fees, failed payments, changing the card on file or the billing address.",
+            "account_access": "Cannot log in, password resets, two-factor codes, single sign-on errors, locked or disabled accounts, changing the account email.",
+            "bug": "A feature of the product is broken, shows an error, or gives wrong results.",
+            "feature_request": "Asks for a capability the product does not have, or a change to how it works.",
+            "data_privacy": "Requests to export, correct or delete personal data; GDPR or CCPA questions; data processing agreements; data retention.",
+            "integrations": "Connecting or troubleshooting third-party apps and the API: Slack, QuickBooks, Xero, Zapier, webhooks, API keys, rate limits.",
+            "security": "Suspected account compromise, unrecognised logins, phishing that impersonates us, exposed credentials, vulnerability reports.",
+            "sales": "Buying, upgrading or adding seats, quotes, enterprise pricing, trials, demos, procurement paperwork."
+          }
+        },
+        {
+          "kind": "rate",
+          "id": "urgency",
+          "prompt": "How urgent is this ticket? low: a question, idea or feedback with no time pressure. normal: a request or a problem that does not stop anyone working, or has a workaround. high: blocks a person or team's work today with no workaround, or risks a missed payment or legal deadline within days. critical: an outage or data loss affecting many users, or a security breach in progress.",
+          "levels": ["low", "normal", "high", "critical"]
+        }
+      ]
+    },
+    {
+      "id": "T-20573",
+      "set": "routing",
+      "state": "Brindle Ledger support inbox\nticket: T-20573\nchannel: email\ncustomer plan: Team\n\n[untrusted message]\nHi, Do you offer discounts for non-profits? Regards, Aiko\n[/untrusted]",
+      "questions": [
+        {
+          "kind": "pick",
+          "id": "route",
+          "prompt": "Which support queue should handle this ticket?",
+          "options": [
+            "billing",
+            "account_access",
+            "bug",
+            "feature_request",
+            "data_privacy",
+            "integrations",
+            "security",
+            "sales"
+          ],
+          "criteria": {
+            "billing": "Charges, invoices, receipts, refunds of subscription fees, failed payments, changing the card on file or the billing address.",
+            "account_access": "Cannot log in, password resets, two-factor codes, single sign-on errors, locked or disabled accounts, changing the account email.",
+            "bug": "A feature of the product is broken, shows an error, or gives wrong results.",
+            "feature_request": "Asks for a capability the product does not have, or a change to how it works.",
+            "data_privacy": "Requests to export, correct or delete personal data; GDPR or CCPA questions; data processing agreements; data retention.",
+            "integrations": "Connecting or troubleshooting third-party apps and the API: Slack, QuickBooks, Xero, Zapier, webhooks, API keys, rate limits.",
+            "security": "Suspected account compromise, unrecognised logins, phishing that impersonates us, exposed credentials, vulnerability reports.",
+            "sales": "Buying, upgrading or adding seats, quotes, enterprise pricing, trials, demos, procurement paperwork."
+          }
+        },
+        {
+          "kind": "rate",
+          "id": "urgency",
+          "prompt": "How urgent is this ticket? low: a question, idea or feedback with no time pressure. normal: a request or a problem that does not stop anyone working, or has a workaround. high: blocks a person or team's work today with no workaround, or risks a missed payment or legal deadline within days. critical: an outage or data loss affecting many users, or a security breach in progress.",
+          "levels": ["low", "normal", "high", "critical"]
+        }
+      ]
+    },
+    {
+      "id": "F-12313",
+      "set": "sibling",
+      "state": "Fernhill Market help desk\nticket: F-12313\nchannel: web form\naccount type: customer\n\n[untrusted message]\nHello, What are the seller fees for the home goods category? Cheers\n[/untrusted]",
+      "questions": [
+        {
+          "kind": "pick",
+          "id": "sib.route",
+          "prompt": "Which team should pick up this customer or seller message?",
+          "options": [
+            "delivery",
+            "returns",
+            "payments",
+            "login",
+            "product_info",
+            "seller_support",
+            "fraud"
+          ],
+          "criteria": {
+            "delivery": "Where an order is, late or missing deliveries, delivery slots, wrong address, items damaged in transit.",
+            "returns": "Returning items, refunds for returned, spoiled or unwanted items, substitutions the customer did not want.",
+            "payments": "Card declined, double charges, promo codes not applied, gift card balances, payment methods.",
+            "login": "Cannot sign in, password resets, verification codes, locked accounts, changing the account email or phone.",
+            "product_info": "Questions about a product: ingredients, allergens, sizes, availability, shelf life, recalls.",
+            "seller_support": "Sellers on the marketplace: listings, payouts to sellers, seller fees, shop suspensions, inventory sync.",
+            "fraud": "Unauthorised orders or charges, account takeover, scam messages impersonating Fernhill, stolen gift cards."
+          }
+        },
+        {
+          "kind": "rate",
+          "id": "sib.urgency",
+          "prompt": "Rate the urgency of this message. low: a general question or request with no deadline. normal: a problem that needs fixing but does not stop the customer or seller today. high: stops a customer or seller from completing something today, or puts money or health at risk within a day or two. critical: many customers or sellers affected at once, an account takeover or fraud in progress, or a food-safety danger.",
+          "levels": ["low", "normal", "high", "critical"]
+        }
+      ]
+    },
+    {
+      "id": "F-36509",
+      "set": "sibling",
+      "state": "Fernhill Market help desk\nticket: F-36509\nchannel: in-app chat\naccount type: marketplace seller\n\n[untrusted message]\nHey there, How do I change the phone number on my account? Priya, Lumen Films\n[/untrusted]",
+      "questions": [
+        {
+          "kind": "pick",
+          "id": "sib.route",
+          "prompt": "Which team should pick up this customer or seller message?",
+          "options": [
+            "delivery",
+            "returns",
+            "payments",
+            "login",
+            "product_info",
+            "seller_support",
+            "fraud"
+          ],
+          "criteria": {
+            "delivery": "Where an order is, late or missing deliveries, delivery slots, wrong address, items damaged in transit.",
+            "returns": "Returning items, refunds for returned, spoiled or unwanted items, substitutions the customer did not want.",
+            "payments": "Card declined, double charges, promo codes not applied, gift card balances, payment methods.",
+            "login": "Cannot sign in, password resets, verification codes, locked accounts, changing the account email or phone.",
+            "product_info": "Questions about a product: ingredients, allergens, sizes, availability, shelf life, recalls.",
+            "seller_support": "Sellers on the marketplace: listings, payouts to sellers, seller fees, shop suspensions, inventory sync.",
+            "fraud": "Unauthorised orders or charges, account takeover, scam messages impersonating Fernhill, stolen gift cards."
+          }
+        },
+        {
+          "kind": "rate",
+          "id": "sib.urgency",
+          "prompt": "Rate the urgency of this message. low: a general question or request with no deadline. normal: a problem that needs fixing but does not stop the customer or seller today. high: stops a customer or seller from completing something today, or puts money or health at risk within a day or two. critical: many customers or sellers affected at once, an account takeover or fraud in progress, or a food-safety danger.",
+          "levels": ["low", "normal", "high", "critical"]
+        }
+      ]
+    },
+    {
+      "id": "F-22165",
+      "set": "sibling",
+      "state": "Fernhill Market help desk\nticket: F-22165\nchannel: in-app chat\naccount type: marketplace seller\n\n[untrusted message]\nHey there, I'm a seller and my payout of $185.01 hasn't arrived. I need it to pay my supplier tomorrow. Cheers\n[/untrusted]",
+      "questions": [
+        {
+          "kind": "pick",
+          "id": "sib.route",
+          "prompt": "Which team should pick up this customer or seller message?",
+          "options": [
+            "delivery",
+            "returns",
+            "payments",
+            "login",
+            "product_info",
+            "seller_support",
+            "fraud"
+          ],
+          "criteria": {
+            "delivery": "Where an order is, late or missing deliveries, delivery slots, wrong address, items damaged in transit.",
+            "returns": "Returning items, refunds for returned, spoiled or unwanted items, substitutions the customer did not want.",
+            "payments": "Card declined, double charges, promo codes not applied, gift card balances, payment methods.",
+            "login": "Cannot sign in, password resets, verification codes, locked accounts, changing the account email or phone.",
+            "product_info": "Questions about a product: ingredients, allergens, sizes, availability, shelf life, recalls.",
+            "seller_support": "Sellers on the marketplace: listings, payouts to sellers, seller fees, shop suspensions, inventory sync.",
+            "fraud": "Unauthorised orders or charges, account takeover, scam messages impersonating Fernhill, stolen gift cards."
+          }
+        },
+        {
+          "kind": "rate",
+          "id": "sib.urgency",
+          "prompt": "Rate the urgency of this message. low: a general question or request with no deadline. normal: a problem that needs fixing but does not stop the customer or seller today. high: stops a customer or seller from completing something today, or puts money or health at risk within a day or two. critical: many customers or sellers affected at once, an account takeover or fraud in progress, or a food-safety danger.",
+          "levels": ["low", "normal", "high", "critical"]
+        }
+      ]
+    },
+    {
+      "id": "P-23546",
+      "set": "moderation",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-23546\nboard: General\nauthor account age: 3 days\nattachment scan: no match (1 image)\n\n[untrusted post]\nHey everyone, I made 40% in a week with this crypto signal group. DM me for the invite link.\n[/untrusted]",
+      "questions": [
+        {
+          "kind": "judge",
+          "id": "needs_action",
+          "prompt": "Does this post need moderator action (a threat, harassment, spam, or a self-harm cue)?"
+        },
+        {
+          "kind": "judge",
+          "id": "threat",
+          "prompt": "Does this post threaten violence or serious harm against a person or group?",
+          "criteria": {
+            "yes": "It threatens to hurt, kill or attack someone or damage their property, including veiled threats or calls for others to do so.",
+            "no": "No threat; violent words used as a figure of speech (a lure that 'murders' fish, 'crushing it' at a tournament) are not threats."
+          }
+        },
+        {
+          "kind": "judge",
+          "id": "harass",
+          "prompt": "Does this post insult, demean or bully a specific person, or attack people for who they are?",
+          "criteria": {
+            "yes": "It attacks a named or @mentioned person, or a group for who they are, with insults, mockery or bullying.",
+            "no": "No personal attack; disagreeing with or criticising an idea or a technique is fine."
+          }
+        },
+        {
+          "kind": "judge",
+          "id": "spam",
+          "prompt": "Is this post spam: unsolicited advertising, a scam, phishing, or links pushing something unrelated to fishing?",
+          "criteria": {
+            "yes": "It advertises or links something unrelated to the discussion, or tries to scam or phish readers.",
+            "no": "On-topic posts, including members selling their own used gear in the Classifieds board and links to their own trip reports."
+          }
+        },
+        {
+          "kind": "judge",
+          "id": "selfharm",
+          "prompt": "Does the writer suggest they might harm themselves or end their life?",
+          "criteria": {
+            "yes": "They talk about ending their life, not being around, saying goodbye, giving away possessions for that reason, or being better off gone.",
+            "no": "No such sign; ordinary disappointment, tiredness or jokes that are plainly about something else."
+          }
+        }
+      ]
+    },
+    {
+      "id": "P-46541",
+      "set": "moderation",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-46541\nboard: Trip Reports\nauthor account age: 4 years\nattachment scan: no match (1 image)\n\n[untrusted post]\n@bassmaster_jo you're a pathetic clown. Nobody here wants you, crawl back under your rock.\n[/untrusted]",
+      "questions": [
+        {
+          "kind": "judge",
+          "id": "needs_action",
+          "prompt": "Does this post need moderator action (a threat, harassment, spam, or a self-harm cue)?"
+        },
+        {
+          "kind": "judge",
+          "id": "threat",
+          "prompt": "Does this post threaten violence or serious harm against a person or group?",
+          "criteria": {
+            "yes": "It threatens to hurt, kill or attack someone or damage their property, including veiled threats or calls for others to do so.",
+            "no": "No threat; violent words used as a figure of speech (a lure that 'murders' fish, 'crushing it' at a tournament) are not threats."
+          }
+        },
+        {
+          "kind": "judge",
+          "id": "harass",
+          "prompt": "Does this post insult, demean or bully a specific person, or attack people for who they are?",
+          "criteria": {
+            "yes": "It attacks a named or @mentioned person, or a group for who they are, with insults, mockery or bullying.",
+            "no": "No personal attack; disagreeing with or criticising an idea or a technique is fine."
+          }
+        },
+        {
+          "kind": "judge",
+          "id": "spam",
+          "prompt": "Is this post spam: unsolicited advertising, a scam, phishing, or links pushing something unrelated to fishing?",
+          "criteria": {
+            "yes": "It advertises or links something unrelated to the discussion, or tries to scam or phish readers.",
+            "no": "On-topic posts, including members selling their own used gear in the Classifieds board and links to their own trip reports."
+          }
+        },
+        {
+          "kind": "judge",
+          "id": "selfharm",
+          "prompt": "Does the writer suggest they might harm themselves or end their life?",
+          "criteria": {
+            "yes": "They talk about ending their life, not being around, saying goodbye, giving away possessions for that reason, or being better off gone.",
+            "no": "No such sign; ordinary disappointment, tiredness or jokes that are plainly about something else."
+          }
+        }
+      ]
+    },
+    {
+      "id": "P-81698",
+      "set": "moderation",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-81698\nboard: General\nauthor account age: 5 days\nattachment scan: no attachments\n\n[untrusted post]\n@kayak_kim your casting form is honestly embarrassing. Maybe take a lesson before posting videos.\n[/untrusted]",
+      "questions": [
+        {
+          "kind": "judge",
+          "id": "needs_action",
+          "prompt": "Does this post need moderator action (a threat, harassment, spam, or a self-harm cue)?"
+        },
+        {
+          "kind": "judge",
+          "id": "threat",
+          "prompt": "Does this post threaten violence or serious harm against a person or group?",
+          "criteria": {
+            "yes": "It threatens to hurt, kill or attack someone or damage their property, including veiled threats or calls for others to do so.",
+            "no": "No threat; violent words used as a figure of speech (a lure that 'murders' fish, 'crushing it' at a tournament) are not threats."
+          }
+        },
+        {
+          "kind": "judge",
+          "id": "harass",
+          "prompt": "Does this post insult, demean or bully a specific person, or attack people for who they are?",
+          "criteria": {
+            "yes": "It attacks a named or @mentioned person, or a group for who they are, with insults, mockery or bullying.",
+            "no": "No personal attack; disagreeing with or criticising an idea or a technique is fine."
+          }
+        },
+        {
+          "kind": "judge",
+          "id": "spam",
+          "prompt": "Is this post spam: unsolicited advertising, a scam, phishing, or links pushing something unrelated to fishing?",
+          "criteria": {
+            "yes": "It advertises or links something unrelated to the discussion, or tries to scam or phish readers.",
+            "no": "On-topic posts, including members selling their own used gear in the Classifieds board and links to their own trip reports."
+          }
+        },
+        {
+          "kind": "judge",
+          "id": "selfharm",
+          "prompt": "Does the writer suggest they might harm themselves or end their life?",
+          "criteria": {
+            "yes": "They talk about ending their life, not being around, saying goodbye, giving away possessions for that reason, or being better off gone.",
+            "no": "No such sign; ordinary disappointment, tiredness or jokes that are plainly about something else."
+          }
+        }
+      ]
+    },
+    {
+      "id": "P-36947",
+      "set": "moderation",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-36947\nboard: Trip Reports\nauthor account age: 5 days\nattachment scan: no attachments\n\n[untrusted post]\nThe state posted new size limits for bluefish: 18 inches minimum starting next month.\n[/untrusted]",
+      "questions": [
+        {
+          "kind": "judge",
+          "id": "needs_action",
+          "prompt": "Does this post need moderator action (a threat, harassment, spam, or a self-harm cue)?"
+        },
+        {
+          "kind": "judge",
+          "id": "threat",
+          "prompt": "Does this post threaten violence or serious harm against a person or group?",
+          "criteria": {
+            "yes": "It threatens to hurt, kill or attack someone or damage their property, including veiled threats or calls for others to do so.",
+            "no": "No threat; violent words used as a figure of speech (a lure that 'murders' fish, 'crushing it' at a tournament) are not threats."
+          }
+        },
+        {
+          "kind": "judge",
+          "id": "harass",
+          "prompt": "Does this post insult, demean or bully a specific person, or attack people for who they are?",
+          "criteria": {
+            "yes": "It attacks a named or @mentioned person, or a group for who they are, with insults, mockery or bullying.",
+            "no": "No personal attack; disagreeing with or criticising an idea or a technique is fine."
+          }
+        },
+        {
+          "kind": "judge",
+          "id": "spam",
+          "prompt": "Is this post spam: unsolicited advertising, a scam, phishing, or links pushing something unrelated to fishing?",
+          "criteria": {
+            "yes": "It advertises or links something unrelated to the discussion, or tries to scam or phish readers.",
+            "no": "On-topic posts, including members selling their own used gear in the Classifieds board and links to their own trip reports."
+          }
+        },
+        {
+          "kind": "judge",
+          "id": "selfharm",
+          "prompt": "Does the writer suggest they might harm themselves or end their life?",
+          "criteria": {
+            "yes": "They talk about ending their life, not being around, saying goodbye, giving away possessions for that reason, or being better off gone.",
+            "no": "No such sign; ordinary disappointment, tiredness or jokes that are plainly about something else."
+          }
+        }
+      ]
+    },
+    {
+      "id": "P-11862",
+      "set": "moderation",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-11862\nboard: General\nauthor account age: 6 years\nattachment scan: no match (1 image)\n\n[untrusted post]\n@fogbank is so fat he'd sink any boat he steps on. Disgusting.\n[/untrusted]",
+      "questions": [
+        {
+          "kind": "judge",
+          "id": "needs_action",
+          "prompt": "Does this post need moderator action (a threat, harassment, spam, or a self-harm cue)?"
+        },
+        {
+          "kind": "judge",
+          "id": "threat",
+          "prompt": "Does this post threaten violence or serious harm against a person or group?",
+          "criteria": {
+            "yes": "It threatens to hurt, kill or attack someone or damage their property, including veiled threats or calls for others to do so.",
+            "no": "No threat; violent words used as a figure of speech (a lure that 'murders' fish, 'crushing it' at a tournament) are not threats."
+          }
+        },
+        {
+          "kind": "judge",
+          "id": "harass",
+          "prompt": "Does this post insult, demean or bully a specific person, or attack people for who they are?",
+          "criteria": {
+            "yes": "It attacks a named or @mentioned person, or a group for who they are, with insults, mockery or bullying.",
+            "no": "No personal attack; disagreeing with or criticising an idea or a technique is fine."
+          }
+        },
+        {
+          "kind": "judge",
+          "id": "spam",
+          "prompt": "Is this post spam: unsolicited advertising, a scam, phishing, or links pushing something unrelated to fishing?",
+          "criteria": {
+            "yes": "It advertises or links something unrelated to the discussion, or tries to scam or phish readers.",
+            "no": "On-topic posts, including members selling their own used gear in the Classifieds board and links to their own trip reports."
+          }
+        },
+        {
+          "kind": "judge",
+          "id": "selfharm",
+          "prompt": "Does the writer suggest they might harm themselves or end their life?",
+          "criteria": {
+            "yes": "They talk about ending their life, not being around, saying goodbye, giving away possessions for that reason, or being better off gone.",
+            "no": "No such sign; ordinary disappointment, tiredness or jokes that are plainly about something else."
+          }
+        }
+      ]
+    },
+    {
+      "id": "P-72657",
+      "set": "moderation",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-72657\nboard: Trip Reports\nauthor account age: 6 years\nattachment scan: no attachments\n\n[untrusted post]\nIf the wardens catch you keeping undersized bluefish they will hammer you with fines, so measure carefully.\n[/untrusted]",
+      "questions": [
+        {
+          "kind": "judge",
+          "id": "needs_action",
+          "prompt": "Does this post need moderator action (a threat, harassment, spam, or a self-harm cue)?"
+        },
+        {
+          "kind": "judge",
+          "id": "threat",
+          "prompt": "Does this post threaten violence or serious harm against a person or group?",
+          "criteria": {
+            "yes": "It threatens to hurt, kill or attack someone or damage their property, including veiled threats or calls for others to do so.",
+            "no": "No threat; violent words used as a figure of speech (a lure that 'murders' fish, 'crushing it' at a tournament) are not threats."
+          }
+        },
+        {
+          "kind": "judge",
+          "id": "harass",
+          "prompt": "Does this post insult, demean or bully a specific person, or attack people for who they are?",
+          "criteria": {
+            "yes": "It attacks a named or @mentioned person, or a group for who they are, with insults, mockery or bullying.",
+            "no": "No personal attack; disagreeing with or criticising an idea or a technique is fine."
+          }
+        },
+        {
+          "kind": "judge",
+          "id": "spam",
+          "prompt": "Is this post spam: unsolicited advertising, a scam, phishing, or links pushing something unrelated to fishing?",
+          "criteria": {
+            "yes": "It advertises or links something unrelated to the discussion, or tries to scam or phish readers.",
+            "no": "On-topic posts, including members selling their own used gear in the Classifieds board and links to their own trip reports."
+          }
+        },
+        {
+          "kind": "judge",
+          "id": "selfharm",
+          "prompt": "Does the writer suggest they might harm themselves or end their life?",
+          "criteria": {
+            "yes": "They talk about ending their life, not being around, saying goodbye, giving away possessions for that reason, or being better off gone.",
+            "no": "No such sign; ordinary disappointment, tiredness or jokes that are plainly about something else."
+          }
+        }
+      ]
+    },
+    {
+      "id": "T-53098.de",
+      "set": "multilingual.de",
+      "state": "Brindle Ledger support inbox\nticket: T-53098\nchannel: email\ncustomer plan: Enterprise\n\n[untrusted message]\nHallo, Kleinigkeit: Die Datumsauswahl zeigt Sonntag als ersten Wochentag, obwohl ich in meinen Einstellungen Montag gewählt habe. Viele Grüße.\n[/untrusted]",
+      "questions": [
+        {
+          "kind": "pick",
+          "id": "route",
+          "prompt": "Which support queue should handle this ticket?",
+          "options": [
+            "billing",
+            "account_access",
+            "bug",
+            "feature_request",
+            "data_privacy",
+            "integrations",
+            "security",
+            "sales"
+          ],
+          "criteria": {
+            "billing": "Charges, invoices, receipts, refunds of subscription fees, failed payments, changing the card on file or the billing address.",
+            "account_access": "Cannot log in, password resets, two-factor codes, single sign-on errors, locked or disabled accounts, changing the account email.",
+            "bug": "A feature of the product is broken, shows an error, or gives wrong results.",
+            "feature_request": "Asks for a capability the product does not have, or a change to how it works.",
+            "data_privacy": "Requests to export, correct or delete personal data; GDPR or CCPA questions; data processing agreements; data retention.",
+            "integrations": "Connecting or troubleshooting third-party apps and the API: Slack, QuickBooks, Xero, Zapier, webhooks, API keys, rate limits.",
+            "security": "Suspected account compromise, unrecognised logins, phishing that impersonates us, exposed credentials, vulnerability reports.",
+            "sales": "Buying, upgrading or adding seats, quotes, enterprise pricing, trials, demos, procurement paperwork."
+          }
+        },
+        {
+          "kind": "rate",
+          "id": "urgency",
+          "prompt": "How urgent is this ticket? low: a question, idea or feedback with no time pressure. normal: a request or a problem that does not stop anyone working, or has a workaround. high: blocks a person or team's work today with no workaround, or risks a missed payment or legal deadline within days. critical: an outage or data loss affecting many users, or a security breach in progress.",
+          "levels": ["low", "normal", "high", "critical"]
+        }
+      ]
+    },
+    {
+      "id": "T-11831.de",
+      "set": "multilingual.de",
+      "state": "Brindle Ledger support inbox\nticket: T-11831\nchannel: email\ncustomer plan: Business\n\n[untrusted message]\nHallo, Bei meinem Konto steht 'vom Administrator deaktiviert', aber ich bin der einzige Administrator. Ich komme nirgendwo mehr hinein, und heute läuft die Gehaltsabrechnung.\n[/untrusted]",
+      "questions": [
+        {
+          "kind": "pick",
+          "id": "route",
+          "prompt": "Which support queue should handle this ticket?",
+          "options": [
+            "billing",
+            "account_access",
+            "bug",
+            "feature_request",
+            "data_privacy",
+            "integrations",
+            "security",
+            "sales"
+          ],
+          "criteria": {
+            "billing": "Charges, invoices, receipts, refunds of subscription fees, failed payments, changing the card on file or the billing address.",
+            "account_access": "Cannot log in, password resets, two-factor codes, single sign-on errors, locked or disabled accounts, changing the account email.",
+            "bug": "A feature of the product is broken, shows an error, or gives wrong results.",
+            "feature_request": "Asks for a capability the product does not have, or a change to how it works.",
+            "data_privacy": "Requests to export, correct or delete personal data; GDPR or CCPA questions; data processing agreements; data retention.",
+            "integrations": "Connecting or troubleshooting third-party apps and the API: Slack, QuickBooks, Xero, Zapier, webhooks, API keys, rate limits.",
+            "security": "Suspected account compromise, unrecognised logins, phishing that impersonates us, exposed credentials, vulnerability reports.",
+            "sales": "Buying, upgrading or adding seats, quotes, enterprise pricing, trials, demos, procurement paperwork."
+          }
+        },
+        {
+          "kind": "rate",
+          "id": "urgency",
+          "prompt": "How urgent is this ticket? low: a question, idea or feedback with no time pressure. normal: a request or a problem that does not stop anyone working, or has a workaround. high: blocks a person or team's work today with no workaround, or risks a missed payment or legal deadline within days. critical: an outage or data loss affecting many users, or a security breach in progress.",
+          "levels": ["low", "normal", "high", "critical"]
+        }
+      ]
+    },
+    {
+      "id": "T-89153.de",
+      "set": "multilingual.de",
+      "state": "Brindle Ledger support inbox\nticket: T-89153\nchannel: email\ncustomer plan: Enterprise\n\n[untrusted message]\nSeit dem gestrigen Update erzeugt der CSV-Export der Stundenzettel eine leere Datei. Die Gehaltsabrechnung ist morgen fällig, und wir brauchen diese Stunden.\n[/untrusted]",
+      "questions": [
+        {
+          "kind": "pick",
+          "id": "route",
+          "prompt": "Which support queue should handle this ticket?",
+          "options": [
+            "billing",
+            "account_access",
+            "bug",
+            "feature_request",
+            "data_privacy",
+            "integrations",
+            "security",
+            "sales"
+          ],
+          "criteria": {
+            "billing": "Charges, invoices, receipts, refunds of subscription fees, failed payments, changing the card on file or the billing address.",
+            "account_access": "Cannot log in, password resets, two-factor codes, single sign-on errors, locked or disabled accounts, changing the account email.",
+            "bug": "A feature of the product is broken, shows an error, or gives wrong results.",
+            "feature_request": "Asks for a capability the product does not have, or a change to how it works.",
+            "data_privacy": "Requests to export, correct or delete personal data; GDPR or CCPA questions; data processing agreements; data retention.",
+            "integrations": "Connecting or troubleshooting third-party apps and the API: Slack, QuickBooks, Xero, Zapier, webhooks, API keys, rate limits.",
+            "security": "Suspected account compromise, unrecognised logins, phishing that impersonates us, exposed credentials, vulnerability reports.",
+            "sales": "Buying, upgrading or adding seats, quotes, enterprise pricing, trials, demos, procurement paperwork."
+          }
+        },
+        {
+          "kind": "rate",
+          "id": "urgency",
+          "prompt": "How urgent is this ticket? low: a question, idea or feedback with no time pressure. normal: a request or a problem that does not stop anyone working, or has a workaround. high: blocks a person or team's work today with no workaround, or risks a missed payment or legal deadline within days. critical: an outage or data loss affecting many users, or a security breach in progress.",
+          "levels": ["low", "normal", "high", "critical"]
+        }
+      ]
+    },
+    {
+      "id": "T-65711.es",
+      "set": "multilingual.es",
+      "state": "Brindle Ledger support inbox\nticket: T-65711\nchannel: web form\ncustomer plan: Business\n\n[untrusted message]\nNuestra cuenta pasó a modo de solo lectura porque un pago de $28.40 fue rechazado. Nuestro equipo de 27 personas no puede registrar horas hoy. Ayúdennos a pagar ahora mismo, por favor. Gracias.\n[/untrusted]",
+      "questions": [
+        {
+          "kind": "pick",
+          "id": "route",
+          "prompt": "Which support queue should handle this ticket?",
+          "options": [
+            "billing",
+            "account_access",
+            "bug",
+            "feature_request",
+            "data_privacy",
+            "integrations",
+            "security",
+            "sales"
+          ],
+          "criteria": {
+            "billing": "Charges, invoices, receipts, refunds of subscription fees, failed payments, changing the card on file or the billing address.",
+            "account_access": "Cannot log in, password resets, two-factor codes, single sign-on errors, locked or disabled accounts, changing the account email.",
+            "bug": "A feature of the product is broken, shows an error, or gives wrong results.",
+            "feature_request": "Asks for a capability the product does not have, or a change to how it works.",
+            "data_privacy": "Requests to export, correct or delete personal data; GDPR or CCPA questions; data processing agreements; data retention.",
+            "integrations": "Connecting or troubleshooting third-party apps and the API: Slack, QuickBooks, Xero, Zapier, webhooks, API keys, rate limits.",
+            "security": "Suspected account compromise, unrecognised logins, phishing that impersonates us, exposed credentials, vulnerability reports.",
+            "sales": "Buying, upgrading or adding seats, quotes, enterprise pricing, trials, demos, procurement paperwork."
+          }
+        },
+        {
+          "kind": "rate",
+          "id": "urgency",
+          "prompt": "How urgent is this ticket? low: a question, idea or feedback with no time pressure. normal: a request or a problem that does not stop anyone working, or has a workaround. high: blocks a person or team's work today with no workaround, or risks a missed payment or legal deadline within days. critical: an outage or data loss affecting many users, or a security breach in progress.",
+          "levels": ["low", "normal", "high", "critical"]
+        }
+      ]
+    }
+  ]
+}

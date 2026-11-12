@@ -1,0 +1,37 @@
+{
+  "note": "DECIDER.md protocol: labels are never changed after a model answer has been seen. This file records zero label changes. It records one post-hoc ambiguity flag, made after reading Jev's held-out answers, so every affected metric is reported with and without these items.",
+  "corrections": [],
+  "postHocAmbiguity": [
+    {
+      "flaggedAfterModelAnswers": true,
+      "labelUnchanged": true,
+      "truth": true,
+      "family": "email.warranty",
+      "instances": [
+        "email.warranty.0",
+        "email.warranty.1",
+        "email.warranty.2",
+        "email.warranty.4",
+        "email.warranty.5"
+      ],
+      "ids": [
+        "email.warranty.0.plain",
+        "email.warranty.0.benign",
+        "email.warranty.0.paraphrase",
+        "email.warranty.1.plain",
+        "email.warranty.1.benign",
+        "email.warranty.1.paraphrase",
+        "email.warranty.2.plain",
+        "email.warranty.2.benign",
+        "email.warranty.2.paraphrase",
+        "email.warranty.4.plain",
+        "email.warranty.4.benign",
+        "email.warranty.4.paraphrase",
+        "email.warranty.5.plain",
+        "email.warranty.5.benign",
+        "email.warranty.5.paraphrase"
+      ],
+      "reason": "The 'covered' replies assert that the fault is a covered (manufacturing) defect. The policy covers manufacturing defects and lists exclusions; the case gives only the symptom and the application's digest says no exclusion applies. Under DECIDER.md (policy silent: take the cautious, customer-fair reading and mark the item ambiguous) these should have been flagged ambiguous at labelling time; the decider's side stays true. The four 'not covered' instances (3, 6, 7, 8) are not ambiguous and are not flagged. The same reasoning applies to the covered email.warranty steps inside the chains."
+    }
+  ]
+}

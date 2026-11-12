@@ -21,8 +21,9 @@ import type { Oracle } from "../src/types.ts";
 // which the CLI builds a profile with a 0.75 bar at a 90% promise. Then a ledger of gates that
 // might borrow it, read at --target 0.9: "fresh" (m-1, 10 labels: no fitted bar, no grade of
 // its own), "fitted" (m-1, enforcing, 40 labelled acts: a fitted bar from selected rows, still
-// no grade), "other" (m-2: the key does not match), "sourced" (m-1, built from the profile
-// with policyFromProfile and barSource) and "moved" (the same, then answered by m-2).
+// no grade, so it still borrows), "other" (m-2: the key does not match), "sourced" (m-1, built
+// from the profile with policyFromProfile and barSource) and "moved" (the same, then answered by
+// m-2).
 const Q = judge("Safe to run?", { id: "safe" });
 const truthOf = (s: string): boolean => !s.endsWith("-no");
 
@@ -250,7 +251,7 @@ describe("--profile on report, check and trail", () => {
   };
   const gradeIn = (r: LedgerReport, gate: string) => r.gates.find((g) => g.gate === gate)?.grade;
 
-  it("borrows only for a gate with no fitted bar whose key matches", async () => {
+  it("borrows for a gate whose key matches until its own labels grade it estimated", async () => {
     const without = await json();
     expect(gradeIn(without, "fresh")?.kind).toBe("none");
     const r = await json("--profile", profilePath);
@@ -260,8 +261,10 @@ describe("--profile on report, check and trail", () => {
       via: profileVia(p, 0.9),
       at: p.from.lastAt,
     });
+    // A bar of its own fitted on selected rows is no grade of its own, so the profile still
+    // lends (e2e T3-03): lending stops at estimated, not at the first fitted bar.
     expect(r.gates.find((g) => g.gate === "fitted")?.fitted).toBeDefined();
-    expect(gradeIn(r, "fitted")?.kind).toBe("none");
+    expect(gradeIn(r, "fitted")?.kind).toBe("borrowed");
     expect(gradeIn(r, "other")?.kind).toBe("none");
     expect(gradeIn(r, "sourced")).toEqual({
       kind: "borrowed",
@@ -324,7 +327,8 @@ describe("--profile on report, check and trail", () => {
       "--profile",
       profilePath,
     ]);
-    expect(other.output).toContain("has borrowed as of");
+    // Pinned to m-1 while m-2 answers: the bar describes a model that no longer answers.
+    expect(other.output).toContain("has borrowed (stale) as of");
     expect((await run("--min-support", "0")).exitCode).toBe(2);
   });
 
@@ -335,7 +339,7 @@ describe("--profile on report, check and trail", () => {
     const kinds = Object.fromEntries(t.bars.map((b) => [b.gate, b.grade.kind]));
     expect(kinds).toMatchObject({
       fresh: "borrowed",
-      fitted: "none",
+      fitted: "borrowed",
       other: "none",
       sourced: "borrowed",
     });

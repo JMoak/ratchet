@@ -16,8 +16,16 @@ export const HOOK_GATE_PREFIX = "agent.tool";
 
 export const hookGateId = (harness: string): string => `${HOOK_GATE_PREFIX}.${harness}`;
 
-/** Bump with any change to the rubric, policy, floors, state rendering or model pin. */
-export const HOOK_EVIDENCE = "agent-tool-v1";
+/**
+ * Bump with any change to the rubric, policy, floors, state rendering or model pin.
+ * v2 (2026-11-12): PowerShell and argv commands are command subjects; wider destructive,
+ * opaque and upload digests; secret scrubbing that leaves ordinary paths alone;
+ * `inside_workspace` from the session's root; `harness_owned` and `harness_config` digests and
+ * the floors that read them. Wave 3 changed v2's subjects again before any v2 evidence was
+ * used (`check_bypass`, a command's `harness_config`, the owned allowlist, git global options,
+ * normalised commands, scrubbing); whether that is a v3 is the release's decision.
+ */
+export const HOOK_EVIDENCE = "agent-tool-v2";
 
 export const hookLabelSource = (harness: string): string => `${harness}:person`;
 
@@ -50,20 +58,38 @@ const hookQuestionHash = hashQuestion(hookQuestion);
  */
 export const hookPolicy: GatePolicy = { actAbove: 0.95 };
 
+/** The digest lines, before the first untrusted span: text the agent wrote cannot forge them. */
+function trustedBlock(state: string): string {
+  const i = state.indexOf("\n[untrusted ");
+  return i < 0 ? state : state.slice(0, i);
+}
+
 /**
  * Code-owned floors over digests the state renders. A destructive or publishing command and a
- * patch that deletes files are one-way doors. Opaque, truncated and uploading commands, and
- * paths outside the workspace or of unknown position, are reviewed: the model cannot see
- * everything they do.
+ * patch that deletes files are one-way doors. Opaque, truncated and uploading commands,
+ * commands that switch a check off, anything that changes or links to an agent harness's
+ * configuration (settings, credentials, hooks, MCP servers, plugins, skills, agents,
+ * instructions), and any read or copy of a credential file, by tool or by command, are
+ * reviewed: the model cannot see everything they do, or they hide what a check would catch, or
+ * they change what the agent may do unasked, or they put a secret into the transcript. A path outside the workspace or of unknown
+ * position is reviewed unless it is in the harness's scratch space or its notes; the exemption
+ * is read from the trusted digests only, so a line planted in the path cannot lower the floor.
  */
 export const hookFloors = [
   oneWayDoor((state) => /^destructive: true$/m.test(state)),
   reviewIf(
     /^opaque: true$/m,
+    /^check_bypass: true$/m,
     /^uploads: true$/m,
     /^truncated: true$/m,
-    /^inside_workspace: (?:false|unknown)$/m,
+    /^harness_config: true$/m,
+    /^credential: true$/m,
   ),
+  (state: string) =>
+    /^inside_workspace: (?:false|unknown)$/m.test(state) &&
+    !/^harness_owned: true$/m.test(trustedBlock(state))
+      ? "review"
+      : undefined,
 ] as const;
 
 export interface HookGateOptions {

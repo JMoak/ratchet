@@ -1,4 +1,6 @@
+import type { CorrelationMatrix } from "../compound/aggregate.ts";
 import { clamp, mean } from "../math.ts";
+import type { Verdict } from "../types.ts";
 import { type DecisionRecord, settledWithoutAnswer } from "./ledger.ts";
 import { admits, type FitClass, type TrustFilter } from "./sources.ts";
 
@@ -114,7 +116,10 @@ export interface ScoredTruth extends Scored {
 export type FitMode = "accuracy" | "recall";
 
 export interface FitOptions {
-  /** Accept a bar only when the Wilson lower bound of its accuracy (or recall) clears the target. */
+  /**
+   * Accept a bar only when the lower end of the two-sided Wilson interval of its accuracy (or
+   * recall) at `confidence` clears the target: at 0.95, z 1.96, a one-sided 97.5% bound.
+   */
   readonly conservative?: boolean;
   /** Confidence level of that lower bound. Default 0.95. */
   readonly confidence?: number;
@@ -239,7 +244,9 @@ export function coverageAt(
 }
 
 /**
- * Wilson score lower bound on a proportion. With `conservative`, a bar is accepted only when
+ * Wilson score lower bound on a proportion: the lower end of the two-sided Wilson interval at
+ * `confidence`, so at 0.95 (z 1.96) a one-sided 97.5% bound. With `conservative`, a bar is
+ * accepted only when
  * the lower bound of its observed accuracy clears the target, so a promise of 98% rests on
  * enough rows to mean it rather than on a lucky point estimate.
  */
@@ -293,14 +300,36 @@ export function scoredFromLedger(
   });
 }
 
+/**
+ * The attempt number a chain row carries (`chain:attempt:<n>`, the tag `runChain` writes beside
+ * `chain` and `chain:step:<name>`), or undefined for a row outside a chain.
+ */
+export function chainAttempt(r: DecisionRecord): number | undefined {
+  for (const t of Array.isArray(r.tags) ? r.tags : []) {
+    const m = /^chain:attempt:(\d+)$/.exec(t);
+    if (m) return Number(m[1]);
+  }
+  return undefined;
+}
+
+/**
+ * A retry exists only because an earlier attempt of the same step was held back, so the states
+ * that reach a second attempt are chosen by the verifier's own earlier answers: a selected
+ * sample, however the row was ruled. Measured on the verifier track, chain rows read as
+ * unselected fitted a bar of 0.870 where held-out rows supported 0.48.
+ */
+const chainRetry = (r: DecisionRecord): boolean => (chainAttempt(r) ?? 1) >= 2;
+
 const unselectedRow = (r: DecisionRecord): boolean =>
-  r.mode === "shadow" || r.tags.includes("audit");
+  (r.mode === "shadow" || r.tags.includes("audit")) && !chainRetry(r);
 
 /**
  * Historical fit-source classification: shadow rows and blind audits, whose label (if any)
  * comes from a source the trust filter admits (by default blind, census and unsourced). Audits
  * are random only within the acted population; they cannot validate a lower bar. Shadow
  * labels must also be collected representatively. This predicate alone does not establish that.
+ * A chain's retries (`chain:attempt:<n>` with n of 2 or more) are never unselected: only a
+ * held-back earlier attempt sent their state back to the verifier.
  */
 export const isUnselected = (r: DecisionRecord, filter: TrustFilter = {}): boolean =>
   unselectedRow(r) && admits(filter, r.outcome?.source);
@@ -313,6 +342,36 @@ export const isUnselected = (r: DecisionRecord, filter: TrustFilter = {}): boole
 export function expectedAccuracy(records: readonly DecisionRecord[]): number | undefined {
   const live = records.filter((r) => !r.failedOpen && !settledWithoutAnswer(r));
   return live.length === 0 ? undefined : mean(live.map((r) => r.confidence));
+}
+
+/**
+ * Score labelled rows on the act side: the probability that acting is right as the policy reads
+ * it (a judge row's p(yes) or 1 - p(yes) by the side its policy acted on; a pick or rate row's
+ * leading confidence), against whether acting was right (`actWasRight`). This is the scale an
+ * `actAbove` is set on, so a bar fitted on it is the bar to act at. The leading-answer scale
+ * (`scoredFromLedger`) also counts a confident "no" toward the promise, which on a judge gate
+ * acting never makes: a verifier sure of its rejections and loose with its passes fitted 0.9
+ * for 95% there and delivered 80% precision acting at it. Each row's side is read from its own
+ * `go`; a row that cannot tell (an exact 0.5) takes `goIsYes`, default the gate's majority.
+ * Rows a floor or bypass settled, failed-open rows and labels the trust filter refuses are
+ * skipped, as in every fit.
+ */
+export function scoredForAct(
+  records: readonly DecisionRecord[],
+  opts: ScoreOptions & { readonly goIsYes?: boolean } = {},
+): Scored[] {
+  const fallback = opts.goIsYes ?? inferGoIsYes(records).goIsYes;
+  return records.flatMap((r) => {
+    if (!r.outcome || r.failedOpen || settledWithoutAnswer(r)) return [];
+    if (!admits(opts, r.outcome.source)) return [];
+    if (opts.unselectedOnly && !unselectedRow(r)) return [];
+    const v = r.verdict;
+    const goIsYes = recordedGoIsYes(r) ?? fallback;
+    const right = actWasRight(r, goIsYes);
+    if (right === undefined) return [];
+    const go = v.kind === "judge" ? (goIsYes ? v.pYes : 1 - v.pYes) : r.confidence;
+    return Number.isFinite(go) ? [{ confidence: go, correct: right }] : [];
+  });
 }
 
 /** Score labelled judge rows by the yes-probability against the boolean truth. */
@@ -433,32 +492,99 @@ export function pairwiseCorrelation(matrix: readonly (readonly boolean[])[]): nu
   return mean(vals);
 }
 
+/**
+ * Phi between two members' correctness, or undefined when either member's correctness did not
+ * vary (it was right on every row read, or wrong on every one): then nothing about their error
+ * correlation was observed. `errorCorrelation` reads that case as 0, which is independence,
+ * the most optimistic rho there is.
+ */
+function phiOrUndefined(pairs: readonly (readonly [boolean, boolean])[]): number | undefined {
+  const a = pairs.filter(([x]) => x).length;
+  const b = pairs.filter(([, y]) => y).length;
+  if (a === 0 || a === pairs.length || b === 0 || b === pairs.length) return undefined;
+  return errorCorrelation(pairs.map(([x, y]) => ({ a: x, b: y })));
+}
+
 /** Phi between two members' correctness, over the rows on which both answered. */
 export interface MemberPairCorrelation {
   /** The two member keys, in sorted order. */
   readonly keys: readonly [string, string];
-  readonly correlation: number;
+  /**
+   * Phi, absent when either member's correctness did not vary on the rows read: three replicas
+   * that were never wrong say nothing about how their errors move together, and reading that as
+   * 0 would pool them as three independent votes.
+   */
+  readonly correlation?: number;
   readonly n: number;
 }
 
 export interface MemberCorrelation {
   /** Every pair of member keys that answered together on at least one row read. */
   readonly pairs: readonly MemberPairCorrelation[];
-  /** Mean over the pairs: the rho for `PoolOptions.correlation`. Absent when no pair exists. */
+  /**
+   * Mean over the pairs with a correlation: the rho for `PoolOptions.correlation`. Right only
+   * for exchangeable members (replicas, framings of one model); a mixed ensemble wants
+   * `matrix`. Absent when no pair has one, rather than 0, which would read as independence.
+   */
   readonly mean?: number;
-  /** Rows read: labelled with a boolean truth, members recorded, not failed open. */
+  /** The pairs with a correlation, by member key in both orders: `PoolOptions.correlations`. */
+  readonly matrix?: CorrelationMatrix;
+  /**
+   * Rows read: compound rows labelled with a truth, members recorded, not failed open; and
+   * battery requests whose member rows carry a label with a boolean truth.
+   */
   readonly n: number;
+}
+
+/** Was a member's answer right against a truth? Undefined when the two cannot be compared. */
+function memberRight(v: Verdict, truth: string | boolean): boolean | undefined {
+  if (v.kind === "judge") return typeof truth === "boolean" ? v.pYes >= 0.5 === truth : undefined;
+  if (typeof truth !== "string") return undefined;
+  return v.kind === "pick" ? v.choice === truth : v.level === truth;
+}
+
+/**
+ * Each battery request's member correctness by question id, read from the member rows' own
+ * labels: the battery's truth, or a member's own truth when the label gave one
+ * (`Outcome.memberTruths`). A battery's members are rows of their own and its combined row
+ * carries no `members`, so they pair by request.
+ */
+function batteryAnswers(
+  rows: readonly DecisionRecord[],
+  opts: ScoreOptions,
+): Map<string, boolean>[] {
+  const key = (r: DecisionRecord) => `${r.gateId}\u0000${r.requestId}`;
+  const batteries = new Set(rows.filter((r) => r.combined === true).map(key));
+  const byRequest = new Map<string, Map<string, boolean>>();
+  for (const r of rows) {
+    if (r.combined === true || !batteries.has(key(r)) || r.failedOpen) continue;
+    const truth = r.outcome?.truth;
+    if (typeof truth !== "boolean" || r.verdict.kind !== "judge") continue;
+    if (!admits(opts, r.outcome?.source) || (opts.unselectedOnly && !unselectedRow(r))) continue;
+    let correct = byRequest.get(key(r));
+    if (!correct) {
+      correct = new Map();
+      byRequest.set(key(r), correct);
+    }
+    if (!correct.has(r.questionId)) correct.set(r.questionId, r.verdict.pYes >= 0.5 === truth);
+  }
+  return [...byRequest.values()];
 }
 
 /**
  * Member error correlation measured from the ledger: pairwise phi between members'
  * correctness, paired by member key so a tier a cascade did not reach, or a member added
- * later, never misaligns the columns. Each member is scored by its own lean against the row's
- * boolean truth, as `inheritOutcome` scores a battery member; a failed-open answer has no lean
- * and is skipped. This is the number the design effect needs in place of a guessed rho. With
- * no pair `mean` is absent rather than 0, which would read as independence. Labels pass the
- * trust filter as in every fit. Pass `unselectedOnly` when labels come from reviewing the
- * unsure: rows chosen on the pooled confidence are chosen on both members at once, and that
+ * later, never misaligns the columns. A compound row's members (ensemble, cascade, sequential)
+ * are scored by their own leading answer against the row's truth: p(yes) against a boolean
+ * truth, a pick's choice or a rate's level against a string one. A battery's members are rows
+ * of their own, paired by request and keyed by question id, each scored by its own label (the
+ * battery's truth unless the label gave the member its own, `Outcome.memberTruths`; without
+ * member truths, the members of an any/all battery are scored against the composite, which is
+ * not their question, and their phi says little). A failed-open answer has no lean and is
+ * skipped. This is the number the design effect needs in place of a guessed rho. A pair whose
+ * members did not both vary has no phi, and `mean` reads only the pairs that have one. Labels
+ * pass the trust filter as in every fit. Pass `unselectedOnly` when labels come from reviewing
+ * the unsure: rows chosen on the pooled confidence are chosen on both members at once, and that
  * selection alone moves phi (Berkson's paradox).
  */
 export function memberCorrelation(
@@ -468,33 +594,181 @@ export function memberCorrelation(
   const answered: Map<string, boolean>[] = [];
   for (const r of rows) {
     const truth = r.outcome?.truth;
-    if (typeof truth !== "boolean" || !r.members || r.failedOpen) continue;
+    if (truth === undefined || !r.members || r.failedOpen) continue;
     if (!admits(opts, r.outcome?.source) || (opts.unselectedOnly && !unselectedRow(r))) continue;
     const correct = new Map<string, boolean>();
     for (const m of r.members) {
-      if (m.failedOpen || m.verdict.kind !== "judge" || correct.has(m.key)) continue;
-      correct.set(m.key, m.verdict.pYes >= 0.5 === truth);
+      if (m.failedOpen || m.verdict.kind !== r.verdict.kind || correct.has(m.key)) continue;
+      const right = memberRight(m.verdict, truth);
+      if (right !== undefined) correct.set(m.key, right);
     }
-    answered.push(correct);
+    if (correct.size > 0) answered.push(correct);
   }
+  answered.push(...batteryAnswers(rows, opts));
   const keys = [...new Set(answered.flatMap((c) => [...c.keys()]))].sort();
   const pairs: MemberPairCorrelation[] = [];
+  const byKey = new Map<string, Map<string, number>>();
+  const put = (a: string, b: string, phi: number) => {
+    const row = byKey.get(a) ?? new Map<string, number>();
+    row.set(b, phi);
+    byKey.set(a, row);
+  };
   for (const [i, a] of keys.entries()) {
     for (const b of keys.slice(i + 1)) {
-      const both = answered.flatMap((c) => {
+      const both = answered.flatMap((c): [boolean, boolean][] => {
         const x = c.get(a);
         const y = c.get(b);
         return x === undefined || y === undefined ? [] : [[x, y]];
       });
-      if (both.length > 0) {
-        pairs.push({ keys: [a, b], correlation: pairwiseCorrelation(both), n: both.length });
+      if (both.length === 0) continue;
+      const phi = phiOrUndefined(both);
+      pairs.push({
+        keys: [a, b],
+        ...(phi !== undefined ? { correlation: phi } : {}),
+        n: both.length,
+      });
+      if (phi !== undefined) {
+        put(a, b, phi);
+        put(b, a, phi);
       }
     }
   }
+  const measured = pairs.flatMap((p) => (p.correlation === undefined ? [] : [p.correlation]));
+  // Built from entries, so a member keyed "__proto__" is a key like any other.
+  const matrix: CorrelationMatrix = Object.fromEntries(
+    [...byKey].map(([k, row]) => [k, Object.fromEntries(row)]),
+  );
   return {
     pairs,
-    ...(pairs.length > 0 ? { mean: mean(pairs.map((p) => p.correlation)) } : {}),
+    ...(measured.length > 0 ? { mean: mean(measured), matrix } : {}),
     n: answered.length,
+  };
+}
+
+/**
+ * A model's family: the first token of its name, compared without case. The owner prefix (the
+ * part before the last "/") is dropped, and so is a leading name token that repeats the owner
+ * ("meta-llama/Meta-Llama-3.1-70B" is "llama"); a revision tag after "@" or ":" goes, the name
+ * splits on anything not a letter or digit, and a version glued to the first token is cut
+ * ("jev113" is "jev", "qwen2.5" is "qwen"). So "typesafe/jev-1.13", "jev-1.13", "jev113.para"
+ * and "typesafe/jev-router" are all "jev"; "anthropic/claude-sonnet-4.5", "claude-sonnet-4-5"
+ * and "claude-3-5-sonnet" are all "claude"; "openai/gpt-4o" and "gpt-4o" are "gpt". Haiku and
+ * Jev, GPT and Claude stay apart.
+ *
+ * Families are deliberately coarse. A family decides when two answers count as one voice (a
+ * second opinion refused, a correlation defaulted, a lead counted once), and a false merge only
+ * adds caution there while a false split removes it: two spellings of one model read as two
+ * families pooled as independent and acted where one voice would have been reviewed, and
+ * jev-1.13 and jev-1.14 shared 89% of their errors (phi 0.785). Two tiers of one vendor's line
+ * are one family here; pass member correlations measured from the ledger to tell them apart.
+ * A family no id shows (two vendors serving one model under different names) is the caller's
+ * to know. Strategies read voter identity through it, so its spelling of a family is stable.
+ */
+export function modelFamily(model: string): string {
+  const id = model.trim().toLowerCase();
+  const slash = id.lastIndexOf("/");
+  const owner = new Set(
+    id
+      .slice(0, Math.max(slash, 0))
+      .split(/[^a-z0-9]+/)
+      .filter((x) => x !== ""),
+  );
+  const tokens = id
+    .slice(slash + 1)
+    .replace(/[@:].*$/, "")
+    .split(/[^a-z0-9]+/)
+    .filter((x) => x !== "");
+  // Drop leading tokens that repeat the owner, while a name token follows them.
+  let i = 0;
+  while (
+    i < tokens.length - 1 &&
+    owner.has(tokens[i] ?? "") &&
+    /^[a-z]/.test(tokens[i + 1] ?? "")
+  ) {
+    i++;
+  }
+  const first = tokens[i];
+  if (first === undefined) return id;
+  // A version glued to the name: greedy on the letters, so "jev113" is "jev", not "je".
+  return first.replace(/^([a-z]{2,})\d+$/, "$1");
+}
+
+/** The leading answer of a verdict, as a string a disagreement can compare. */
+const leadingAnswer = (v: Verdict): string =>
+  v.kind === "judge" ? (v.pYes >= 0.5 ? "yes" : "no") : v.kind === "pick" ? v.choice : v.level;
+
+export interface Disagreement {
+  /** Ready to pass to `gradeOf` as `borrowed`. */
+  readonly via: {
+    readonly type: "disagreement";
+    readonly rate: number;
+    readonly pairs: number;
+    readonly models: readonly [string, string];
+  };
+  /** The two member keys compared. */
+  readonly keys: readonly [string, string];
+  /** The newest paired row's `at`: pass it to `gradeOf` as `borrowedAt`. */
+  readonly at: string;
+}
+
+/**
+ * How often two members from different model families gave different leading answers, over the
+ * compound rows on which both answered (labels are not read). On each such row at least one of
+ * the two is wrong, so the rate bounds from below the share of rows on which at least one judge
+ * is wrong, whatever their correlation; it is not the gate's error rate, which can be 0 while
+ * the second opinion is wrong on every disagreement. `keys` names the two members; without it
+ * the two most often recorded member keys whose models are of different families are taken.
+ * Undefined when no such pair answered together, or when the two share a family
+ * (`modelFamily`).
+ */
+export function disagreement(
+  rows: readonly DecisionRecord[],
+  opts: { readonly keys?: readonly [string, string] } = {},
+): Disagreement | undefined {
+  const seen = new Map<string, { n: number; model: string }>();
+  for (const r of rows) {
+    for (const m of r.members ?? []) {
+      if (m.failedOpen || m.model === undefined) continue;
+      const s = seen.get(m.key);
+      if (s) s.n++;
+      else seen.set(m.key, { n: 1, model: m.model });
+    }
+  }
+  const ranked = [...seen.entries()].sort((x, y) => y[1].n - x[1].n);
+  let keys = opts.keys;
+  if (keys === undefined) {
+    for (const [i, [a, x]] of ranked.entries()) {
+      const partner = ranked
+        .slice(i + 1)
+        .find(([, y]) => modelFamily(y.model) !== modelFamily(x.model));
+      if (partner) {
+        keys = [a, partner[0]];
+        break;
+      }
+    }
+  }
+  if (keys === undefined) return undefined;
+  const [ka, kb] = keys;
+  const a = seen.get(ka);
+  const b = seen.get(kb);
+  if (!a || !b || modelFamily(a.model) === modelFamily(b.model)) return undefined;
+  let pairs = 0;
+  let differ = 0;
+  let at = "";
+  for (const r of rows) {
+    if (r.failedOpen) continue;
+    const ma = r.members?.find((m) => m.key === ka && !m.failedOpen);
+    const mb = r.members?.find((m) => m.key === kb && !m.failedOpen);
+    if (!ma || !mb) continue;
+    pairs++;
+    if (leadingAnswer(ma.verdict) !== leadingAnswer(mb.verdict)) differ++;
+    if (r.at > at) at = r.at;
+  }
+  if (pairs === 0) return undefined;
+  return {
+    via: { type: "disagreement", rate: differ / pairs, pairs, models: [a.model, b.model] },
+    keys: [ka, kb],
+    at,
   };
 }
 

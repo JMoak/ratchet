@@ -44,7 +44,8 @@ export interface AcceptancePlan {
    * Trust classes whose labels the evaluation reads. Default `TRUSTED_SOURCES`: blind, census
    * and unsourced labels. An act labelled only from another source stays in the sample and
    * counts as unlabelled. Consequence is refused outright: what happened next depends on what
-   * the gate did, so it cannot certify the gate.
+   * the gate did, so it cannot certify the gate. So is unregistered: a label whose source is
+   * present but unreadable or unnamed is not known to be blind (register the source instead).
    */
   readonly sources?: readonly FitClass[];
 }
@@ -144,6 +145,11 @@ function planSources(sources: readonly FitClass[] | undefined): readonly FitClas
   for (const c of sources as readonly unknown[]) {
     if (!isTrustClass(c)) throw new Error(`unknown trust class "${String(c)}"`);
     if (c === "consequence") throw new Error("consequence labels never feed acceptance");
+    if (c === "unregistered") {
+      throw new Error(
+        "unregistered labels never feed acceptance: register their source in labelTrust",
+      );
+    }
   }
   return TRUST_CLASSES.filter((c): c is FitClass => (sources as readonly string[]).includes(c));
 }
@@ -196,13 +202,15 @@ export function resolvePlan(plan: AcceptancePlan): ResolvedPlan {
 export function acceptanceSample(
   rows: readonly DecisionRecord[],
   plan: ResolvedPlan,
+  from = 0,
 ): DecisionRecord[] {
   const seenStates = new Set<string>();
   const perGroup = new Map<string, number>();
   const sample: DecisionRecord[] = [];
-  for (const r of rows) {
+  for (let i = Math.max(0, from); i < rows.length; i++) {
+    const r = rows[i] as DecisionRecord;
     if (sample.length === plan.sampleSize) break;
-    if (r.soft !== "act" || r.failedOpen || settledWithoutAnswer(r)) continue;
+    if (!isPlannedAct(r)) continue;
     const retry = `${r.gateId}\u0000${r.questionHash}\u0000${r.stateHash}`;
     if (seenStates.has(retry)) continue;
     seenStates.add(retry);
@@ -234,7 +242,15 @@ export function evaluateAcceptance(
   trust: TrustRegistry = DEFAULT_TRUST,
 ): AcceptanceResult {
   const resolved = "hash" in plan ? plan : resolvePlan(plan);
-  const sample = acceptanceSample(rows, resolved);
+  return judgeSample(acceptanceSample(rows, resolved), resolved, trust);
+}
+
+/** The one evaluation of a planned sample already drawn (`acceptanceSample`). */
+function judgeSample(
+  sample: readonly DecisionRecord[],
+  resolved: ResolvedPlan,
+  trust: TrustRegistry,
+): AcceptanceResult {
   if (sample.length < resolved.sampleSize) {
     return { status: "collecting", plan: resolved, acts: sample.length };
   }
@@ -260,6 +276,82 @@ export function evaluateAcceptance(
     lowerBound,
     sample: ids,
   };
+}
+
+/** An act a planned sample may hold: the policy acted, and an oracle answered. */
+export const isPlannedAct = (r: DecisionRecord): boolean =>
+  r.soft === "act" && !r.failedOpen && !settledWithoutAnswer(r);
+
+/**
+ * True when a complete planned sample can no longer pass, whatever its unread labels turn out
+ * to be: its read labels already hold more wrong acts than the plan allows (an unreadable
+ * label counts as wrong, as in `evaluateAcceptance`). An incomplete sample cannot fail yet.
+ */
+export function cannotPass(
+  sample: readonly DecisionRecord[],
+  plan: ResolvedPlan,
+  trust: TrustRegistry = DEFAULT_TRUST,
+): boolean {
+  if (sample.length < plan.sampleSize) return false;
+  const filter = { sources: plan.sources, trust };
+  const wrong = sample.filter(
+    (r) => r.outcome !== undefined && admits(filter, r.outcome.source) && !rightToAct(r),
+  ).length;
+  if (wrong > plan.maxErrors) return true;
+  return exactLowerBound(sample.length - wrong, sample.length, plan.confidence) < plan.target;
+}
+
+/**
+ * The first planned window among `rows` that can no longer pass, as its sample, or undefined.
+ * A window is the planned sample drawn from one act on, as a phase starting there would draw
+ * it; one is checked for every act before the act `before` names (default: every act). This
+ * is what makes a rejection outlast its checkpoint: a configuration whose own evidence already
+ * holds a failed planned sample cannot have a later, luckier one chosen in its place, however
+ * the phase start is set (e2e V1, T4-10). Pass rows scoped as for `evaluateAcceptance`.
+ */
+export function failedWindow(
+  rows: readonly DecisionRecord[],
+  plan: ResolvedPlan,
+  trust: TrustRegistry = DEFAULT_TRUST,
+  before?: string,
+): readonly DecisionRecord[] | undefined {
+  const filter = { sources: plan.sources, trust };
+  // A window fails only on a wrong (or unreadable) label, so none can start after the last one.
+  let last = -1;
+  rows.forEach((r, i) => {
+    if (isPlannedAct(r) && r.outcome !== undefined && admits(filter, r.outcome.source)) {
+      if (!rightToAct(r)) last = i;
+    }
+  });
+  for (let i = 0; i <= last; i++) {
+    const r = rows[i] as DecisionRecord;
+    if (r.id === before) break;
+    if (!isPlannedAct(r)) continue;
+    const sample = acceptanceSample(rows, plan, i);
+    // Later windows hold no more acts than this one: none of them is complete either.
+    if (sample.length < plan.sampleSize) return undefined;
+    if (cannotPass(sample, plan, trust)) return sample;
+  }
+  return undefined;
+}
+
+/**
+ * The earliest planned window among `rows` that the ledger accepts, or undefined: the sample
+ * of a phase that could have started at each act, in order, until one is complete, fully read
+ * and passes. Used to verify a checkpoint written before checkpoints named their sample.
+ */
+export function earliestAccepted(
+  rows: readonly DecisionRecord[],
+  plan: ResolvedPlan,
+  trust: TrustRegistry = DEFAULT_TRUST,
+): readonly DecisionRecord[] | undefined {
+  for (let i = 0; i < rows.length; i++) {
+    if (!isPlannedAct(rows[i] as DecisionRecord)) continue;
+    const sample = acceptanceSample(rows, plan, i);
+    if (sample.length < plan.sampleSize) return undefined;
+    if (judgeSample(sample, plan, trust).status === "accepted") return sample;
+  }
+  return undefined;
 }
 
 /** A row without the group tag is its own group: nothing ties it to another row. */

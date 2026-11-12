@@ -9,6 +9,10 @@
  * (`ratchet review --denied`). A person who denies to steer ("not that, do X") is judging the
  * moment, not the call, and only a review can tell the two apart.
  *
+ * Each outcome also carries its session's root (the reported project directory, else the
+ * session's first cwd), so `promptState` measures `inside_workspace` from where the session
+ * started rather than from wherever the agent had `cd`'d when it asked.
+ *
  * Matching is by session, tool and input hash, oldest prompt first, because `PermissionRequest`
  * carries no `tool_use_id` in either harness. If the same call is prompted twice in a session
  * and only once run, the rows may swap labels between the two prompts; the counts do not change,
@@ -29,6 +33,12 @@ export interface PromptOutcome {
   readonly settledAt?: string;
   /** The run's tool_use_id when it ran. */
   readonly toolUseId?: string;
+  /**
+   * The session's root, what `inside_workspace` is measured from: the project directory the
+   * harness reported, else the first cwd the session's events carry. Absent when neither is
+   * known. Pass it to `promptState`.
+   */
+  readonly root?: string;
 }
 
 export interface Resolution {
@@ -61,6 +71,8 @@ export function resolvePrompts(events: readonly HookEvent[]): Resolution {
   const bySession = new Map<string, Open[]>();
   const lastTurn = new Map<string, string>();
   const sessions = new Set<string>();
+  const firstCwd = new Map<string, string>();
+  const projectDir = new Map<string, string>();
   let runsWithoutPrompt = 0;
   let sessionsEnded = 0;
 
@@ -85,6 +97,9 @@ export function resolvePrompts(events: readonly HookEvent[]): Resolution {
 
   for (const e of ordered) {
     sessions.add(e.session);
+    if (e.cwd !== undefined && !firstCwd.has(e.session)) firstCwd.set(e.session, e.cwd);
+    if (e.projectDir !== undefined && !projectDir.has(e.session))
+      projectDir.set(e.session, e.projectDir);
     // A new user turn in a session means every prompt from an earlier turn was answered, and
     // one that never ran was denied: the harness does not move on past an unanswered prompt.
     if (e.turn !== undefined) {
@@ -124,16 +139,21 @@ export function resolvePrompts(events: readonly HookEvent[]): Resolution {
       }
     }
   }
+  const rootOf = (session: string): { root?: string } => {
+    const root = projectDir.get(session) ?? firstCwd.get(session);
+    return root === undefined ? {} : { root };
+  };
   return {
     outcomes: all.map((o) =>
       o.settled === undefined
-        ? { prompt: o.prompt, label: "open" }
+        ? { prompt: o.prompt, label: "open", ...rootOf(o.prompt.session) }
         : {
             prompt: o.prompt,
             label: o.settled.label,
             by: o.settled.by,
             settledAt: o.settled.at,
             ...(o.settled.toolUseId === undefined ? {} : { toolUseId: o.settled.toolUseId }),
+            ...rootOf(o.prompt.session),
           },
     ),
     runsWithoutPrompt,

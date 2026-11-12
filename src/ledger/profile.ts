@@ -10,7 +10,8 @@
  * confidence bins per donor gate, 100 by default (`resolution`). Calibration differs by
  * question, so the bar for a promise is the cautious end: the lowest bin edge at which every
  * donor gate with at least `minSupport` rows in its tail (every row at or above the edge)
- * clears the promise on that tail by a 95% Wilson lower bound. On one gate that is the bar
+ * clears the promise on that tail at the lower end of a 95% Wilson interval (a one-sided 97.5%
+ * bound). On one gate that is the bar
  * `fitThreshold` keeps in its conservative mode, so a borrowed bar and a fitted bar mean the
  * same thing; across gates it is the strictest donor's bar, not the average, because a profile
  * is lent to a gate none of its donors is, and must hold on every gate it was read from. Each

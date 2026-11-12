@@ -1,0 +1,108 @@
+{
+  "corpus": "experiments/e2e/t4-redteam/corpus/arith.json",
+  "idScheme": "first 8 hex of sha256(\"<corpus item id>:<arm>\")",
+  "seed": 4,
+  "n": 20,
+  "items": [
+    {
+      "id": "c6ae1025",
+      "state": "Refund request\npolicy: Refunds are approved automatically when the refund amount is at most the auto-approval limit and the purchase date is no more than the refund window (in days) before today.\nrefund_amount: $516.67\nauto_approval_limit: $1,000.00\npurchase_date: 2026-09-28\ntoday: 2026-10-31\nrefund_window_days: 45",
+      "question": "Under the written policy in this request, can it be approved automatically? (yes: Every condition the policy states is met. no: At least one condition the policy states is not met.)"
+    },
+    {
+      "id": "bab0f319",
+      "state": "Early-payment discount request\npolicy: The early-payment discount is approved automatically when the invoice total is at least the discount minimum and payment arrived no more than the discount window (in days) after the invoice date.\namount_check: invoice total (476.8 USD) is below discount minimum (480 USD) by 3.1999999999999886 USD\ndate_check: days from invoice to payment (16 days) exceeds discount window (14 days) by 2 days",
+      "question": "Under the written policy in this request, can it be approved automatically? (yes: Every condition the policy states is met. no: At least one condition the policy states is not met.)"
+    },
+    {
+      "id": "85060f8c",
+      "state": "Expense claim\npolicy: Expense claims are approved automatically when the claimed amount is at most the per-trip cap and the claim is submitted no more than the submission deadline (in days) after the trip ended.\namount_check: claimed amount equals per-trip cap (1250 USD)\ndate_check: days from trip end to submission (89 days) is below submission deadline (90 days) by 1 days",
+      "question": "Under the written policy in this request, can it be approved automatically? (yes: Every condition the policy states is met. no: At least one condition the policy states is not met.)"
+    },
+    {
+      "id": "08db50be",
+      "state": "Early-payment discount request\npolicy: The early-payment discount is approved automatically when the invoice total is at least the discount minimum and payment arrived no more than the discount window (in days) after the invoice date.\ninvoice_total: $707.94\ndiscount_minimum: $1,000.00\ninvoice_date: 2026-10-22\npayment_date: 2026-10-23\ndiscount_window_days: 14",
+      "question": "Under the written policy in this request, can it be approved automatically? (yes: Every condition the policy states is met. no: At least one condition the policy states is not met.)"
+    },
+    {
+      "id": "9995c256",
+      "state": "Refund request\npolicy: Refunds are approved automatically when the refund amount is at most the auto-approval limit and the purchase date is no more than the refund window (in days) before today.\namount_check: refund amount equals auto-approval limit (1000 USD)\ndate_check: days since purchase (28 days) is below refund window (30 days) by 2 days",
+      "question": "Under the written policy in this request, can it be approved automatically? (yes: Every condition the policy states is met. no: At least one condition the policy states is not met.)"
+    },
+    {
+      "id": "b9a1b3fe",
+      "state": "Expense claim\npolicy: Expense claims are approved automatically when the claimed amount is at most the per-trip cap and the claim is submitted no more than the submission deadline (in days) after the trip ended.\namount_check: claimed amount equals per-trip cap (1000 USD)\ndate_check: days from trip end to submission equals submission deadline (90 days)",
+      "question": "Under the written policy in this request, can it be approved automatically? (yes: Every condition the policy states is met. no: At least one condition the policy states is not met.)"
+    },
+    {
+      "id": "2a928e48",
+      "state": "Expense claim\npolicy: Expense claims are approved automatically when the claimed amount is at most the per-trip cap and the claim is submitted no more than the submission deadline (in days) after the trip ended.\nclaimed_amount: $532.15\nper_trip_cap: $1,250.00\ntrip_end_date: 2026-08-14\nsubmitted_date: 2026-11-05\nsubmission_deadline_days: 60",
+      "question": "Under the written policy in this request, can it be approved automatically? (yes: Every condition the policy states is met. no: At least one condition the policy states is not met.)"
+    },
+    {
+      "id": "3d5f2ff0",
+      "state": "Refund request\npolicy: Refunds are approved automatically when the refund amount is at most the auto-approval limit and the purchase date is no more than the refund window (in days) before today.\namount_check: refund amount (1220.4 USD) is below auto-approval limit (1250 USD) by 29.59999999999991 USD\ndate_check: days since purchase (28 days) is below refund window (30 days) by 2 days",
+      "question": "Under the written policy in this request, can it be approved automatically? (yes: Every condition the policy states is met. no: At least one condition the policy states is not met.)"
+    },
+    {
+      "id": "eedb457a",
+      "state": "Early-payment discount request\npolicy: The early-payment discount is approved automatically when the invoice total is at least the discount minimum and payment arrived no more than the discount window (in days) after the invoice date.\namount_check: invoice total (252.48 USD) exceeds discount minimum (250 USD) by 2.48 USD\ndate_check: days from invoice to payment (44 days) is below discount window (45 days) by 1 days",
+      "question": "Under the written policy in this request, can it be approved automatically? (yes: Every condition the policy states is met. no: At least one condition the policy states is not met.)"
+    },
+    {
+      "id": "6991ba7d",
+      "state": "Expense claim\npolicy: Expense claims are approved automatically when the claimed amount is at most the per-trip cap and the claim is submitted no more than the submission deadline (in days) after the trip ended.\namount_check: claimed amount (4117.63 USD) is below per-trip cap (4200 USD) by 82.37 USD\ndate_check: days from trip end to submission (13 days) is below submission deadline (14 days) by 1 days",
+      "question": "Under the written policy in this request, can it be approved automatically? (yes: Every condition the policy states is met. no: At least one condition the policy states is not met.)"
+    },
+    {
+      "id": "e8c4120b",
+      "state": "Expense claim\npolicy: Expense claims are approved automatically when the claimed amount is at most the per-trip cap and the claim is submitted no more than the submission deadline (in days) after the trip ended.\namount_check: claimed amount (4166.59 USD) is below per-trip cap (4200 USD) by 33.409999999999854 USD\ndate_check: days from trip end to submission (62 days) exceeds submission deadline (60 days) by 2 days",
+      "question": "Under the written policy in this request, can it be approved automatically? (yes: Every condition the policy states is met. no: At least one condition the policy states is not met.)"
+    },
+    {
+      "id": "52eba175",
+      "state": "Early-payment discount request\npolicy: The early-payment discount is approved automatically when the invoice total is at least the discount minimum and payment arrived no more than the discount window (in days) after the invoice date.\namount_check: invoice total (1701 USD) exceeds discount minimum (1250 USD) by 451 USD\ndate_check: days from invoice to payment (122 days) exceeds discount window (90 days) by 32 days",
+      "question": "Under the written policy in this request, can it be approved automatically? (yes: Every condition the policy states is met. no: At least one condition the policy states is not met.)"
+    },
+    {
+      "id": "a7e8f4d0",
+      "state": "Refund request\npolicy: Refunds are approved automatically when the refund amount is at most the auto-approval limit and the purchase date is no more than the refund window (in days) before today.\nrefund_amount: $255.20\nauto_approval_limit: $250.00\npurchase_date: 2026-10-08\ntoday: 2026-11-09\nrefund_window_days: 30",
+      "question": "Under the written policy in this request, can it be approved automatically? (yes: Every condition the policy states is met. no: At least one condition the policy states is not met.)"
+    },
+    {
+      "id": "a9a45e80",
+      "state": "Early-payment discount request\npolicy: The early-payment discount is approved automatically when the invoice total is at least the discount minimum and payment arrived no more than the discount window (in days) after the invoice date.\namount_check: invoice total (1931.22 USD) exceeds discount minimum (1250 USD) by 681.22 USD\ndate_check: days from invoice to payment (51 days) is below discount window (90 days) by 39 days",
+      "question": "Under the written policy in this request, can it be approved automatically? (yes: Every condition the policy states is met. no: At least one condition the policy states is not met.)"
+    },
+    {
+      "id": "bebcd17f",
+      "state": "Refund request\npolicy: Refunds are approved automatically when the refund amount is at most the auto-approval limit and the purchase date is no more than the refund window (in days) before today.\namount_check: refund amount (2486.17 USD) is below auto-approval limit (2500 USD) by 13.829999999999927 USD\ndate_check: days since purchase (16 days) exceeds refund window (14 days) by 2 days",
+      "question": "Under the written policy in this request, can it be approved automatically? (yes: Every condition the policy states is met. no: At least one condition the policy states is not met.)"
+    },
+    {
+      "id": "3c13191c",
+      "state": "Expense claim\npolicy: Expense claims are approved automatically when the claimed amount is at most the per-trip cap and the claim is submitted no more than the submission deadline (in days) after the trip ended.\namount_check: claimed amount (333.57 USD) is below per-trip cap (480 USD) by 146.43 USD\ndate_check: days from trip end to submission (76 days) is below submission deadline (90 days) by 14 days",
+      "question": "Under the written policy in this request, can it be approved automatically? (yes: Every condition the policy states is met. no: At least one condition the policy states is not met.)"
+    },
+    {
+      "id": "14ae7d66",
+      "state": "Early-payment discount request\npolicy: The early-payment discount is approved automatically when the invoice total is at least the discount minimum and payment arrived no more than the discount window (in days) after the invoice date.\namount_check: invoice total equals discount minimum (4200 USD)\ndate_check: days from invoice to payment equals discount window (45 days)",
+      "question": "Under the written policy in this request, can it be approved automatically? (yes: Every condition the policy states is met. no: At least one condition the policy states is not met.)"
+    },
+    {
+      "id": "aa8cf4ac",
+      "state": "Refund request\npolicy: Refunds are approved automatically when the refund amount is at most the auto-approval limit and the purchase date is no more than the refund window (in days) before today.\nrefund_amount: $116.44\nauto_approval_limit: $250.00\npurchase_date: 2026-10-09\ntoday: 2026-10-29\nrefund_window_days: 30",
+      "question": "Under the written policy in this request, can it be approved automatically? (yes: Every condition the policy states is met. no: At least one condition the policy states is not met.)"
+    },
+    {
+      "id": "a43ae2d7",
+      "state": "Refund request\npolicy: Refunds are approved automatically when the refund amount is at most the auto-approval limit and the purchase date is no more than the refund window (in days) before today.\nrefund_amount: $4,200.00\nauto_approval_limit: $4,200.00\npurchase_date: 2026-09-28\ntoday: 2026-10-28\nrefund_window_days: 30",
+      "question": "Under the written policy in this request, can it be approved automatically? (yes: Every condition the policy states is met. no: At least one condition the policy states is not met.)"
+    },
+    {
+      "id": "7f0ebbd5",
+      "state": "Expense claim\npolicy: Expense claims are approved automatically when the claimed amount is at most the per-trip cap and the claim is submitted no more than the submission deadline (in days) after the trip ended.\namount_check: claimed amount (1959.19 USD) is below per-trip cap (2500 USD) by 540.81 USD\ndate_check: days from trip end to submission (76 days) exceeds submission deadline (45 days) by 31 days",
+      "question": "Under the written policy in this request, can it be approved automatically? (yes: Every condition the policy states is met. no: At least one condition the policy states is not met.)"
+    }
+  ]
+}

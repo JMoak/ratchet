@@ -7,9 +7,12 @@
  * by nothing else.
  *
  * A source string is `<channel>:<kind>[:<name>]`, such as `review:blind:jordan`. Its class is
- * looked up by `channel:kind`, then `channel:*`. Anything unregistered or unparseable is
- * `unknown`, which reads exactly as an unsourced label always has, so ledgers written before
- * sources existed do not move.
+ * looked up by `channel:kind`, then `channel:*`. Only an absent source is `unknown`, which
+ * reads exactly as an unsourced label always has, so ledgers written before sources existed do
+ * not move. A source that is present but malformed or that no entry names is `unregistered`:
+ * counted on its own, never fitted on, graded or accepted, because a mistyped or invented route
+ * (`Reverted:git`, `accepted:`, `hook:inferred`) is not evidence that the label was given blind
+ * (e2e T4-09). Register a new source with `labelTrust` before writing labels from it.
  */
 
 /**
@@ -17,16 +20,18 @@
  * - `census`: a person answered every ask in the moment, so the labels are the population.
  * - `moment`: a person answered after seeing the model's answer or suggestion.
  * - `consequence`: inferred from what happened next.
- * - `unknown`: no source, or one no registry entry names.
+ * - `unknown`: no source at all, as every label written before sources existed.
+ * - `unregistered`: a source is present but malformed, or no registry entry names it.
  */
-export type TrustClass = "blind" | "census" | "moment" | "consequence" | "unknown";
+export type TrustClass = "blind" | "census" | "moment" | "consequence" | "unknown" | "unregistered";
 
 /**
  * The classes a fit or an acceptance test may be told to read. Consequence is not one: a revert
  * or a silence happens because of what the gate did, so a bar fitted on it is fitted on the
- * gate's own output.
+ * gate's own output. Unregistered is not one either: register the source (`labelTrust`) to
+ * have its labels read, so that what they are is stated once, where it can be reviewed.
  */
-export type FitClass = Exclude<TrustClass, "consequence">;
+export type FitClass = Exclude<TrustClass, "consequence" | "unregistered">;
 
 export const TRUST_CLASSES: readonly TrustClass[] = [
   "blind",
@@ -34,17 +39,25 @@ export const TRUST_CLASSES: readonly TrustClass[] = [
   "moment",
   "consequence",
   "unknown",
+  "unregistered",
 ];
 
 /** The default trust filter for fitting and acceptance: blind, census and unsourced labels. */
 export const TRUSTED_SOURCES: readonly FitClass[] = ["blind", "census", "unknown"];
 
 /**
- * What a report's `labelled` counts and grades: every class but consequence, which has a column
- * of its own. A moment label still says how often the model was right; it cannot fit a bar,
- * because the person saw the model's answer before giving it.
+ * What a report's `labelled` counts and grades: every class but consequence and unregistered,
+ * which are counted on their own (read them with `sources: ["consequence"]` or
+ * `["unregistered"]`). A moment label still says how often the model was right; it cannot fit
+ * a bar, because the person saw the model's answer before giving it. An unregistered label is
+ * not even known to be a person's answer, so it stays out of every figure until its source is
+ * registered.
  */
 export const COUNTED_SOURCES: readonly FitClass[] = ["blind", "census", "moment", "unknown"];
+
+/** True for a class a fit or an acceptance test may read: not consequence, not unregistered. */
+export const isFitClass = (x: unknown): x is FitClass =>
+  isTrustClass(x) && x !== "consequence" && x !== "unregistered";
 
 export interface LabelSource {
   readonly channel: string;
@@ -57,10 +70,11 @@ export interface LabelSource {
 export type TrustRegistry = ReadonlyMap<string, TrustClass>;
 
 /**
- * The sources this repository writes or plans to: `ratchet review` writes `review:blind`, the
- * keywork gate and the agent hook write `<harness>:person`. The consequence channels are
- * registered before anything writes them so that the first one written is never read as
- * `unknown`, which would let it fit a bar.
+ * The sources this repository writes or plans to: `ratchet review` writes `review:blind` (or
+ * `review:blind:<name>`), the keywork gate writes `keywork:person` and the agent hook writes
+ * `<harness>:person` for each harness it supports (`claude-code`, `codex`). The consequence
+ * channels are registered before anything writes them, so the first one written reads as
+ * consequence rather than as an unregistered source.
  */
 export const DEFAULT_TRUST: TrustRegistry = new Map<string, TrustClass>([
   ["review:blind", "blind"],
@@ -89,14 +103,20 @@ export function parseSource(source: string): LabelSource | undefined {
   return name === "" ? undefined : { channel, kind, name };
 }
 
-/** The trust class of a label's source. No source, or an unregistered one, is `unknown`. */
+/**
+ * The trust class of a label's source. Only an absent source is `unknown` (trusted, as every
+ * label written before sources existed). A present source that is not a string, does not
+ * parse, or that no entry names is `unregistered`, which nothing fits on or accepts: a label
+ * whose route is unreadable must not pass as one whose route was never recorded.
+ */
 export function trustOf(
   source: string | undefined,
   registry: TrustRegistry = DEFAULT_TRUST,
 ): TrustClass {
-  const s = source === undefined ? undefined : parseSource(source);
-  if (!s) return "unknown";
-  return registry.get(`${s.channel}:${s.kind}`) ?? registry.get(`${s.channel}:*`) ?? "unknown";
+  if (source === undefined) return "unknown";
+  const s = typeof source === "string" ? parseSource(source) : undefined;
+  if (!s) return "unregistered";
+  return registry.get(`${s.channel}:${s.kind}`) ?? registry.get(`${s.channel}:*`) ?? "unregistered";
 }
 
 /**
@@ -134,7 +154,11 @@ export interface TrustFilter {
   readonly trust?: TrustRegistry;
 }
 
-/** True when a label from `source` passes the filter. */
+/**
+ * True when a label from `source` passes the filter. A filter that names `unregistered` admits
+ * those labels, which is how a report counts them; fits and acceptance take `FitClass`es, which
+ * cannot name it.
+ */
 export function admits(filter: TrustFilter, source: string | undefined): boolean {
   const sources: readonly TrustClass[] = filter.sources ?? TRUSTED_SOURCES;
   return sources.includes(trustOf(source, filter.trust));

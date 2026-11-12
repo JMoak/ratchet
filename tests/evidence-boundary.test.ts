@@ -94,22 +94,28 @@ describe("code-only decisions cannot become model evidence", () => {
     const api = (await engine.report({ targetAccuracy: 0.9, minSupport: 1 })).byGate[gateId];
     expect(cli?.rows).toBe(25);
     expect(cli?.fixed).toBe(23);
+    // The newest row's policy (a refuse bar) is the question's current configuration, so the
+    // calibration columns read it alone and count the other 24 rows as older (wave 3, item 7).
+    expect([cli?.older, api?.older]).toEqual([24, 24]);
     expect(cli?.labelled).toBe(api?.labelled);
-    expect(cli?.labelled).toBe(2);
+    expect(cli?.labelled).toBe(1);
     expect(cli?.accuracy).toBe(0);
     expect(cli?.expectedAccuracy).toBeCloseTo(0.9);
     expect(cli?.fitted).toBeUndefined();
 
-    const check = checkGate(groupGates(rows), {
-      gate: gateId,
-      promise: 0.9,
-      minRows: 1,
-      maxEce: 0.1,
-      window: 100,
-    });
+    const options = { gate: gateId, promise: 0.9, minRows: 1, maxEce: 0.1, window: 100 };
+    // The newest row was asked under another policy (a refuse bar), which is the gate's current
+    // configuration (e2e T4-20): the 24 rows before it are counted and never read.
+    const check = checkGate(groupGates(rows), options);
     expect(check.pass).toBe(false);
-    expect(check.acted).toMatchObject({ n: 1, accuracy: 0 });
-    expect(check.ece).toMatchObject({ n: 2, value: 0.9 });
+    expect(check.olderRows).toBe(24);
+    expect(check.acted).toMatchObject({ n: 0 });
+    expect(check.ece).toMatchObject({ n: 1, value: 0.9 });
+    // Under the gate's own policy, floor and allowlist placeholders still never count.
+    const own = checkGate(groupGates(rows.slice(0, -1)), options);
+    expect(own.olderRows).toBe(0);
+    expect(own.acted).toMatchObject({ n: 1, accuracy: 0 });
+    expect(own.ece).toMatchObject({ n: 1, value: 0.9 });
   });
 
   it("cannot promote an unreliable oracle on a large correct allowlist", async () => {
@@ -206,7 +212,9 @@ describe("threshold fitting cannot discard sufficient negative shadow evidence",
     const api = (await mixed.report({ targetAccuracy: 0.9, minSupport: 10 })).byGate[
       "mixed-labels"
     ];
-    expect(api?.fitted?.n).toBe(100);
+    // 91 right of 100 clears 90% as a point estimate, not by a 95% lower bound (e2e T1-01).
+    expect(api?.pointFitted?.n).toBe(100);
+    expect(api?.fitted).toBeUndefined();
     expect(api?.fittedFrom).toBe("all");
   });
 });

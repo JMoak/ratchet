@@ -336,8 +336,12 @@ describe("batteries", () => {
     expect(c.decision.verdict.pYes).toBeCloseTo(poolLearned(vsOf(c), model).pYes, 10);
     expect(c.decision.detail).toMatchObject({ combine: "learned", members: 4 });
     const d = await fn.ask("s");
-    // Whatever a custom combiner returns is normalised: clamped, re-scored, renamed.
-    expect(d.decision.verdict).toEqual({ kind: "judge", questionId: "fn", pYes: 1, confidence: 1 });
+    // A custom combiner that returns something other than a probability fails the battery open
+    // (it used to be clamped to p(yes) 1 and act); a valid one is re-scored and renamed.
+    expect(d.decision.failedOpen).toBe(true);
+    expect(d.decision.error).toMatch(/not a probability/);
+    expect(d.action).toBe("review");
+    expect(d.decision.verdict).toMatchObject({ kind: "judge", questionId: "fn", pYes: 0.5 });
     const hashes = (await engine.ledger.all()).filter((r) => r.combined).map((r) => r.questionHash);
     expect(new Set(hashes).size).toBe(4);
   });

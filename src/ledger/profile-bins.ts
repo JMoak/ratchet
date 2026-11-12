@@ -124,7 +124,8 @@ export function above(tallies: readonly Tally[], from: number): { n: number; rig
 
 /**
  * One gate's bar: the lowest bin edge whose tail (every row at or above it) holds at least
- * `minSupport` rows and clears `target` by a 95% Wilson lower bound, the bar `fitThreshold`
+ * `minSupport` rows and clears `target` at the lower end of a 95% Wilson interval (a one-sided
+ * 97.5% bound), the bar `fitThreshold`
  * keeps with `conservative` on. An empty bin's edge is never a bar, since nothing there was seen.
  */
 export function gateBar(

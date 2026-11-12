@@ -70,6 +70,8 @@ export function compoundOf(
     ? maxLatency(members)
     : members.reduce((s, d) => s + d.latencyMs, 0);
   const failedOpen = members.length > 0 && members.every((d) => d.failedOpen === true);
+  // A member whose cost is unknown leaves the total unknown too: the sum is a lower bound.
+  const costUnknown = members.some((d) => d.costUnknown === true);
   return {
     verdict,
     oracle: opts.oracle,
@@ -82,6 +84,7 @@ export function compoundOf(
     detail: opts.detail ?? {},
     ...(opts.memberKeys !== undefined ? { memberKeys: opts.memberKeys } : {}),
     ...(failedOpen ? { failedOpen: true } : {}),
+    ...(costUnknown ? { costUnknown: true as const } : {}),
   };
 }
 

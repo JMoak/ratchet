@@ -1,7 +1,10 @@
 import {
   type AcceptancePlan,
   type AcceptanceResult,
+  earliestAccepted,
   evaluateAcceptance,
+  failedWindow,
+  isPlannedAct,
   type ResolvedPlan,
   resolvePlan,
 } from "./acceptance.ts";
@@ -38,9 +41,23 @@ export interface RolloutEvidence {
 }
 
 /**
+ * The planned sample that promoted a gate, carried by its enforce checkpoint so a restore can
+ * check it against the ledger: the phase it was drawn from begins after `from` (null: the
+ * target's first row) and ends at the checkpoint's `afterId`, and `sample` is its acts' ids.
+ */
+export interface AcceptedSample {
+  readonly from: string | null;
+  readonly sample: readonly string[];
+}
+
+/**
  * Caller-persisted continuation, bound to configuration and a ledger-order boundary. Format 2
  * adds `rejected`, so a configuration that failed its acceptance test cannot be retried until it
- * passes by luck merely by restarting. Format 1 checkpoints still load, as never rejected.
+ * passes by luck merely by restarting. Format 3 adds `accepted` to an enforce checkpoint: the
+ * planned sample that promoted it, which a restore re-derives from the ledger and re-evaluates
+ * before honouring enforce (e2e T4-10). Format 1 and 2 checkpoints still load; an enforce one
+ * restores enforce only on the earliest planned sample the ledger accepts, and is written back
+ * as format 3 with it (e2e V1); see `docs/rollout.md`.
  */
 export type RolloutCheckpoint =
   | {
@@ -57,6 +74,15 @@ export type RolloutCheckpoint =
       readonly afterId: string | null;
       /** True once this configuration's planned sample was evaluated and failed. */
       readonly rejected: boolean;
+    }
+  | {
+      readonly format: 3;
+      readonly scopeHash: string;
+      readonly mode: Mode;
+      readonly afterId: string | null;
+      readonly rejected: boolean;
+      /** On an enforce checkpoint, and only there: the planned sample that promoted it. */
+      readonly accepted?: AcceptedSample;
     };
 
 export interface RolloutSettings {
@@ -137,7 +163,15 @@ interface Scope {
   readonly minAuditRows: number;
 }
 
-type State = Extract<RolloutCheckpoint, { format: 2 }>;
+/**
+ * The controller's state: a format 3 checkpoint, with `legacy` set on an enforce state restored
+ * from a format 1 or 2 checkpoint, which names no sample: the restore looks for one in the
+ * ledger and writes the state back as format 3 with it, or holds shadow.
+ */
+type State = Extract<RolloutCheckpoint, { format: 3 }> & { readonly legacy?: true };
+
+/** Start a new phase: set the mode and the state a checkpoint will carry. */
+type Boundary = (mode: Mode, rejected?: boolean, accepted?: AcceptedSample) => void;
 
 type Report = (
   reason: string,
@@ -156,6 +190,19 @@ const hash = (value: unknown): value is string =>
   typeof value === "string" && /^[0-9a-f]{16}$/.test(value);
 const pct = (x: number, places = 1): string => `${(100 * x).toFixed(places)}%`;
 
+function validAccepted(value: unknown): value is AcceptedSample {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) return false;
+  const v = value as Record<string, unknown>;
+  return (
+    Object.keys(v).sort().join(",") === "from,sample" &&
+    (v.from === null || nonempty(v.from)) &&
+    Array.isArray(v.sample) &&
+    v.sample.length > 0 &&
+    v.sample.every(nonempty) &&
+    new Set(v.sample).size === v.sample.length
+  );
+}
+
 function validCheckpoint(value: unknown): value is RolloutCheckpoint {
   if (typeof value !== "object" || value === null || Array.isArray(value)) return false;
   const v = value as Record<string, unknown>;
@@ -164,7 +211,14 @@ function validCheckpoint(value: unknown): value is RolloutCheckpoint {
     (v.format === 1 && keys === "afterId,format,mode,scopeHash") ||
     (v.format === 2 &&
       keys === "afterId,format,mode,rejected,scopeHash" &&
-      typeof v.rejected === "boolean");
+      typeof v.rejected === "boolean") ||
+    (v.format === 3 &&
+      typeof v.rejected === "boolean" &&
+      (keys === "afterId,format,mode,rejected,scopeHash" ||
+        // Only an enforce checkpoint carries a sample; a shadow one with a sample is not ours.
+        (keys === "accepted,afterId,format,mode,rejected,scopeHash" &&
+          v.mode === "enforce" &&
+          validAccepted(v.accepted))));
   return (
     shape &&
     hash(v.scopeHash) &&
@@ -174,7 +228,22 @@ function validCheckpoint(value: unknown): value is RolloutCheckpoint {
 }
 
 function upgradeCheckpoint(c: RolloutCheckpoint): State {
-  return c.format === 2 ? { ...c } : { ...c, format: 2, rejected: false };
+  if (c.format === 3) {
+    return {
+      format: 3,
+      scopeHash: c.scopeHash,
+      mode: c.mode,
+      afterId: c.afterId,
+      rejected: c.rejected,
+      ...(c.accepted !== undefined
+        ? { accepted: { from: c.accepted.from, sample: [...c.accepted.sample] } }
+        : {}),
+    };
+  }
+  const rejected = c.format === 2 ? c.rejected : false;
+  const base = { format: 3 as const, scopeHash: c.scopeHash, mode: c.mode, afterId: c.afterId };
+  // An older enforce checkpoint names no sample: the restore must find one in the ledger.
+  return { ...base, rejected, ...(c.mode === "enforce" ? { legacy: true as const } : {}) };
 }
 
 /**
@@ -205,9 +274,25 @@ export class Rollout {
     }
   }
 
-  /** Copy as plain JSON after evaluation; Ratchet does not persist controller state. */
+  /**
+   * Copy as plain JSON after evaluation; Ratchet does not persist controller state. Format 3,
+   * with the accepted sample on an enforce checkpoint (one restored from format 1 or 2 carries
+   * the sample its restore found in the ledger).
+   */
   checkpoint(): RolloutCheckpoint | undefined {
-    return this.initialized && this.state ? { ...this.state } : undefined;
+    const s = this.state;
+    if (!this.initialized || !s) return undefined;
+    const { scopeHash, mode, afterId, rejected } = s;
+    return {
+      format: 3,
+      scopeHash,
+      mode,
+      afterId,
+      rejected,
+      ...(s.accepted !== undefined
+        ? { accepted: { from: s.accepted.from, sample: [...s.accepted.sample] } }
+        : {}),
+    };
   }
 
   private target(): Target {
@@ -362,17 +447,18 @@ export class Rollout {
       return value;
     };
     const graded: Grader = (phase, extra = {}) => gradeOf(phase, { trust: target.trust, ...extra });
-    const boundary = (mode: Mode, rejected = false): void => {
+    const boundary: Boundary = (mode, rejected = false, accepted) => {
       target.setMode(mode);
       this.state =
         typeof scope === "string"
           ? undefined
           : {
-              format: 2,
+              format: 3,
               scopeHash: scope.hash,
               mode,
               afterId: rows.at(-1)?.id ?? null,
               rejected,
+              ...(mode === "enforce" && accepted !== undefined ? { accepted } : {}),
             };
       this.initialized = true;
       this.invalidCheckpoint = false;
@@ -397,12 +483,25 @@ export class Rollout {
     if (!reset && state && this.initialized && target.mode() !== state.mode) {
       reset = "mode changed outside this controller";
     }
+    // A restored enforce checkpoint is honoured only while the ledger still holds the planned
+    // sample that promoted it, labelled so that it still passes, and no earlier planned sample
+    // of the configuration failed (e2e T4-10, V1). An older format is verified the same way.
+    let verified: AcceptedSample | undefined;
+    if (!reset && state && !this.initialized && state.mode === "enforce") {
+      const v = this.verify(rows, start - 1, scope, state, target.trust);
+      if ("why" in v) reset = v.why;
+      else verified = v.accepted;
+    }
     if (reset) {
       boundary("shadow");
       return status(`holding shadow: ${reset}`, { grade: graded([]) });
     }
     // Only a fully validated checkpoint may restore enforce after a restart.
     if (state) target.setMode(state.mode);
+    if (state && verified !== undefined) {
+      const { legacy: _legacy, ...rest } = state;
+      this.state = { ...rest, accepted: verified };
+    }
     this.initialized = true;
     const fresh = rows.slice(start);
     if (
@@ -432,28 +531,152 @@ export class Rollout {
         { grade: graded(shadowRows, { sources: scope.plan.sources }) },
       );
     }
-    return this.accept(fresh, scope, target, status, boundary, graded);
+    return this.accept(
+      rows,
+      fresh,
+      scope,
+      target,
+      status,
+      boundary,
+      graded,
+      state?.afterId ?? null,
+    );
+  }
+
+  /**
+   * The scope's eligible shadow rows since its last enforce row, among `rows` up to `end`: the
+   * stretch any planned sample of the current configuration is drawn from, as the ledger alone
+   * shows it, whatever phase boundaries a checkpoint claims.
+   */
+  private stretch(
+    rows: readonly DecisionRecord[],
+    scope: Scope,
+    end = rows.length,
+  ): DecisionRecord[] {
+    const eligible = this.eligible(rows.slice(0, end), scope);
+    let start = eligible.length;
+    while (start > 0 && eligible[start - 1]?.mode !== "enforce") start--;
+    return eligible.slice(start).filter((r) => r.mode === "shadow");
+  }
+
+  /**
+   * Verify a restored enforce checkpoint against the ledger (e2e T4-10, V1): the planned sample
+   * that promoted it must still be drawn from the ledger and pass on its labels, and no planned
+   * sample of this configuration that could have been drawn before it may already have failed,
+   * so a rejected configuration stays rejected however a checkpoint sets its phase start. A
+   * format 3 checkpoint names its sample; for a format 1 or 2 one, the earliest sample the
+   * ledger accepts before the anchor stands in, and is written back as format 3. Returns why
+   * it cannot be honoured, or the sample it rests on.
+   */
+  private verify(
+    rows: readonly DecisionRecord[],
+    anchor: number,
+    scope: Scope,
+    state: State,
+    trust: TrustRegistry,
+  ): { readonly why: string } | { readonly accepted: AcceptedSample } {
+    if (anchor < 0) return { why: "the enforce checkpoint has no anchor in this ledger" };
+    const plan = scope.plan;
+    const stretch = this.stretch(rows, scope, anchor + 1);
+    const index = new Map(rows.map((r, i) => [r.id, i]));
+    let sample: readonly string[];
+    let from: string | null;
+    const claimed = state.accepted;
+    if (claimed !== undefined) {
+      const start = claimed.from === null ? -1 : (index.get(claimed.from) ?? -2);
+      if (start === -2)
+        return { why: "the accepted sample's phase no longer starts in this ledger" };
+      if (start >= anchor) {
+        return { why: "the accepted sample's phase does not end at the checkpoint's anchor" };
+      }
+      const phase = stretch.filter((r) => (index.get(r.id) ?? -1) > start);
+      const result = evaluateAcceptance(phase, plan, trust);
+      if (result.status !== "accepted") {
+        return {
+          why: `the accepted sample no longer passes on the ledger's labels (${result.status})`,
+        };
+      }
+      const same =
+        result.sample.length === claimed.sample.length &&
+        result.sample.every((id, i) => id === claimed.sample[i]);
+      if (!same)
+        return { why: "the ledger's planned sample is not the one the checkpoint accepted" };
+      sample = result.sample;
+      from = claimed.from;
+    } else if (state.legacy) {
+      const found = earliestAccepted(stretch, plan, trust);
+      const failed = found === undefined ? failedWindow(stretch, plan, trust) : undefined;
+      if (failed !== undefined) {
+        return {
+          why: `this configuration already failed a planned sample on this ledger (the one starting at ${failed[0]?.id}), so it stays rejected; change its rubric, policy, model, plan or evidence version to test a new one`,
+        };
+      }
+      if (found === undefined) {
+        return {
+          why: "the format 1 or 2 enforce checkpoint names no sample, and no planned sample before its anchor passes on the ledger's labels",
+        };
+      }
+      sample = found.map((r) => r.id);
+      const first = index.get(sample[0] as string) ?? 0;
+      from = first > 0 ? (rows[first - 1]?.id ?? null) : null;
+    } else {
+      return { why: "the enforce checkpoint carries no accepted planned sample" };
+    }
+    // Any complete planned sample of this configuration up to the anchor, before or after the
+    // one the checkpoint rests on, that already failed keeps it rejected (e2e V1 round 2).
+    const failed = failedWindow(stretch, plan, trust);
+    if (failed !== undefined) {
+      return {
+        why: `this configuration already failed a planned sample on this ledger (the one starting at ${failed[0]?.id}), so it stays rejected; change its rubric, policy, model, plan or evidence version to test a new one`,
+      };
+    }
+    return { accepted: { from, sample: [...sample] } };
   }
 
   /**
    * Shadow mode: run the planned acceptance test on the fresh phase's shadow rows. The grade
    * decides promotion, not the acceptance status read here: only a measured grade has a way in.
+   * A planned sample this configuration already failed on the ledger before the phase, under a
+   * checkpoint that was lost, rejects it now: a rejection outlasts its checkpoint (e2e V1).
    */
   private accept(
+    rows: readonly DecisionRecord[],
     fresh: readonly DecisionRecord[],
     scope: Scope,
     target: Target,
     status: Report,
-    boundary: (mode: Mode, rejected?: boolean) => void,
+    boundary: Boundary,
     graded: Grader,
+    phaseStart: string | null,
   ): RolloutStatus {
     const shadowRows = this.eligible(fresh, scope).filter((r) => r.mode === "shadow");
     const acceptance = evaluateAcceptance(shadowRows, scope.plan, target.trust);
     const plan = scope.plan;
     const promised = this.opts.promisedAccuracy;
+    // A sample of the phase's own that failed is reported as the plan's verdict, below. Before
+    // promoting, no planned sample of the configuration on the ledger may have failed, wherever
+    // it starts; while the phase is still filling, those that start before it are checked, so a
+    // rejection recorded under a lost checkpoint holds at once (e2e V1).
+    const firstAct = shadowRows.find(isPlannedAct)?.id;
+    const failed =
+      acceptance.status === "rejected"
+        ? undefined
+        : failedWindow(
+            this.stretch(rows, scope),
+            plan,
+            target.trust,
+            acceptance.status === "accepted" ? undefined : firstAct,
+          );
+    if (failed !== undefined) {
+      boundary("shadow", true);
+      return status(
+        `rejected: this configuration already failed a planned sample on this ledger (the one starting at ${failed[0]?.id}); change its rubric, policy, model, plan or evidence version to test a new one`,
+        { grade: graded(shadowRows, { sources: plan.sources }) },
+      );
+    }
     const grade = graded(shadowRows, { acceptance, sources: plan.sources });
     if (grade.kind === "measured") {
-      return this.promote(grade, acceptance, scope, target, status, boundary);
+      return this.promote(grade, acceptance, scope, target, status, boundary, phaseStart);
     }
     switch (acceptance.status) {
       case "collecting":
@@ -495,14 +718,19 @@ export class Rollout {
     scope: Scope,
     target: Target,
     status: Report,
-    boundary: (mode: Mode) => void,
+    boundary: Boundary,
+    phaseStart: string | null,
   ): RolloutStatus {
     const kind = (grade as EvidenceGrade).kind;
     if (kind !== "measured") throw new TypeError(`only a measured grade promotes; got ${kind}`);
     if (grade.plan.hash !== scope.plan.hash) {
       throw new TypeError("only a grade measured under this rollout's plan promotes");
     }
-    boundary("enforce");
+    if (acceptance.status !== "accepted") {
+      throw new TypeError(`only an accepted planned sample promotes; got ${acceptance.status}`);
+    }
+    // The checkpoint carries the sample, so a restore can check the ledger still holds it.
+    boundary("enforce", false, { from: phaseStart, sample: [...acceptance.sample] });
     const unwatched =
       target.auditRate() > 0
         ? ""
@@ -519,7 +747,7 @@ export class Rollout {
     scope: Scope,
     target: Target,
     status: Report,
-    boundary: (mode: Mode) => void,
+    boundary: Boundary,
     graded: Grader,
   ): RolloutStatus {
     const audits = this.audits(fresh, scope);
@@ -532,10 +760,14 @@ export class Rollout {
         { grade, audits },
       );
     }
+    // Judged once enough audits exist, whatever the audit rate is now (e2e T1-10: "need 30 to
+    // judge" was printed after 40 had been judged).
     const watching =
-      target.auditRate() > 0
-        ? `need ${scope.minAuditRows} to judge`
-        : "audits are off, so nothing can demote this gate";
+      audits.n >= scope.minAuditRows
+        ? `${audits.acted} audited acts at ${pct(audits.accuracy)} hold the promised ${pct(promised)}`
+        : target.auditRate() > 0
+          ? `need ${scope.minAuditRows} to judge`
+          : "audits are off, so nothing can demote this gate";
     return status(`live: ${audits.n} current-phase audited rows; ${watching}`, { grade, audits });
   }
 }

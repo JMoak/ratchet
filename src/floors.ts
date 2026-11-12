@@ -9,18 +9,74 @@ import { type Action, moreCautious, type Question } from "./types.ts";
  */
 export type FloorRule = (state: string, question: Question) => Action | undefined;
 
-/** The most cautious action any rule demands, or "act" when no rule speaks. */
-export function floorFor(rules: readonly FloorRule[], state: string, question: Question): Action {
-  let floor: Action = "act";
-  for (const rule of rules) {
-    const a = rule(state, question);
-    if (a) floor = moreCautious(floor, a);
-  }
-  return floor;
+/** The floor a set of rules imposes, and why any rule could not be read. */
+export interface FloorEvaluation {
+  readonly floor: Action;
+  /** One line per rule that threw or returned something other than an Action, kept short. */
+  readonly errors: readonly string[];
 }
 
-/** Global and sticky patterns must not make a hard rule depend on earlier evaluations. */
-function matches(pattern: RegExp, text: string): boolean {
+/** What a floor rule fails closed to when it throws or answers outside the vocabulary. */
+export const FLOOR_FAILS_CLOSED_TO: Action = "review";
+
+const ACTIONS: ReadonlySet<unknown> = new Set<Action>(["act", "review", "refuse"]);
+
+/**
+ * Evaluate every rule. A rule that throws, or returns anything but an Action or silence
+ * (undefined, and the null or false a `cond && "refuse"` rule yields), cannot be read, and an
+ * unreadable hard rule fails closed: it imposes review and its error is kept, so a typo
+ * ("deny") or a parser that chokes on a malformed state never lets the oracle's answer
+ * through unbounded, and never aborts the ask without a ledger row.
+ */
+export function evaluateFloors(
+  rules: readonly FloorRule[],
+  state: string,
+  question: Question,
+): FloorEvaluation {
+  let floor: Action = "act";
+  const errors: string[] = [];
+  rules.forEach((rule, i) => {
+    let a: unknown;
+    try {
+      a = rule(state, question);
+    } catch (error) {
+      let message: string;
+      try {
+        message = error instanceof Error ? error.message : String(error);
+      } catch {
+        message = "an unprintable error";
+      }
+      errors.push(`floor ${i + 1} threw: ${message}`.slice(0, 160));
+      floor = moreCautious(floor, FLOOR_FAILS_CLOSED_TO);
+      return;
+    }
+    if (a === undefined || a === null || a === false) return;
+    if (!ACTIONS.has(a)) {
+      const what = typeof a === "string" ? JSON.stringify(a) : `a value of type ${typeof a}`;
+      errors.push(`floor ${i + 1} returned ${what}, not an action`.slice(0, 160));
+      floor = moreCautious(floor, FLOOR_FAILS_CLOSED_TO);
+      return;
+    }
+    floor = moreCautious(floor, a as Action);
+  });
+  return { floor, errors };
+}
+
+/**
+ * The most cautious action any rule demands, or "act" when no rule speaks. A rule that throws
+ * or answers outside the vocabulary fails closed to review (`evaluateFloors`, which also says
+ * why).
+ */
+export function floorFor(rules: readonly FloorRule[], state: string, question: Question): Action {
+  return evaluateFloors(rules, state, question).floor;
+}
+
+/**
+ * Test a pattern from its start, whatever its flags. Global and sticky patterns carry
+ * `lastIndex` between calls, so `test` would alternate between a match and a miss on the same
+ * text; a hard rule (or a scripted verdict) must not depend on earlier evaluations.
+ */
+export function matches(pattern: RegExp, text: string): boolean {
   const lastIndex = pattern.lastIndex;
   try {
     pattern.lastIndex = 0;
@@ -56,11 +112,17 @@ export function oneWayDoor(
   return (state, q) => (isIrreversible(state, q) ? "review" : undefined);
 }
 
-/** Scope a rule to questions whose id matches. */
+/**
+ * Scope a rule to questions whose id matches. The scope is recorded on the rule under
+ * `Symbol.for("ratchet.questionScope")`, so a gate can refuse at registration a rule scoped to
+ * a battery member, which floors never see (e2e T4-08).
+ */
 export function forQuestion(id: string | RegExp, rule: FloorRule): FloorRule {
   const match =
     typeof id === "string" ? (q: Question) => q.id === id : (q: Question) => matches(id, q.id);
-  return (state, q) => (match(q) ? rule(state, q) : undefined);
+  const scoped: FloorRule = (state, q) => (match(q) ? rule(state, q) : undefined);
+  Object.defineProperty(scoped, Symbol.for("ratchet.questionScope"), { value: id });
+  return scoped;
 }
 
 /**
@@ -80,5 +142,13 @@ export function bypassFor(
   state: string,
   question: Question,
 ): boolean {
-  return question.kind === "judge" && rules.some((r) => r(state, question));
+  // A bypass that throws grants nothing: the question is asked as if it had not matched.
+  const grants = (r: BypassRule): boolean => {
+    try {
+      return Boolean(r(state, question));
+    } catch {
+      return false;
+    }
+  };
+  return question.kind === "judge" && rules.some(grants);
 }

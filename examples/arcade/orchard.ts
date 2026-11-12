@@ -167,7 +167,9 @@ export async function play(input: unknown, liveOracle?: Oracle) {
             return {
               verdict: pickVerdictFrom(
                 q,
-                q.options.map((option) => (option === selected ? 0.97 : 0.01)),
+                q.options.map((option) =>
+                  option === selected ? 0.97 : 0.03 / (q.options.length - 1),
+                ),
               ),
               oracle: "orchard.scripted-gardener",
               model: "visible-clue-script-v1",

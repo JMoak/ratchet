@@ -4,7 +4,7 @@ import type { JudgeVerdict } from "../types.ts";
 import type { Harness } from "./event.ts";
 import { hookLabelSource } from "./gate.ts";
 import type { PromptOutcome } from "./resolve.ts";
-import { promptState } from "./state.ts";
+import { type PromptStateOptions, promptState } from "./state.ts";
 
 /** Ledger tag naming the prompt a row came from; it makes ingestion idempotent. */
 export const promptTag = (o: PromptOutcome): string => `hook:prompt:${o.prompt.id}`;
@@ -33,6 +33,8 @@ export async function ingestPrompts(
   gate: Gate<JudgeVerdict>,
   harness: Harness,
   outcomes: readonly PromptOutcome[],
+  /** Where the harness keeps its files here (`hookContext(harness)`), so paths are placed afresh. */
+  placement?: PromptStateOptions["placement"],
 ): Promise<IngestResult> {
   const seen = new Set(
     (await engine.ledger.all()).flatMap((r) =>
@@ -66,7 +68,11 @@ export async function ingestPrompts(
     }
     seen.add(tag);
     const p = o.prompt;
-    const result = await gate.ask(promptState(p), {
+    const view = promptState(p, {
+      ...(o.root === undefined ? {} : { root: o.root }),
+      ...(placement === undefined ? {} : { placement }),
+    });
+    const result = await gate.ask(view, {
       baseline: "review",
       tags: [
         tag,

@@ -42,7 +42,9 @@ function builder(probability = 0.99, forced?: string, states: string[] = []): Or
             question.kind === "pick"
               ? pickVerdictFrom(
                   question,
-                  question.options.map((option) => (option === choice ? 0.99 : 0.001)),
+                  question.options.map((option) =>
+                    option === choice ? 0.99 : 0.01 / (question.options.length - 1),
+                  ),
                 )
               : question.kind === "judge"
                 ? judgeVerdictFrom(question, probability)

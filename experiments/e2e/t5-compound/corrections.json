@@ -1,0 +1,13 @@
+{
+  "note": "Corrections are recorded, never absorbed: corpus files keep the label fixed before their run. Pilot items calibrate difficulty only and are not part of the evaluation.",
+  "corrections": [
+    {
+      "id": "p-entail-042",
+      "corpus": "pilot-corpus.json",
+      "old": false,
+      "new": true,
+      "reason": "Generator bug in pilot 1's supplier theme: 'Fairhurst has not responded' was treated as an open result, but a supplier that has not responded has not signed, so 'Not every one of the suppliers signed it' is established. Found because all three models disagreed with the label; the theme's open phrasing was changed to 'has replied, but the reply has not been logged yet' before pilot 2. No other pilot-1 supplier item changes label under the corrected reading (checked by hand: p-entail-006, 007, 012, 021, 028, 029, 045)."
+    }
+  ],
+  "evaluation": []
+}

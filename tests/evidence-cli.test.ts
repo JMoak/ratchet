@@ -7,7 +7,7 @@ import { groupGates, loadLedger } from "../src/cli/common.ts";
 import { type GateReport, type LedgerReport, report } from "../src/cli/report.ts";
 import { type Trail, trail } from "../src/cli/trail.ts";
 import { Engine } from "../src/engine.ts";
-import { type BorrowedVia, gradeOf } from "../src/ledger/evidence.ts";
+import { type BorrowedVia, gradeOf, REPORT_DEFAULTS } from "../src/ledger/evidence.ts";
 import { type DecisionRecord, JsonlLedger } from "../src/ledger/ledger.ts";
 import { SimOracle, type Truth } from "../src/oracles/sim.ts";
 import { judge } from "../src/questions.ts";
@@ -55,7 +55,7 @@ const disagreement: BorrowedVia = {
   type: "disagreement",
   rate: 0.25,
   pairs: 40,
-  models: ["model-a", "model-b"],
+  models: ["alpha-1", "beta-1"],
 };
 
 let dir = "";
@@ -300,7 +300,10 @@ describe("ratchet check --require", () => {
       expect(r.pass).toBe(false);
       expect([r.grade.kind, r.requiredBy]).toEqual(["borrowed", "flag"]);
       expect(r.line).toContain(`requires ${require} evidence, has borrowed as of `);
-      expect(r.line).toContain(": at least 25.0% wrong on this slice, 40 pairs");
+      // The rate bounds "at least one judge is wrong", never this gate's error (e2e T5-03).
+      expect(r.line).toContain(
+        ": alpha-1 and beta-1 disagree on 25.0% of 40 pairs, so at least one of the two judges is wrong on at least 25.0% of them; this is not this gate's error rate",
+      );
     }
   });
 
@@ -365,8 +368,12 @@ describe("ratchet trail and Engine.report", () => {
       kind: "none",
       unselected: THIN_LABELS,
     });
-    // The engine's own default promise is 95%: 59 planned acts.
-    expect((await engine.gateReport(MET)).grade).toMatchObject({
+    // One set of defaults (e2e T3-04): without levers the engine reads what the CLI reads.
+    const byDefault = await engine.gateReport(MET);
+    expect(byDefault.grade).toEqual(cli.gates.find((g) => g.gate === MET)?.grade);
+    expect(byDefault.levers).toEqual(REPORT_DEFAULTS);
+    // A 95% promise is a plan of 59 planned acts.
+    expect((await engine.gateReport(MET, { targetAccuracy: 0.95 })).grade).toMatchObject({
       kind: "measured",
       sampleSize: 59,
     });

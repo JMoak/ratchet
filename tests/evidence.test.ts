@@ -93,7 +93,7 @@ const disagreement: BorrowedVia = {
   type: "disagreement",
   rate: 0.25,
   pairs: 40,
-  models: ["model-a", "model-b"],
+  models: ["alpha-1", "beta-1"],
 };
 
 describe("wilsonInterval", () => {
@@ -247,7 +247,7 @@ describe("gradeOf", () => {
     expect(() => gradeOf([], { sources: [] })).toThrow(/at least one/);
     const consequence = ["consequence"] as unknown as FitClass[];
     expect(() => gradeOf([], { sources: consequence })).toThrow(/consequence/);
-    const same: BorrowedVia = { ...disagreement, models: ["model-a", "model-a"] };
+    const same: BorrowedVia = { ...disagreement, models: ["alpha-1", "alpha-1"] };
     expect(() => gradeOf([], { borrowed: same })).toThrow(/two different models/);
     expect(() => gradeOf([], { borrowed: { ...disagreement, pairs: 0 } })).toThrow(/pair/);
     expect(() => gradeOf([], { borrowed: { ...profile, bar: 0 } })).toThrow(/bar/);
@@ -267,7 +267,12 @@ describe("the planned sample a ledger implies", () => {
 
   it("starts again with a new configuration and reads only the pinned model's rows", () => {
     const changed = acts(10, "p", { policyHash: "0000000000000001" });
-    expect(gradeOf([...acts(29, "a"), ...changed], { plan }).kind).toBe("estimated");
+    // The old policy's 29 labels are counted, never read (e2e T4-20): 10 rows estimate nothing.
+    expect(gradeOf([...acts(29, "a"), ...changed], { plan })).toMatchObject({
+      kind: "none",
+      unselected: 10,
+      older: 29,
+    });
     const foreign = [row("f", { right: false, model: "m-2" }), ...acts(29, "a")];
     expect(gradeOf(foreign, { plan }).kind).toBe("estimated");
     expect(gradeOf(foreign, { plan, model: "m-1" }).kind).toBe("measured");
@@ -326,7 +331,7 @@ describe("one grade, one shape, one sentence", () => {
       "borrowed as of 2026-10-20: bar 0.840 from profile a1b2c3d4, donor 1240 rows of gates bash.safe, tool.safe in ledger keywork.jsonl, 2026-09-01 to 2026-10-20, 0 rows here",
     );
     expect(describeGrade(gradeOf([], { borrowed: disagreement, borrowedAt: AT }))).toBe(
-      "borrowed as of 2026-10-30: at least 25.0% wrong on this slice, 40 pairs, from the disagreement of model-a and model-b",
+      "borrowed as of 2026-10-30: alpha-1 and beta-1 disagree on 25.0% of 40 pairs, so at least one of the two judges is wrong on at least 25.0% of them; this is not this gate's error rate",
     );
     expect(describeGrade(none)).toBe("none: 12 labelled unselected rows; estimated needs 30");
   });

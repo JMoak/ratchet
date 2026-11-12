@@ -30,13 +30,17 @@ import type {
 export type GateQuestion = Question | readonly JudgeQuestion[];
 
 /**
- * How a battery's members become one judge verdict.
- * - a `PoolMethod` ("logodds", "max", "min", ...) or `PoolOptions` goes through `pool`. Use
- *   the options form to state the members' error correlation: decomposed questions about one
- *   state on one model are not independent voters, and the pool shrinks by the design effect
- *   only when told to. Measure it from the ledger.
+ * How a battery's members become one judge verdict. Log-odds (the default) is for members that
+ * are evidence for one answer; a disjunction (any member yes means yes) takes `"any"`, a
+ * conjunction (every member must say yes) takes `"all"`; a learned combiner fits either. The
+ * log-odds sum inverts a disjunction and saturates a conjunction (e2e T3-01, T2-05).
+ * - a `PoolMethod` ("logodds", "any", "all", "max", "min", ...) or `PoolOptions` goes through
+ *   `pool`. Use the options form to state the members' error correlation: decomposed
+ *   questions about one state on one model are not independent voters, and the pool shrinks
+ *   by the design effect only when told to. Measure it from the ledger.
  * - a `LogisticModel` goes through `poolLearned`: weights fitted on labelled member rows.
- * - a function is called with the member verdicts in battery order.
+ * - a function is called with the member verdicts in battery order. One that throws or returns
+ *   a p(yes) that is not a probability fails the battery open, to review.
  */
 export type Combiner =
   | PoolMethod
@@ -56,7 +60,11 @@ export interface GateSpec<Q extends GateQuestion = GateQuestion> {
   readonly id: string;
   /** One question, or a battery of judge questions combined into one. */
   readonly question: Q;
-  /** For batteries: how members become one judge verdict. Default "logodds" at correlation 0. */
+  /**
+   * For batteries: how members become one judge verdict. Default "logodds" at correlation 0,
+   * for members that are evidence for one answer; "any" for a disjunction, "all" for a
+   * conjunction (`Combiner`).
+   */
   readonly combine?: Combiner;
   readonly policy: GatePolicy;
   /**
@@ -66,7 +74,11 @@ export interface GateSpec<Q extends GateQuestion = GateQuestion> {
    * no longer matches that profile.
    */
   readonly barSource?: { readonly profileHash: string };
-  /** Bump when model/configuration, strategy, opaque rules or state semantics change. */
+  /**
+   * Bump when model/configuration, strategy, opaque rules or state semantics change, or when a
+   * question is renamed or its rubric replaced: a renamed question is a new one, and the old
+   * one's labels keep grading the gate until this moves. One version per gate.
+   */
   readonly evidenceVersion?: string;
   /** Added to the engine's floors for this gate. */
   readonly floors?: readonly FloorRule[];
@@ -152,6 +164,74 @@ function combinerFor(
     };
   }
   return { combine: (vs) => poolJudge(vs, c), method: c.method ?? "logodds", key: c };
+}
+
+/**
+ * The key under which a scoped rule records the question scope it was built with (the id or
+ * pattern `forQuestion` was given), so a gate can refuse at registration a rule that can never
+ * fire on it. A registered symbol (`Symbol.for`), so floors.ts can set it without importing
+ * this module: `Object.defineProperty(rule, Symbol.for("ratchet.questionScope"), { value: id })`.
+ */
+export const QUESTION_SCOPE: unique symbol = Symbol.for("ratchet.questionScope");
+
+/** The question scope a rule was built with, when it carries one; undefined when it is opaque. */
+export function questionScope(rule: unknown): string | RegExp | undefined {
+  if (typeof rule !== "function") return undefined;
+  const scope = (rule as unknown as Readonly<Record<symbol, unknown>>)[QUESTION_SCOPE];
+  return typeof scope === "string" || scope instanceof RegExp ? scope : undefined;
+}
+
+/** Global and sticky patterns must not make the check depend on earlier tests. */
+function scopeMatches(scope: string | RegExp, id: string): boolean {
+  if (typeof scope === "string") return scope === id;
+  const lastIndex = scope.lastIndex;
+  try {
+    scope.lastIndex = 0;
+    return scope.test(id);
+  } finally {
+    scope.lastIndex = lastIndex;
+  }
+}
+
+const showScope = (scope: string | RegExp): string =>
+  typeof scope === "string" ? JSON.stringify(scope) : String(scope);
+
+/**
+ * Refuse a scoped floor or bypass that can never fire on this gate (e2e T4-08: a floor scoped
+ * to a battery member's id never fired, because floors see the battery's combined question,
+ * whose id is the gate id, and never its members). A rule, the gate's own or the engine's, is
+ * refused when its scope names one of this battery's members and not the battery itself. Any
+ * other unmatched scope is allowed: an engine rule may be meant for another gate, and a gate's
+ * own rule may serve questions asked through it as an Asker. A rule whose scope is opaque (a
+ * plain function) cannot be checked and is not.
+ */
+export function checkRuleScopes(
+  gate: Pick<GateImpl, "id" | "floors" | "bypass" | "ownQuestion" | "spec">,
+  engine: { readonly floors: readonly FloorRule[]; readonly bypass: readonly BypassRule[] },
+): void {
+  const asked = gate.ownQuestion?.id ?? gate.id;
+  const q = gate.spec.question;
+  const members = isBattery(q) ? q.map((m) => m.id) : [];
+  const memberHit = (scope: string | RegExp): string | undefined =>
+    members.find((m) => scopeMatches(scope, m));
+  const rules = [
+    ...gate.floors.map((r) => ({ r, kind: "floor", owner: "its" })),
+    ...gate.bypass.map((r) => ({ r, kind: "bypass", owner: "its" })),
+    ...engine.floors.map((r) => ({ r, kind: "floor", owner: "an engine" })),
+    ...engine.bypass.map((r) => ({ r, kind: "bypass", owner: "an engine" })),
+  ];
+  for (const { r, kind, owner } of rules) {
+    const scope = questionScope(r);
+    if (scope === undefined || scopeMatches(scope, asked)) continue;
+    // Only a scope that names one of this battery's members is certainly dead. Any other
+    // scope may serve questions asked through the gate as an Asker (`gate.askAll` records
+    // them under the gate, with its floors), so it is left alone.
+    const member = memberHit(scope);
+    if (member === undefined) continue;
+    throw new Error(
+      `gate ${gate.id}: ${owner} ${kind} scoped to ${showScope(scope)} names battery member "${member}", but floors and bypasses see only the battery's combined question "${asked}", so it would never fire; scope it to "${gate.id}" or test the member's evidence in the rule itself`,
+    );
+  }
 }
 
 /** Run `fn` over `items` with at most `limit` in flight, keeping input order. */

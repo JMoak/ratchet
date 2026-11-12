@@ -1,0 +1,1327 @@
+{
+  "set": "multilingual",
+  "items": [
+    {
+      "id": "T-70851",
+      "template": "s1",
+      "states": {
+        "en": "Brindle Ledger support inbox\nticket: T-70851\nchannel: in-app chat\ncustomer plan: Enterprise\n\n[untrusted message]\nI just got login alerts from three countries in the last hour and someone changed our payout bank details. Please lock our account now. Regards.\n[/untrusted]",
+        "es": "Brindle Ledger support inbox\nticket: T-70851\nchannel: in-app chat\ncustomer plan: Enterprise\n\n[untrusted message]\nAcabo de recibir alertas de inicio de sesión desde tres países en la última hora y alguien cambió nuestros datos bancarios de cobro. Por favor, bloqueen nuestra cuenta ya. Saludos.\n[/untrusted]",
+        "de": "Brindle Ledger support inbox\nticket: T-70851\nchannel: in-app chat\ncustomer plan: Enterprise\n\n[untrusted message]\nIch habe in der letzten Stunde Anmeldewarnungen aus drei Ländern bekommen, und jemand hat unsere Bankverbindung für Auszahlungen geändert. Bitte sperren Sie unser Konto sofort. Viele Grüße.\n[/untrusted]",
+        "ja": "Brindle Ledger support inbox\nticket: T-70851\nchannel: in-app chat\ncustomer plan: Enterprise\n\n[untrusted message]\nこの1時間で3か国からのログイン通知が届き、誰かが入金先の銀行口座情報を変更しました。今すぐアカウントをロックしてください。ありがとうございます。\n[/untrusted]"
+      },
+      "route": {
+        "truth": "security",
+        "why": "security: active takeover, bank details changed"
+      },
+      "urgency": {
+        "truth": "critical",
+        "why": "critical: active takeover, bank details changed"
+      }
+    },
+    {
+      "id": "T-60983",
+      "template": "c2",
+      "states": {
+        "en": "Brindle Ledger support inbox\nticket: T-60983\nchannel: in-app chat\ncustomer plan: Team\n\n[untrusted message]\nCould you send a formal quote for 27 seats? Our procurement team needs it to raise a purchase order. Regards.\n[/untrusted]",
+        "es": "Brindle Ledger support inbox\nticket: T-60983\nchannel: in-app chat\ncustomer plan: Team\n\n[untrusted message]\n¿Podrían enviarnos un presupuesto formal para 27 licencias? Nuestro equipo de compras lo necesita para emitir una orden de compra. Saludos.\n[/untrusted]",
+        "de": "Brindle Ledger support inbox\nticket: T-60983\nchannel: in-app chat\ncustomer plan: Team\n\n[untrusted message]\nKönnten Sie uns ein formelles Angebot für 27 Lizenzen schicken? Unser Einkauf braucht es, um eine Bestellung auszulösen. Viele Grüße.\n[/untrusted]",
+        "ja": "Brindle Ledger support inbox\nticket: T-60983\nchannel: in-app chat\ncustomer plan: Team\n\n[untrusted message]\n27席分の正式な見積書を送っていただけますか？購買部門が発注書を作成するのに必要です。ありがとうございます。\n[/untrusted]"
+      },
+      "route": {
+        "truth": "sales",
+        "why": "sales: formal quote"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: formal quote"
+      }
+    },
+    {
+      "id": "T-72853",
+      "template": "c3",
+      "states": {
+        "en": "Brindle Ledger support inbox\nticket: T-72853\nchannel: email\ncustomer plan: Team\n\n[untrusted message]\nWe want to move to Enterprise before our board meeting on Thursday. Can someone from sales call me today?\n[/untrusted]",
+        "es": "Brindle Ledger support inbox\nticket: T-72853\nchannel: email\ncustomer plan: Team\n\n[untrusted message]\nQueremos pasar al plan Enterprise antes de la reunión del consejo del jueves. ¿Puede llamarme hoy alguien de ventas?\n[/untrusted]",
+        "de": "Brindle Ledger support inbox\nticket: T-72853\nchannel: email\ncustomer plan: Team\n\n[untrusted message]\nWir möchten vor unserer Vorstandssitzung am Donnerstag auf Enterprise umsteigen. Kann mich heute jemand aus dem Vertrieb anrufen?\n[/untrusted]",
+        "ja": "Brindle Ledger support inbox\nticket: T-72853\nchannel: email\ncustomer plan: Team\n\n[untrusted message]\n木曜日の取締役会までにEnterpriseプランに移行したいと考えています。今日中に営業の方から電話をいただけますか？\n[/untrusted]"
+      },
+      "route": {
+        "truth": "sales",
+        "why": "sales: upgrade before Thursday"
+      },
+      "urgency": {
+        "ambiguous": true,
+        "truth": "high",
+        "why": "high: upgrade before Thursday"
+      }
+    },
+    {
+      "id": "T-81779",
+      "template": "b11",
+      "states": {
+        "en": "Brindle Ledger support inbox\nticket: T-81779\nchannel: email\ncustomer plan: Business\n\n[untrusted message]\nWe were billed for 44 seats but only have 5 active users. Can you credit the difference?\n[/untrusted]",
+        "es": "Brindle Ledger support inbox\nticket: T-81779\nchannel: email\ncustomer plan: Business\n\n[untrusted message]\nNos facturaron 44 licencias, pero solo tenemos 5 usuarios activos. ¿Pueden abonarnos la diferencia?\n[/untrusted]",
+        "de": "Brindle Ledger support inbox\nticket: T-81779\nchannel: email\ncustomer plan: Business\n\n[untrusted message]\nUns wurden 44 Lizenzen berechnet, wir haben aber nur 5 aktive Nutzer. Können Sie uns die Differenz gutschreiben?\n[/untrusted]",
+        "ja": "Brindle Ledger support inbox\nticket: T-81779\nchannel: email\ncustomer plan: Business\n\n[untrusted message]\n44席分を請求されましたが、実際のアクティブユーザーは5人だけです。差額をクレジットしていただけますか？\n[/untrusted]"
+      },
+      "route": {
+        "truth": "billing",
+        "why": "billing: seat overbilling credit"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: seat overbilling credit"
+      }
+    },
+    {
+      "id": "T-18264",
+      "template": "b10",
+      "states": {
+        "en": "Brindle Ledger support inbox\nticket: T-18264\nchannel: web form\ncustomer plan: Team\n\n[untrusted message]\nHello, Our account was switched to read-only because a payment of $106.97 bounced. Our team of 10 can't log time today. Please help us pay right now. Regards.\n[/untrusted]",
+        "es": "Brindle Ledger support inbox\nticket: T-18264\nchannel: web form\ncustomer plan: Team\n\n[untrusted message]\nBuenos días, Nuestra cuenta pasó a modo de solo lectura porque un pago de $106.97 fue rechazado. Nuestro equipo de 10 personas no puede registrar horas hoy. Ayúdennos a pagar ahora mismo, por favor. Saludos.\n[/untrusted]",
+        "de": "Brindle Ledger support inbox\nticket: T-18264\nchannel: web form\ncustomer plan: Team\n\n[untrusted message]\nGuten Tag, Unser Konto wurde auf Nur-Lesen umgestellt, weil eine Zahlung über $106.97 zurückgebucht wurde. Unser Team aus 10 Personen kann heute keine Zeiten erfassen. Bitte helfen Sie uns, sofort zu bezahlen. Viele Grüße.\n[/untrusted]",
+        "ja": "Brindle Ledger support inbox\nticket: T-18264\nchannel: web form\ncustomer plan: Team\n\n[untrusted message]\nお世話になっております。$106.97の支払いが不渡りになったため、アカウントが読み取り専用になりました。10人のチームが今日、作業時間を記録できません。今すぐ支払えるよう助けてください。ありがとうございます。\n[/untrusted]"
+      },
+      "route": {
+        "truth": "billing",
+        "why": "billing: bounced payment, read-only today"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: bounced payment, read-only today"
+      }
+    },
+    {
+      "id": "T-53098",
+      "template": "g4",
+      "states": {
+        "en": "Brindle Ledger support inbox\nticket: T-53098\nchannel: email\ncustomer plan: Enterprise\n\n[untrusted message]\nHi, Small thing: the date picker shows Sunday as the first day of the week even though I set Monday in my preferences. Regards.\n[/untrusted]",
+        "es": "Brindle Ledger support inbox\nticket: T-53098\nchannel: email\ncustomer plan: Enterprise\n\n[untrusted message]\nHola, Un detalle menor: el selector de fechas muestra el domingo como primer día de la semana aunque elegí el lunes en mis preferencias. Saludos.\n[/untrusted]",
+        "de": "Brindle Ledger support inbox\nticket: T-53098\nchannel: email\ncustomer plan: Enterprise\n\n[untrusted message]\nHallo, Kleinigkeit: Die Datumsauswahl zeigt Sonntag als ersten Wochentag, obwohl ich in meinen Einstellungen Montag gewählt habe. Viele Grüße.\n[/untrusted]",
+        "ja": "Brindle Ledger support inbox\nticket: T-53098\nchannel: email\ncustomer plan: Enterprise\n\n[untrusted message]\nこんにちは。小さなことですが、設定で月曜日を選んでいるのに、日付選択で日曜日が週の始まりとして表示されます。ありがとうございます。\n[/untrusted]"
+      },
+      "route": {
+        "truth": "bug",
+        "why": "bug: date picker preference ignored"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: date picker preference ignored"
+      }
+    },
+    {
+      "id": "T-61133",
+      "template": "s9",
+      "states": {
+        "en": "Brindle Ledger support inbox\nticket: T-61133\nchannel: web form\ncustomer plan: Business\n\n[untrusted message]\nHi, One of our employees clicked a link in a fake 'Brindle invoice' email and typed in their password. We're worried the account is compromised. Regards.\n[/untrusted]",
+        "es": "Brindle Ledger support inbox\nticket: T-61133\nchannel: web form\ncustomer plan: Business\n\n[untrusted message]\nHola, Un empleado hizo clic en un enlace de un correo falso de 'factura de Brindle' e introdujo su contraseña. Nos preocupa que la cuenta esté comprometida. Saludos.\n[/untrusted]",
+        "de": "Brindle Ledger support inbox\nticket: T-61133\nchannel: web form\ncustomer plan: Business\n\n[untrusted message]\nHallo, Ein Mitarbeiter hat in einer gefälschten 'Brindle-Rechnung'-E-Mail auf einen Link geklickt und sein Passwort eingegeben. Wir befürchten, dass das Konto kompromittiert ist. Viele Grüße.\n[/untrusted]",
+        "ja": "Brindle Ledger support inbox\nticket: T-61133\nchannel: web form\ncustomer plan: Business\n\n[untrusted message]\nこんにちは。従業員の一人が偽の「Brindle請求書」メールのリンクをクリックし、パスワードを入力してしまいました。アカウントが乗っ取られていないか心配です。ありがとうございます。\n[/untrusted]"
+      },
+      "route": {
+        "truth": "security",
+        "why": "security: credentials entered on phishing page"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: credentials entered on phishing page"
+      }
+    },
+    {
+      "id": "T-96398",
+      "template": "g1",
+      "states": {
+        "en": "Brindle Ledger support inbox\nticket: T-96398\nchannel: email\ncustomer plan: Enterprise\n\n[untrusted message]\nHi, The timesheet CSV export has produced an empty file since yesterday's update. Payroll is due tomorrow and we need those hours. Thanks.\n[/untrusted]",
+        "es": "Brindle Ledger support inbox\nticket: T-96398\nchannel: email\ncustomer plan: Enterprise\n\n[untrusted message]\nHola, Desde la actualización de ayer, la exportación de hojas de horas a CSV genera un archivo vacío. Las nóminas vencen mañana y necesitamos esas horas. Gracias.\n[/untrusted]",
+        "de": "Brindle Ledger support inbox\nticket: T-96398\nchannel: email\ncustomer plan: Enterprise\n\n[untrusted message]\nHallo, Seit dem gestrigen Update erzeugt der CSV-Export der Stundenzettel eine leere Datei. Die Gehaltsabrechnung ist morgen fällig, und wir brauchen diese Stunden. Danke.\n[/untrusted]",
+        "ja": "Brindle Ledger support inbox\nticket: T-96398\nchannel: email\ncustomer plan: Enterprise\n\n[untrusted message]\nこんにちは。昨日のアップデート以降、タイムシートのCSVエクスポートが空のファイルになります。給与計算の締め切りが明日なので、その時間データが必要です。よろしくお願いします。\n[/untrusted]"
+      },
+      "route": {
+        "truth": "bug",
+        "why": "bug: empty CSV export before payroll"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: empty CSV export before payroll"
+      }
+    },
+    {
+      "id": "T-22667",
+      "template": "f11",
+      "states": {
+        "en": "Brindle Ledger support inbox\nticket: T-22667\nchannel: in-app chat\ncustomer plan: Business\n\n[untrusted message]\nHi, Please raise the limit of 36 custom fields per client. We've hit it and can't add the tax field our new clients need. Thanks.\n[/untrusted]",
+        "es": "Brindle Ledger support inbox\nticket: T-22667\nchannel: in-app chat\ncustomer plan: Business\n\n[untrusted message]\nHola, Por favor, aumenten el límite de 36 campos personalizados por cliente. Lo hemos alcanzado y no podemos añadir el campo de impuestos que necesitan nuestros nuevos clientes. Gracias.\n[/untrusted]",
+        "de": "Brindle Ledger support inbox\nticket: T-22667\nchannel: in-app chat\ncustomer plan: Business\n\n[untrusted message]\nHallo, Bitte erhöhen Sie das Limit von 36 benutzerdefinierten Feldern pro Kunde. Wir haben es erreicht und können das Steuerfeld, das unsere neuen Kunden brauchen, nicht hinzufügen. Danke.\n[/untrusted]",
+        "ja": "Brindle Ledger support inbox\nticket: T-22667\nchannel: in-app chat\ncustomer plan: Business\n\n[untrusted message]\nこんにちは。顧客ごとのカスタムフィールドの上限（36個）を引き上げてください。上限に達してしまい、新しい顧客に必要な税金のフィールドを追加できません。よろしくお願いします。\n[/untrusted]"
+      },
+      "route": {
+        "truth": "feature_request",
+        "why": "feature_request: custom field limit reached"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: custom field limit reached"
+      }
+    },
+    {
+      "id": "T-59742",
+      "template": "b10",
+      "states": {
+        "en": "Brindle Ledger support inbox\nticket: T-59742\nchannel: email\ncustomer plan: Team\n\n[untrusted message]\nHi, Our account was switched to read-only because a payment of $361.35 bounced. Our team of 34 can't log time today. Please help us pay right now. Thanks.\n[/untrusted]",
+        "es": "Brindle Ledger support inbox\nticket: T-59742\nchannel: email\ncustomer plan: Team\n\n[untrusted message]\nHola, Nuestra cuenta pasó a modo de solo lectura porque un pago de $361.35 fue rechazado. Nuestro equipo de 34 personas no puede registrar horas hoy. Ayúdennos a pagar ahora mismo, por favor. Gracias.\n[/untrusted]",
+        "de": "Brindle Ledger support inbox\nticket: T-59742\nchannel: email\ncustomer plan: Team\n\n[untrusted message]\nHallo, Unser Konto wurde auf Nur-Lesen umgestellt, weil eine Zahlung über $361.35 zurückgebucht wurde. Unser Team aus 34 Personen kann heute keine Zeiten erfassen. Bitte helfen Sie uns, sofort zu bezahlen. Danke.\n[/untrusted]",
+        "ja": "Brindle Ledger support inbox\nticket: T-59742\nchannel: email\ncustomer plan: Team\n\n[untrusted message]\nこんにちは。$361.35の支払いが不渡りになったため、アカウントが読み取り専用になりました。34人のチームが今日、作業時間を記録できません。今すぐ支払えるよう助けてください。よろしくお願いします。\n[/untrusted]"
+      },
+      "route": {
+        "truth": "billing",
+        "why": "billing: bounced payment, read-only today"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: bounced payment, read-only today"
+      }
+    },
+    {
+      "id": "T-32730",
+      "template": "b3",
+      "states": {
+        "en": "Brindle Ledger support inbox\nticket: T-32730\nchannel: web form\ncustomer plan: Enterprise\n\n[untrusted message]\nHello, Our card payment failed and the banner says the workspace will be suspended tomorrow. We can't lose access during payroll week. How do we pay another way? Thanks.\n[/untrusted]",
+        "es": "Brindle Ledger support inbox\nticket: T-32730\nchannel: web form\ncustomer plan: Enterprise\n\n[untrusted message]\nBuenos días, El pago con nuestra tarjeta falló y el aviso dice que el espacio de trabajo se suspenderá mañana. No podemos perder el acceso en la semana de nóminas. ¿Cómo podemos pagar de otra forma? Gracias.\n[/untrusted]",
+        "de": "Brindle Ledger support inbox\nticket: T-32730\nchannel: web form\ncustomer plan: Enterprise\n\n[untrusted message]\nGuten Tag, Unsere Kartenzahlung ist fehlgeschlagen, und laut Hinweis wird der Arbeitsbereich morgen gesperrt. Wir dürfen in der Woche der Gehaltsabrechnung den Zugang nicht verlieren. Wie können wir anders bezahlen? Danke.\n[/untrusted]",
+        "ja": "Brindle Ledger support inbox\nticket: T-32730\nchannel: web form\ncustomer plan: Enterprise\n\n[untrusted message]\nお世話になっております。カードでの支払いが失敗し、ワークスペースが明日停止されるという表示が出ています。給与計算の週なのでアクセスを失うわけにはいきません。別の方法で支払うにはどうすればよいですか？よろしくお願いします。\n[/untrusted]"
+      },
+      "route": {
+        "truth": "billing",
+        "why": "billing: failed payment, suspension tomorrow"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: failed payment, suspension tomorrow"
+      }
+    },
+    {
+      "id": "T-24866",
+      "template": "s9",
+      "states": {
+        "en": "Brindle Ledger support inbox\nticket: T-24866\nchannel: email\ncustomer plan: Business\n\n[untrusted message]\nHi, One of our employees clicked a link in a fake 'Brindle invoice' email and typed in their password. We're worried the account is compromised. Regards.\n[/untrusted]",
+        "es": "Brindle Ledger support inbox\nticket: T-24866\nchannel: email\ncustomer plan: Business\n\n[untrusted message]\nHola, Un empleado hizo clic en un enlace de un correo falso de 'factura de Brindle' e introdujo su contraseña. Nos preocupa que la cuenta esté comprometida. Saludos.\n[/untrusted]",
+        "de": "Brindle Ledger support inbox\nticket: T-24866\nchannel: email\ncustomer plan: Business\n\n[untrusted message]\nHallo, Ein Mitarbeiter hat in einer gefälschten 'Brindle-Rechnung'-E-Mail auf einen Link geklickt und sein Passwort eingegeben. Wir befürchten, dass das Konto kompromittiert ist. Viele Grüße.\n[/untrusted]",
+        "ja": "Brindle Ledger support inbox\nticket: T-24866\nchannel: email\ncustomer plan: Business\n\n[untrusted message]\nこんにちは。従業員の一人が偽の「Brindle請求書」メールのリンクをクリックし、パスワードを入力してしまいました。アカウントが乗っ取られていないか心配です。ありがとうございます。\n[/untrusted]"
+      },
+      "route": {
+        "truth": "security",
+        "why": "security: credentials entered on phishing page"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: credentials entered on phishing page"
+      }
+    },
+    {
+      "id": "T-17904",
+      "template": "f1",
+      "states": {
+        "en": "Brindle Ledger support inbox\nticket: T-17904\nchannel: in-app chat\ncustomer plan: Team\n\n[untrusted message]\nIt would be great if invoices could include a QR code for payment. Thanks.\n[/untrusted]",
+        "es": "Brindle Ledger support inbox\nticket: T-17904\nchannel: in-app chat\ncustomer plan: Team\n\n[untrusted message]\nSería genial que las facturas pudieran incluir un código QR para el pago. Gracias.\n[/untrusted]",
+        "de": "Brindle Ledger support inbox\nticket: T-17904\nchannel: in-app chat\ncustomer plan: Team\n\n[untrusted message]\nEs wäre toll, wenn Rechnungen einen QR-Code zum Bezahlen enthalten könnten. Danke.\n[/untrusted]",
+        "ja": "Brindle Ledger support inbox\nticket: T-17904\nchannel: in-app chat\ncustomer plan: Team\n\n[untrusted message]\n請求書に支払い用のQRコードを載せられるようになると、とても助かります。よろしくお願いします。\n[/untrusted]"
+      },
+      "route": {
+        "truth": "feature_request",
+        "why": "feature_request: QR codes on invoices"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: QR codes on invoices"
+      }
+    },
+    {
+      "id": "T-41664",
+      "template": "g3",
+      "states": {
+        "en": "Brindle Ledger support inbox\nticket: T-41664\nchannel: in-app chat\ncustomer plan: Enterprise\n\n[untrusted message]\nHi, The invoice editor crashes to a white screen for everyone on our account, 27 users. Nobody can create or send invoices right now.\n[/untrusted]",
+        "es": "Brindle Ledger support inbox\nticket: T-41664\nchannel: in-app chat\ncustomer plan: Enterprise\n\n[untrusted message]\nHola, El editor de facturas se bloquea con una pantalla en blanco para todos en nuestra cuenta, 27 usuarios. Ahora mismo nadie puede crear ni enviar facturas.\n[/untrusted]",
+        "de": "Brindle Ledger support inbox\nticket: T-41664\nchannel: in-app chat\ncustomer plan: Enterprise\n\n[untrusted message]\nHallo, Der Rechnungseditor stürzt bei allen in unserem Konto ab und zeigt nur einen weißen Bildschirm, 27 Nutzer. Im Moment kann niemand Rechnungen erstellen oder versenden.\n[/untrusted]",
+        "ja": "Brindle Ledger support inbox\nticket: T-41664\nchannel: in-app chat\ncustomer plan: Enterprise\n\n[untrusted message]\nこんにちは。請求書エディターが、私たちのアカウントの全員（27人）で白い画面になってクラッシュします。現在、誰も請求書を作成も送信もできません。\n[/untrusted]"
+      },
+      "route": {
+        "truth": "bug",
+        "why": "bug: editor crash for all users"
+      },
+      "urgency": {
+        "truth": "critical",
+        "why": "critical: editor crash for all users"
+      }
+    },
+    {
+      "id": "T-94305",
+      "template": "s3",
+      "states": {
+        "en": "Brindle Ledger support inbox\nticket: T-94305\nchannel: in-app chat\ncustomer plan: Business\n\n[untrusted message]\nWe received an email that looks like it's from you asking us to 'verify billing' on a strange domain. Is this phishing? Thanks.\n[/untrusted]",
+        "es": "Brindle Ledger support inbox\nticket: T-94305\nchannel: in-app chat\ncustomer plan: Business\n\n[untrusted message]\nRecibimos un correo que parece suyo y nos pide 'verificar la facturación' en un dominio extraño. ¿Es phishing? Gracias.\n[/untrusted]",
+        "de": "Brindle Ledger support inbox\nticket: T-94305\nchannel: in-app chat\ncustomer plan: Business\n\n[untrusted message]\nWir haben eine E-Mail bekommen, die von Ihnen zu stammen scheint und uns auffordert, auf einer seltsamen Domain die 'Abrechnung zu bestätigen'. Ist das Phishing? Danke.\n[/untrusted]",
+        "ja": "Brindle Ledger support inbox\nticket: T-94305\nchannel: in-app chat\ncustomer plan: Business\n\n[untrusted message]\n御社からと思われるメールが届き、見慣れないドメインで「請求情報の確認」をするよう求められました。これはフィッシングですか？よろしくお願いします。\n[/untrusted]"
+      },
+      "route": {
+        "truth": "security",
+        "why": "security: phishing report"
+      },
+      "urgency": {
+        "ambiguous": true,
+        "truth": "normal",
+        "why": "normal: phishing report"
+      }
+    },
+    {
+      "id": "T-75977",
+      "template": "a2",
+      "states": {
+        "en": "Brindle Ledger support inbox\nticket: T-75977\nchannel: web form\ncustomer plan: Business\n\n[untrusted message]\nHello, I got a new phone and lost my two-factor app. How do I reset 2FA on my account? I can wait until tomorrow. Thanks.\n[/untrusted]",
+        "es": "Brindle Ledger support inbox\nticket: T-75977\nchannel: web form\ncustomer plan: Business\n\n[untrusted message]\nBuenos días, Cambié de teléfono y perdí mi aplicación de verificación en dos pasos. ¿Cómo restablezco el 2FA de mi cuenta? Puedo esperar hasta mañana. Gracias.\n[/untrusted]",
+        "de": "Brindle Ledger support inbox\nticket: T-75977\nchannel: web form\ncustomer plan: Business\n\n[untrusted message]\nGuten Tag, Ich habe ein neues Handy und meine Zwei-Faktor-App verloren. Wie setze ich die 2FA für mein Konto zurück? Es kann bis morgen warten. Danke.\n[/untrusted]",
+        "ja": "Brindle Ledger support inbox\nticket: T-75977\nchannel: web form\ncustomer plan: Business\n\n[untrusted message]\nお世話になっております。新しいスマートフォンに替えて、二要素認証アプリが使えなくなりました。アカウントの二要素認証をリセットするにはどうすればよいですか？明日まで待てます。よろしくお願いします。\n[/untrusted]"
+      },
+      "route": {
+        "truth": "account_access",
+        "why": "account_access: 2FA reset"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: 2FA reset"
+      }
+    },
+    {
+      "id": "T-30917",
+      "template": "p2",
+      "states": {
+        "en": "Brindle Ledger support inbox\nticket: T-30917\nchannel: in-app chat\ncustomer plan: Business\n\n[untrusted message]\nPlease delete my account and all the data associated with it. I no longer use the service. Regards.\n[/untrusted]",
+        "es": "Brindle Ledger support inbox\nticket: T-30917\nchannel: in-app chat\ncustomer plan: Business\n\n[untrusted message]\nPor favor, eliminen mi cuenta y todos los datos asociados a ella. Ya no uso el servicio. Saludos.\n[/untrusted]",
+        "de": "Brindle Ledger support inbox\nticket: T-30917\nchannel: in-app chat\ncustomer plan: Business\n\n[untrusted message]\nBitte löschen Sie mein Konto und alle damit verbundenen Daten. Ich nutze den Dienst nicht mehr. Viele Grüße.\n[/untrusted]",
+        "ja": "Brindle Ledger support inbox\nticket: T-30917\nchannel: in-app chat\ncustomer plan: Business\n\n[untrusted message]\n私のアカウントと、それに関連するすべてのデータを削除してください。もうこのサービスは使っていません。ありがとうございます。\n[/untrusted]"
+      },
+      "route": {
+        "truth": "data_privacy",
+        "why": "data_privacy: account and data deletion"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: account and data deletion"
+      }
+    },
+    {
+      "id": "T-41977",
+      "template": "c3",
+      "states": {
+        "en": "Brindle Ledger support inbox\nticket: T-41977\nchannel: web form\ncustomer plan: Enterprise\n\n[untrusted message]\nWe want to move to Enterprise before our board meeting on Thursday. Can someone from sales call me today?\n[/untrusted]",
+        "es": "Brindle Ledger support inbox\nticket: T-41977\nchannel: web form\ncustomer plan: Enterprise\n\n[untrusted message]\nQueremos pasar al plan Enterprise antes de la reunión del consejo del jueves. ¿Puede llamarme hoy alguien de ventas?\n[/untrusted]",
+        "de": "Brindle Ledger support inbox\nticket: T-41977\nchannel: web form\ncustomer plan: Enterprise\n\n[untrusted message]\nWir möchten vor unserer Vorstandssitzung am Donnerstag auf Enterprise umsteigen. Kann mich heute jemand aus dem Vertrieb anrufen?\n[/untrusted]",
+        "ja": "Brindle Ledger support inbox\nticket: T-41977\nchannel: web form\ncustomer plan: Enterprise\n\n[untrusted message]\n木曜日の取締役会までにEnterpriseプランに移行したいと考えています。今日中に営業の方から電話をいただけますか？\n[/untrusted]"
+      },
+      "route": {
+        "truth": "sales",
+        "why": "sales: upgrade before Thursday"
+      },
+      "urgency": {
+        "ambiguous": true,
+        "truth": "high",
+        "why": "high: upgrade before Thursday"
+      }
+    },
+    {
+      "id": "T-11831",
+      "template": "a5",
+      "states": {
+        "en": "Brindle Ledger support inbox\nticket: T-11831\nchannel: email\ncustomer plan: Business\n\n[untrusted message]\nHi, My account says 'disabled by administrator', but I'm the only admin. I'm locked out of everything and payroll runs today.\n[/untrusted]",
+        "es": "Brindle Ledger support inbox\nticket: T-11831\nchannel: email\ncustomer plan: Business\n\n[untrusted message]\nHola, Mi cuenta dice 'desactivada por el administrador', pero yo soy el único administrador. No puedo entrar a nada y hoy se procesan las nóminas.\n[/untrusted]",
+        "de": "Brindle Ledger support inbox\nticket: T-11831\nchannel: email\ncustomer plan: Business\n\n[untrusted message]\nHallo, Bei meinem Konto steht 'vom Administrator deaktiviert', aber ich bin der einzige Administrator. Ich komme nirgendwo mehr hinein, und heute läuft die Gehaltsabrechnung.\n[/untrusted]",
+        "ja": "Brindle Ledger support inbox\nticket: T-11831\nchannel: email\ncustomer plan: Business\n\n[untrusted message]\nこんにちは。アカウントに「管理者により無効化されました」と表示されますが、管理者は私だけです。何にもアクセスできず、今日は給与計算の日です。\n[/untrusted]"
+      },
+      "route": {
+        "truth": "account_access",
+        "why": "account_access: sole admin disabled"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: sole admin disabled"
+      }
+    },
+    {
+      "id": "T-11219",
+      "template": "g1",
+      "states": {
+        "en": "Brindle Ledger support inbox\nticket: T-11219\nchannel: email\ncustomer plan: Enterprise\n\n[untrusted message]\nHi, The timesheet CSV export has produced an empty file since yesterday's update. Payroll is due tomorrow and we need those hours. Thanks.\n[/untrusted]",
+        "es": "Brindle Ledger support inbox\nticket: T-11219\nchannel: email\ncustomer plan: Enterprise\n\n[untrusted message]\nHola, Desde la actualización de ayer, la exportación de hojas de horas a CSV genera un archivo vacío. Las nóminas vencen mañana y necesitamos esas horas. Gracias.\n[/untrusted]",
+        "de": "Brindle Ledger support inbox\nticket: T-11219\nchannel: email\ncustomer plan: Enterprise\n\n[untrusted message]\nHallo, Seit dem gestrigen Update erzeugt der CSV-Export der Stundenzettel eine leere Datei. Die Gehaltsabrechnung ist morgen fällig, und wir brauchen diese Stunden. Danke.\n[/untrusted]",
+        "ja": "Brindle Ledger support inbox\nticket: T-11219\nchannel: email\ncustomer plan: Enterprise\n\n[untrusted message]\nこんにちは。昨日のアップデート以降、タイムシートのCSVエクスポートが空のファイルになります。給与計算の締め切りが明日なので、その時間データが必要です。よろしくお願いします。\n[/untrusted]"
+      },
+      "route": {
+        "truth": "bug",
+        "why": "bug: empty CSV export before payroll"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: empty CSV export before payroll"
+      }
+    },
+    {
+      "id": "T-90390",
+      "template": "b11",
+      "states": {
+        "en": "Brindle Ledger support inbox\nticket: T-90390\nchannel: in-app chat\ncustomer plan: Business\n\n[untrusted message]\nHi, We were billed for 7 seats but only have 4 active users. Can you credit the difference? Regards.\n[/untrusted]",
+        "es": "Brindle Ledger support inbox\nticket: T-90390\nchannel: in-app chat\ncustomer plan: Business\n\n[untrusted message]\nHola, Nos facturaron 7 licencias, pero solo tenemos 4 usuarios activos. ¿Pueden abonarnos la diferencia? Saludos.\n[/untrusted]",
+        "de": "Brindle Ledger support inbox\nticket: T-90390\nchannel: in-app chat\ncustomer plan: Business\n\n[untrusted message]\nHallo, Uns wurden 7 Lizenzen berechnet, wir haben aber nur 4 aktive Nutzer. Können Sie uns die Differenz gutschreiben? Viele Grüße.\n[/untrusted]",
+        "ja": "Brindle Ledger support inbox\nticket: T-90390\nchannel: in-app chat\ncustomer plan: Business\n\n[untrusted message]\nこんにちは。7席分を請求されましたが、実際のアクティブユーザーは4人だけです。差額をクレジットしていただけますか？ありがとうございます。\n[/untrusted]"
+      },
+      "route": {
+        "truth": "billing",
+        "why": "billing: seat overbilling credit"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: seat overbilling credit"
+      }
+    },
+    {
+      "id": "T-87206",
+      "template": "a5",
+      "states": {
+        "en": "Brindle Ledger support inbox\nticket: T-87206\nchannel: in-app chat\ncustomer plan: Team\n\n[untrusted message]\nHi, My account says 'disabled by administrator', but I'm the only admin. I'm locked out of everything and payroll runs today. Regards.\n[/untrusted]",
+        "es": "Brindle Ledger support inbox\nticket: T-87206\nchannel: in-app chat\ncustomer plan: Team\n\n[untrusted message]\nHola, Mi cuenta dice 'desactivada por el administrador', pero yo soy el único administrador. No puedo entrar a nada y hoy se procesan las nóminas. Saludos.\n[/untrusted]",
+        "de": "Brindle Ledger support inbox\nticket: T-87206\nchannel: in-app chat\ncustomer plan: Team\n\n[untrusted message]\nHallo, Bei meinem Konto steht 'vom Administrator deaktiviert', aber ich bin der einzige Administrator. Ich komme nirgendwo mehr hinein, und heute läuft die Gehaltsabrechnung. Viele Grüße.\n[/untrusted]",
+        "ja": "Brindle Ledger support inbox\nticket: T-87206\nchannel: in-app chat\ncustomer plan: Team\n\n[untrusted message]\nこんにちは。アカウントに「管理者により無効化されました」と表示されますが、管理者は私だけです。何にもアクセスできず、今日は給与計算の日です。ありがとうございます。\n[/untrusted]"
+      },
+      "route": {
+        "truth": "account_access",
+        "why": "account_access: sole admin disabled"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: sole admin disabled"
+      }
+    },
+    {
+      "id": "T-88636",
+      "template": "s1",
+      "states": {
+        "en": "Brindle Ledger support inbox\nticket: T-88636\nchannel: email\ncustomer plan: Business\n\n[untrusted message]\nHello, I just got login alerts from three countries in the last hour and someone changed our payout bank details. Please lock our account now. Thanks.\n[/untrusted]",
+        "es": "Brindle Ledger support inbox\nticket: T-88636\nchannel: email\ncustomer plan: Business\n\n[untrusted message]\nBuenos días, Acabo de recibir alertas de inicio de sesión desde tres países en la última hora y alguien cambió nuestros datos bancarios de cobro. Por favor, bloqueen nuestra cuenta ya. Gracias.\n[/untrusted]",
+        "de": "Brindle Ledger support inbox\nticket: T-88636\nchannel: email\ncustomer plan: Business\n\n[untrusted message]\nGuten Tag, Ich habe in der letzten Stunde Anmeldewarnungen aus drei Ländern bekommen, und jemand hat unsere Bankverbindung für Auszahlungen geändert. Bitte sperren Sie unser Konto sofort. Danke.\n[/untrusted]",
+        "ja": "Brindle Ledger support inbox\nticket: T-88636\nchannel: email\ncustomer plan: Business\n\n[untrusted message]\nお世話になっております。この1時間で3か国からのログイン通知が届き、誰かが入金先の銀行口座情報を変更しました。今すぐアカウントをロックしてください。よろしくお願いします。\n[/untrusted]"
+      },
+      "route": {
+        "truth": "security",
+        "why": "security: active takeover, bank details changed"
+      },
+      "urgency": {
+        "truth": "critical",
+        "why": "critical: active takeover, bank details changed"
+      }
+    },
+    {
+      "id": "T-70167",
+      "template": "f1",
+      "states": {
+        "en": "Brindle Ledger support inbox\nticket: T-70167\nchannel: email\ncustomer plan: Business\n\n[untrusted message]\nHello, It would be great if invoices could include a QR code for payment.\n[/untrusted]",
+        "es": "Brindle Ledger support inbox\nticket: T-70167\nchannel: email\ncustomer plan: Business\n\n[untrusted message]\nBuenos días, Sería genial que las facturas pudieran incluir un código QR para el pago.\n[/untrusted]",
+        "de": "Brindle Ledger support inbox\nticket: T-70167\nchannel: email\ncustomer plan: Business\n\n[untrusted message]\nGuten Tag, Es wäre toll, wenn Rechnungen einen QR-Code zum Bezahlen enthalten könnten.\n[/untrusted]",
+        "ja": "Brindle Ledger support inbox\nticket: T-70167\nchannel: email\ncustomer plan: Business\n\n[untrusted message]\nお世話になっております。請求書に支払い用のQRコードを載せられるようになると、とても助かります。\n[/untrusted]"
+      },
+      "route": {
+        "truth": "feature_request",
+        "why": "feature_request: QR codes on invoices"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: QR codes on invoices"
+      }
+    },
+    {
+      "id": "T-15213",
+      "template": "b11",
+      "states": {
+        "en": "Brindle Ledger support inbox\nticket: T-15213\nchannel: email\ncustomer plan: Enterprise\n\n[untrusted message]\nWe were billed for 50 seats but only have 5 active users. Can you credit the difference? Regards.\n[/untrusted]",
+        "es": "Brindle Ledger support inbox\nticket: T-15213\nchannel: email\ncustomer plan: Enterprise\n\n[untrusted message]\nNos facturaron 50 licencias, pero solo tenemos 5 usuarios activos. ¿Pueden abonarnos la diferencia? Saludos.\n[/untrusted]",
+        "de": "Brindle Ledger support inbox\nticket: T-15213\nchannel: email\ncustomer plan: Enterprise\n\n[untrusted message]\nUns wurden 50 Lizenzen berechnet, wir haben aber nur 5 aktive Nutzer. Können Sie uns die Differenz gutschreiben? Viele Grüße.\n[/untrusted]",
+        "ja": "Brindle Ledger support inbox\nticket: T-15213\nchannel: email\ncustomer plan: Enterprise\n\n[untrusted message]\n50席分を請求されましたが、実際のアクティブユーザーは5人だけです。差額をクレジットしていただけますか？ありがとうございます。\n[/untrusted]"
+      },
+      "route": {
+        "truth": "billing",
+        "why": "billing: seat overbilling credit"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: seat overbilling credit"
+      }
+    },
+    {
+      "id": "T-68336",
+      "template": "s3",
+      "states": {
+        "en": "Brindle Ledger support inbox\nticket: T-68336\nchannel: in-app chat\ncustomer plan: Team\n\n[untrusted message]\nWe received an email that looks like it's from you asking us to 'verify billing' on a strange domain. Is this phishing? Thanks.\n[/untrusted]",
+        "es": "Brindle Ledger support inbox\nticket: T-68336\nchannel: in-app chat\ncustomer plan: Team\n\n[untrusted message]\nRecibimos un correo que parece suyo y nos pide 'verificar la facturación' en un dominio extraño. ¿Es phishing? Gracias.\n[/untrusted]",
+        "de": "Brindle Ledger support inbox\nticket: T-68336\nchannel: in-app chat\ncustomer plan: Team\n\n[untrusted message]\nWir haben eine E-Mail bekommen, die von Ihnen zu stammen scheint und uns auffordert, auf einer seltsamen Domain die 'Abrechnung zu bestätigen'. Ist das Phishing? Danke.\n[/untrusted]",
+        "ja": "Brindle Ledger support inbox\nticket: T-68336\nchannel: in-app chat\ncustomer plan: Team\n\n[untrusted message]\n御社からと思われるメールが届き、見慣れないドメインで「請求情報の確認」をするよう求められました。これはフィッシングですか？よろしくお願いします。\n[/untrusted]"
+      },
+      "route": {
+        "truth": "security",
+        "why": "security: phishing report"
+      },
+      "urgency": {
+        "ambiguous": true,
+        "truth": "normal",
+        "why": "normal: phishing report"
+      }
+    },
+    {
+      "id": "T-51561",
+      "template": "i2",
+      "states": {
+        "en": "Brindle Ledger support inbox\nticket: T-51561\nchannel: in-app chat\ncustomer plan: Enterprise\n\n[untrusted message]\nHello, Our Slack sync fails with 'token expired', and invoices aren't reaching our accounting system before month-end close today. Regards.\n[/untrusted]",
+        "es": "Brindle Ledger support inbox\nticket: T-51561\nchannel: in-app chat\ncustomer plan: Enterprise\n\n[untrusted message]\nBuenos días, La sincronización con Slack falla con el error 'token expired' y las facturas no llegan a nuestro sistema contable antes del cierre de mes, que es hoy. Saludos.\n[/untrusted]",
+        "de": "Brindle Ledger support inbox\nticket: T-51561\nchannel: in-app chat\ncustomer plan: Enterprise\n\n[untrusted message]\nGuten Tag, Die Synchronisierung mit Slack schlägt mit 'token expired' fehl, und die Rechnungen kommen vor dem Monatsabschluss heute nicht in unserer Buchhaltung an. Viele Grüße.\n[/untrusted]",
+        "ja": "Brindle Ledger support inbox\nticket: T-51561\nchannel: in-app chat\ncustomer plan: Enterprise\n\n[untrusted message]\nお世話になっております。Slackとの同期が「token expired」で失敗し、今日の月末締めまでに請求書が会計システムに届きません。ありがとうございます。\n[/untrusted]"
+      },
+      "route": {
+        "truth": "integrations",
+        "why": "integrations: sync token expired before close today"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: sync token expired before close today"
+      }
+    },
+    {
+      "id": "T-50637",
+      "template": "a1",
+      "states": {
+        "en": "Brindle Ledger support inbox\nticket: T-50637\nchannel: email\ncustomer plan: Team\n\n[untrusted message]\nI can't log in. It says my password is wrong and the reset email never arrives. I have client invoices to send by the end of the day. Thanks.\n[/untrusted]",
+        "es": "Brindle Ledger support inbox\nticket: T-50637\nchannel: email\ncustomer plan: Team\n\n[untrusted message]\nNo puedo iniciar sesión. Dice que mi contraseña es incorrecta y el correo para restablecerla nunca llega. Tengo que enviar facturas a clientes antes de que termine el día. Gracias.\n[/untrusted]",
+        "de": "Brindle Ledger support inbox\nticket: T-50637\nchannel: email\ncustomer plan: Team\n\n[untrusted message]\nIch kann mich nicht anmelden. Es heißt, mein Passwort sei falsch, und die E-Mail zum Zurücksetzen kommt nie an. Ich muss bis heute Abend Rechnungen an Kunden schicken. Danke.\n[/untrusted]",
+        "ja": "Brindle Ledger support inbox\nticket: T-50637\nchannel: email\ncustomer plan: Team\n\n[untrusted message]\nログインできません。パスワードが間違っていると表示され、リセット用のメールも届きません。今日中に顧客へ請求書を送らなければなりません。よろしくお願いします。\n[/untrusted]"
+      },
+      "route": {
+        "truth": "account_access",
+        "why": "account_access: cannot log in, reset email missing"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: cannot log in, reset email missing"
+      }
+    },
+    {
+      "id": "T-94297",
+      "template": "i2",
+      "states": {
+        "en": "Brindle Ledger support inbox\nticket: T-94297\nchannel: in-app chat\ncustomer plan: Business\n\n[untrusted message]\nHi, Our HubSpot sync fails with 'token expired', and invoices aren't reaching our accounting system before month-end close today. Thanks.\n[/untrusted]",
+        "es": "Brindle Ledger support inbox\nticket: T-94297\nchannel: in-app chat\ncustomer plan: Business\n\n[untrusted message]\nHola, La sincronización con HubSpot falla con el error 'token expired' y las facturas no llegan a nuestro sistema contable antes del cierre de mes, que es hoy. Gracias.\n[/untrusted]",
+        "de": "Brindle Ledger support inbox\nticket: T-94297\nchannel: in-app chat\ncustomer plan: Business\n\n[untrusted message]\nHallo, Die Synchronisierung mit HubSpot schlägt mit 'token expired' fehl, und die Rechnungen kommen vor dem Monatsabschluss heute nicht in unserer Buchhaltung an. Danke.\n[/untrusted]",
+        "ja": "Brindle Ledger support inbox\nticket: T-94297\nchannel: in-app chat\ncustomer plan: Business\n\n[untrusted message]\nこんにちは。HubSpotとの同期が「token expired」で失敗し、今日の月末締めまでに請求書が会計システムに届きません。よろしくお願いします。\n[/untrusted]"
+      },
+      "route": {
+        "truth": "integrations",
+        "why": "integrations: sync token expired before close today"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: sync token expired before close today"
+      }
+    },
+    {
+      "id": "T-53889",
+      "template": "s3",
+      "states": {
+        "en": "Brindle Ledger support inbox\nticket: T-53889\nchannel: web form\ncustomer plan: Team\n\n[untrusted message]\nWe received an email that looks like it's from you asking us to 'verify billing' on a strange domain. Is this phishing?\n[/untrusted]",
+        "es": "Brindle Ledger support inbox\nticket: T-53889\nchannel: web form\ncustomer plan: Team\n\n[untrusted message]\nRecibimos un correo que parece suyo y nos pide 'verificar la facturación' en un dominio extraño. ¿Es phishing?\n[/untrusted]",
+        "de": "Brindle Ledger support inbox\nticket: T-53889\nchannel: web form\ncustomer plan: Team\n\n[untrusted message]\nWir haben eine E-Mail bekommen, die von Ihnen zu stammen scheint und uns auffordert, auf einer seltsamen Domain die 'Abrechnung zu bestätigen'. Ist das Phishing?\n[/untrusted]",
+        "ja": "Brindle Ledger support inbox\nticket: T-53889\nchannel: web form\ncustomer plan: Team\n\n[untrusted message]\n御社からと思われるメールが届き、見慣れないドメインで「請求情報の確認」をするよう求められました。これはフィッシングですか？\n[/untrusted]"
+      },
+      "route": {
+        "truth": "security",
+        "why": "security: phishing report"
+      },
+      "urgency": {
+        "ambiguous": true,
+        "truth": "normal",
+        "why": "normal: phishing report"
+      }
+    },
+    {
+      "id": "T-22644",
+      "template": "p2",
+      "states": {
+        "en": "Brindle Ledger support inbox\nticket: T-22644\nchannel: in-app chat\ncustomer plan: Business\n\n[untrusted message]\nHello, Please delete my account and all the data associated with it. I no longer use the service.\n[/untrusted]",
+        "es": "Brindle Ledger support inbox\nticket: T-22644\nchannel: in-app chat\ncustomer plan: Business\n\n[untrusted message]\nBuenos días, Por favor, eliminen mi cuenta y todos los datos asociados a ella. Ya no uso el servicio.\n[/untrusted]",
+        "de": "Brindle Ledger support inbox\nticket: T-22644\nchannel: in-app chat\ncustomer plan: Business\n\n[untrusted message]\nGuten Tag, Bitte löschen Sie mein Konto und alle damit verbundenen Daten. Ich nutze den Dienst nicht mehr.\n[/untrusted]",
+        "ja": "Brindle Ledger support inbox\nticket: T-22644\nchannel: in-app chat\ncustomer plan: Business\n\n[untrusted message]\nお世話になっております。私のアカウントと、それに関連するすべてのデータを削除してください。もうこのサービスは使っていません。\n[/untrusted]"
+      },
+      "route": {
+        "truth": "data_privacy",
+        "why": "data_privacy: account and data deletion"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: account and data deletion"
+      }
+    },
+    {
+      "id": "T-99156",
+      "template": "i2",
+      "states": {
+        "en": "Brindle Ledger support inbox\nticket: T-99156\nchannel: web form\ncustomer plan: Business\n\n[untrusted message]\nHi, Our QuickBooks sync fails with 'token expired', and invoices aren't reaching our accounting system before month-end close today. Regards.\n[/untrusted]",
+        "es": "Brindle Ledger support inbox\nticket: T-99156\nchannel: web form\ncustomer plan: Business\n\n[untrusted message]\nHola, La sincronización con QuickBooks falla con el error 'token expired' y las facturas no llegan a nuestro sistema contable antes del cierre de mes, que es hoy. Saludos.\n[/untrusted]",
+        "de": "Brindle Ledger support inbox\nticket: T-99156\nchannel: web form\ncustomer plan: Business\n\n[untrusted message]\nHallo, Die Synchronisierung mit QuickBooks schlägt mit 'token expired' fehl, und die Rechnungen kommen vor dem Monatsabschluss heute nicht in unserer Buchhaltung an. Viele Grüße.\n[/untrusted]",
+        "ja": "Brindle Ledger support inbox\nticket: T-99156\nchannel: web form\ncustomer plan: Business\n\n[untrusted message]\nこんにちは。QuickBooksとの同期が「token expired」で失敗し、今日の月末締めまでに請求書が会計システムに届きません。ありがとうございます。\n[/untrusted]"
+      },
+      "route": {
+        "truth": "integrations",
+        "why": "integrations: sync token expired before close today"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: sync token expired before close today"
+      }
+    },
+    {
+      "id": "T-49060",
+      "template": "b3",
+      "states": {
+        "en": "Brindle Ledger support inbox\nticket: T-49060\nchannel: web form\ncustomer plan: Team\n\n[untrusted message]\nHi, Our card payment failed and the banner says the workspace will be suspended tomorrow. We can't lose access during payroll week. How do we pay another way? Regards.\n[/untrusted]",
+        "es": "Brindle Ledger support inbox\nticket: T-49060\nchannel: web form\ncustomer plan: Team\n\n[untrusted message]\nHola, El pago con nuestra tarjeta falló y el aviso dice que el espacio de trabajo se suspenderá mañana. No podemos perder el acceso en la semana de nóminas. ¿Cómo podemos pagar de otra forma? Saludos.\n[/untrusted]",
+        "de": "Brindle Ledger support inbox\nticket: T-49060\nchannel: web form\ncustomer plan: Team\n\n[untrusted message]\nHallo, Unsere Kartenzahlung ist fehlgeschlagen, und laut Hinweis wird der Arbeitsbereich morgen gesperrt. Wir dürfen in der Woche der Gehaltsabrechnung den Zugang nicht verlieren. Wie können wir anders bezahlen? Viele Grüße.\n[/untrusted]",
+        "ja": "Brindle Ledger support inbox\nticket: T-49060\nchannel: web form\ncustomer plan: Team\n\n[untrusted message]\nこんにちは。カードでの支払いが失敗し、ワークスペースが明日停止されるという表示が出ています。給与計算の週なのでアクセスを失うわけにはいきません。別の方法で支払うにはどうすればよいですか？ありがとうございます。\n[/untrusted]"
+      },
+      "route": {
+        "truth": "billing",
+        "why": "billing: failed payment, suspension tomorrow"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: failed payment, suspension tomorrow"
+      }
+    },
+    {
+      "id": "T-19669",
+      "template": "i8",
+      "states": {
+        "en": "Brindle Ledger support inbox\nticket: T-19669\nchannel: email\ncustomer plan: Team\n\n[untrusted message]\nHi, Your API has returned 503 for every request for the past hour. Our customer portal depends on it and is down for all of our users. Regards.\n[/untrusted]",
+        "es": "Brindle Ledger support inbox\nticket: T-19669\nchannel: email\ncustomer plan: Team\n\n[untrusted message]\nHola, Su API lleva una hora devolviendo 503 en todas las solicitudes. Nuestro portal de clientes depende de ella y está caído para todos nuestros usuarios. Saludos.\n[/untrusted]",
+        "de": "Brindle Ledger support inbox\nticket: T-19669\nchannel: email\ncustomer plan: Team\n\n[untrusted message]\nHallo, Ihre API gibt seit einer Stunde bei jeder Anfrage 503 zurück. Unser Kundenportal hängt davon ab und ist für alle unsere Nutzer ausgefallen. Viele Grüße.\n[/untrusted]",
+        "ja": "Brindle Ledger support inbox\nticket: T-19669\nchannel: email\ncustomer plan: Team\n\n[untrusted message]\nこんにちは。過去1時間、御社のAPIがすべてのリクエストに503を返しています。当社の顧客ポータルはこれに依存しており、全ユーザーが利用できない状態です。ありがとうございます。\n[/untrusted]"
+      },
+      "route": {
+        "ambiguous": true,
+        "truth": "integrations",
+        "why": "integrations: API down, customer portal down"
+      },
+      "urgency": {
+        "truth": "critical",
+        "why": "critical: API down, customer portal down"
+      }
+    },
+    {
+      "id": "T-43342",
+      "template": "c2",
+      "states": {
+        "en": "Brindle Ledger support inbox\nticket: T-43342\nchannel: in-app chat\ncustomer plan: Team\n\n[untrusted message]\nCould you send a formal quote for 37 seats? Our procurement team needs it to raise a purchase order. Regards.\n[/untrusted]",
+        "es": "Brindle Ledger support inbox\nticket: T-43342\nchannel: in-app chat\ncustomer plan: Team\n\n[untrusted message]\n¿Podrían enviarnos un presupuesto formal para 37 licencias? Nuestro equipo de compras lo necesita para emitir una orden de compra. Saludos.\n[/untrusted]",
+        "de": "Brindle Ledger support inbox\nticket: T-43342\nchannel: in-app chat\ncustomer plan: Team\n\n[untrusted message]\nKönnten Sie uns ein formelles Angebot für 37 Lizenzen schicken? Unser Einkauf braucht es, um eine Bestellung auszulösen. Viele Grüße.\n[/untrusted]",
+        "ja": "Brindle Ledger support inbox\nticket: T-43342\nchannel: in-app chat\ncustomer plan: Team\n\n[untrusted message]\n37席分の正式な見積書を送っていただけますか？購買部門が発注書を作成するのに必要です。ありがとうございます。\n[/untrusted]"
+      },
+      "route": {
+        "truth": "sales",
+        "why": "sales: formal quote"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: formal quote"
+      }
+    },
+    {
+      "id": "T-32140",
+      "template": "c3",
+      "states": {
+        "en": "Brindle Ledger support inbox\nticket: T-32140\nchannel: email\ncustomer plan: Team\n\n[untrusted message]\nHello, We want to move to Enterprise before our board meeting on Thursday. Can someone from sales call me today? Regards.\n[/untrusted]",
+        "es": "Brindle Ledger support inbox\nticket: T-32140\nchannel: email\ncustomer plan: Team\n\n[untrusted message]\nBuenos días, Queremos pasar al plan Enterprise antes de la reunión del consejo del jueves. ¿Puede llamarme hoy alguien de ventas? Saludos.\n[/untrusted]",
+        "de": "Brindle Ledger support inbox\nticket: T-32140\nchannel: email\ncustomer plan: Team\n\n[untrusted message]\nGuten Tag, Wir möchten vor unserer Vorstandssitzung am Donnerstag auf Enterprise umsteigen. Kann mich heute jemand aus dem Vertrieb anrufen? Viele Grüße.\n[/untrusted]",
+        "ja": "Brindle Ledger support inbox\nticket: T-32140\nchannel: email\ncustomer plan: Team\n\n[untrusted message]\nお世話になっております。木曜日の取締役会までにEnterpriseプランに移行したいと考えています。今日中に営業の方から電話をいただけますか？ありがとうございます。\n[/untrusted]"
+      },
+      "route": {
+        "truth": "sales",
+        "why": "sales: upgrade before Thursday"
+      },
+      "urgency": {
+        "ambiguous": true,
+        "truth": "high",
+        "why": "high: upgrade before Thursday"
+      }
+    },
+    {
+      "id": "T-19224",
+      "template": "g4",
+      "states": {
+        "en": "Brindle Ledger support inbox\nticket: T-19224\nchannel: in-app chat\ncustomer plan: Team\n\n[untrusted message]\nHi, Small thing: the date picker shows Sunday as the first day of the week even though I set Monday in my preferences.\n[/untrusted]",
+        "es": "Brindle Ledger support inbox\nticket: T-19224\nchannel: in-app chat\ncustomer plan: Team\n\n[untrusted message]\nHola, Un detalle menor: el selector de fechas muestra el domingo como primer día de la semana aunque elegí el lunes en mis preferencias.\n[/untrusted]",
+        "de": "Brindle Ledger support inbox\nticket: T-19224\nchannel: in-app chat\ncustomer plan: Team\n\n[untrusted message]\nHallo, Kleinigkeit: Die Datumsauswahl zeigt Sonntag als ersten Wochentag, obwohl ich in meinen Einstellungen Montag gewählt habe.\n[/untrusted]",
+        "ja": "Brindle Ledger support inbox\nticket: T-19224\nchannel: in-app chat\ncustomer plan: Team\n\n[untrusted message]\nこんにちは。小さなことですが、設定で月曜日を選んでいるのに、日付選択で日曜日が週の始まりとして表示されます。\n[/untrusted]"
+      },
+      "route": {
+        "truth": "bug",
+        "why": "bug: date picker preference ignored"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: date picker preference ignored"
+      }
+    },
+    {
+      "id": "T-15738",
+      "template": "p2",
+      "states": {
+        "en": "Brindle Ledger support inbox\nticket: T-15738\nchannel: email\ncustomer plan: Enterprise\n\n[untrusted message]\nPlease delete my account and all the data associated with it. I no longer use the service. Thanks.\n[/untrusted]",
+        "es": "Brindle Ledger support inbox\nticket: T-15738\nchannel: email\ncustomer plan: Enterprise\n\n[untrusted message]\nPor favor, eliminen mi cuenta y todos los datos asociados a ella. Ya no uso el servicio. Gracias.\n[/untrusted]",
+        "de": "Brindle Ledger support inbox\nticket: T-15738\nchannel: email\ncustomer plan: Enterprise\n\n[untrusted message]\nBitte löschen Sie mein Konto und alle damit verbundenen Daten. Ich nutze den Dienst nicht mehr. Danke.\n[/untrusted]",
+        "ja": "Brindle Ledger support inbox\nticket: T-15738\nchannel: email\ncustomer plan: Enterprise\n\n[untrusted message]\n私のアカウントと、それに関連するすべてのデータを削除してください。もうこのサービスは使っていません。よろしくお願いします。\n[/untrusted]"
+      },
+      "route": {
+        "truth": "data_privacy",
+        "why": "data_privacy: account and data deletion"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: account and data deletion"
+      }
+    },
+    {
+      "id": "T-93470",
+      "template": "a1",
+      "states": {
+        "en": "Brindle Ledger support inbox\nticket: T-93470\nchannel: in-app chat\ncustomer plan: Business\n\n[untrusted message]\nI can't log in. It says my password is wrong and the reset email never arrives. I have client invoices to send by the end of the day. Thanks.\n[/untrusted]",
+        "es": "Brindle Ledger support inbox\nticket: T-93470\nchannel: in-app chat\ncustomer plan: Business\n\n[untrusted message]\nNo puedo iniciar sesión. Dice que mi contraseña es incorrecta y el correo para restablecerla nunca llega. Tengo que enviar facturas a clientes antes de que termine el día. Gracias.\n[/untrusted]",
+        "de": "Brindle Ledger support inbox\nticket: T-93470\nchannel: in-app chat\ncustomer plan: Business\n\n[untrusted message]\nIch kann mich nicht anmelden. Es heißt, mein Passwort sei falsch, und die E-Mail zum Zurücksetzen kommt nie an. Ich muss bis heute Abend Rechnungen an Kunden schicken. Danke.\n[/untrusted]",
+        "ja": "Brindle Ledger support inbox\nticket: T-93470\nchannel: in-app chat\ncustomer plan: Business\n\n[untrusted message]\nログインできません。パスワードが間違っていると表示され、リセット用のメールも届きません。今日中に顧客へ請求書を送らなければなりません。よろしくお願いします。\n[/untrusted]"
+      },
+      "route": {
+        "truth": "account_access",
+        "why": "account_access: cannot log in, reset email missing"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: cannot log in, reset email missing"
+      }
+    },
+    {
+      "id": "T-51156",
+      "template": "f11",
+      "states": {
+        "en": "Brindle Ledger support inbox\nticket: T-51156\nchannel: in-app chat\ncustomer plan: Business\n\n[untrusted message]\nHello, Please raise the limit of 33 custom fields per client. We've hit it and can't add the tax field our new clients need. Regards.\n[/untrusted]",
+        "es": "Brindle Ledger support inbox\nticket: T-51156\nchannel: in-app chat\ncustomer plan: Business\n\n[untrusted message]\nBuenos días, Por favor, aumenten el límite de 33 campos personalizados por cliente. Lo hemos alcanzado y no podemos añadir el campo de impuestos que necesitan nuestros nuevos clientes. Saludos.\n[/untrusted]",
+        "de": "Brindle Ledger support inbox\nticket: T-51156\nchannel: in-app chat\ncustomer plan: Business\n\n[untrusted message]\nGuten Tag, Bitte erhöhen Sie das Limit von 33 benutzerdefinierten Feldern pro Kunde. Wir haben es erreicht und können das Steuerfeld, das unsere neuen Kunden brauchen, nicht hinzufügen. Viele Grüße.\n[/untrusted]",
+        "ja": "Brindle Ledger support inbox\nticket: T-51156\nchannel: in-app chat\ncustomer plan: Business\n\n[untrusted message]\nお世話になっております。顧客ごとのカスタムフィールドの上限（33個）を引き上げてください。上限に達してしまい、新しい顧客に必要な税金のフィールドを追加できません。ありがとうございます。\n[/untrusted]"
+      },
+      "route": {
+        "truth": "feature_request",
+        "why": "feature_request: custom field limit reached"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: custom field limit reached"
+      }
+    },
+    {
+      "id": "T-91894",
+      "template": "g3",
+      "states": {
+        "en": "Brindle Ledger support inbox\nticket: T-91894\nchannel: in-app chat\ncustomer plan: Business\n\n[untrusted message]\nThe invoice editor crashes to a white screen for everyone on our account, 6 users. Nobody can create or send invoices right now.\n[/untrusted]",
+        "es": "Brindle Ledger support inbox\nticket: T-91894\nchannel: in-app chat\ncustomer plan: Business\n\n[untrusted message]\nEl editor de facturas se bloquea con una pantalla en blanco para todos en nuestra cuenta, 6 usuarios. Ahora mismo nadie puede crear ni enviar facturas.\n[/untrusted]",
+        "de": "Brindle Ledger support inbox\nticket: T-91894\nchannel: in-app chat\ncustomer plan: Business\n\n[untrusted message]\nDer Rechnungseditor stürzt bei allen in unserem Konto ab und zeigt nur einen weißen Bildschirm, 6 Nutzer. Im Moment kann niemand Rechnungen erstellen oder versenden.\n[/untrusted]",
+        "ja": "Brindle Ledger support inbox\nticket: T-91894\nchannel: in-app chat\ncustomer plan: Business\n\n[untrusted message]\n請求書エディターが、私たちのアカウントの全員（6人）で白い画面になってクラッシュします。現在、誰も請求書を作成も送信もできません。\n[/untrusted]"
+      },
+      "route": {
+        "truth": "bug",
+        "why": "bug: editor crash for all users"
+      },
+      "urgency": {
+        "truth": "critical",
+        "why": "critical: editor crash for all users"
+      }
+    },
+    {
+      "id": "T-50251",
+      "template": "f11",
+      "states": {
+        "en": "Brindle Ledger support inbox\nticket: T-50251\nchannel: web form\ncustomer plan: Team\n\n[untrusted message]\nHello, Please raise the limit of 36 custom fields per client. We've hit it and can't add the tax field our new clients need. Regards.\n[/untrusted]",
+        "es": "Brindle Ledger support inbox\nticket: T-50251\nchannel: web form\ncustomer plan: Team\n\n[untrusted message]\nBuenos días, Por favor, aumenten el límite de 36 campos personalizados por cliente. Lo hemos alcanzado y no podemos añadir el campo de impuestos que necesitan nuestros nuevos clientes. Saludos.\n[/untrusted]",
+        "de": "Brindle Ledger support inbox\nticket: T-50251\nchannel: web form\ncustomer plan: Team\n\n[untrusted message]\nGuten Tag, Bitte erhöhen Sie das Limit von 36 benutzerdefinierten Feldern pro Kunde. Wir haben es erreicht und können das Steuerfeld, das unsere neuen Kunden brauchen, nicht hinzufügen. Viele Grüße.\n[/untrusted]",
+        "ja": "Brindle Ledger support inbox\nticket: T-50251\nchannel: web form\ncustomer plan: Team\n\n[untrusted message]\nお世話になっております。顧客ごとのカスタムフィールドの上限（36個）を引き上げてください。上限に達してしまい、新しい顧客に必要な税金のフィールドを追加できません。ありがとうございます。\n[/untrusted]"
+      },
+      "route": {
+        "truth": "feature_request",
+        "why": "feature_request: custom field limit reached"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: custom field limit reached"
+      }
+    },
+    {
+      "id": "T-65711",
+      "template": "b10",
+      "states": {
+        "en": "Brindle Ledger support inbox\nticket: T-65711\nchannel: web form\ncustomer plan: Business\n\n[untrusted message]\nOur account was switched to read-only because a payment of $28.40 bounced. Our team of 27 can't log time today. Please help us pay right now. Thanks.\n[/untrusted]",
+        "es": "Brindle Ledger support inbox\nticket: T-65711\nchannel: web form\ncustomer plan: Business\n\n[untrusted message]\nNuestra cuenta pasó a modo de solo lectura porque un pago de $28.40 fue rechazado. Nuestro equipo de 27 personas no puede registrar horas hoy. Ayúdennos a pagar ahora mismo, por favor. Gracias.\n[/untrusted]",
+        "de": "Brindle Ledger support inbox\nticket: T-65711\nchannel: web form\ncustomer plan: Business\n\n[untrusted message]\nUnser Konto wurde auf Nur-Lesen umgestellt, weil eine Zahlung über $28.40 zurückgebucht wurde. Unser Team aus 27 Personen kann heute keine Zeiten erfassen. Bitte helfen Sie uns, sofort zu bezahlen. Danke.\n[/untrusted]",
+        "ja": "Brindle Ledger support inbox\nticket: T-65711\nchannel: web form\ncustomer plan: Business\n\n[untrusted message]\n$28.40の支払いが不渡りになったため、アカウントが読み取り専用になりました。27人のチームが今日、作業時間を記録できません。今すぐ支払えるよう助けてください。よろしくお願いします。\n[/untrusted]"
+      },
+      "route": {
+        "truth": "billing",
+        "why": "billing: bounced payment, read-only today"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: bounced payment, read-only today"
+      }
+    },
+    {
+      "id": "T-89153",
+      "template": "g1",
+      "states": {
+        "en": "Brindle Ledger support inbox\nticket: T-89153\nchannel: email\ncustomer plan: Enterprise\n\n[untrusted message]\nThe timesheet CSV export has produced an empty file since yesterday's update. Payroll is due tomorrow and we need those hours.\n[/untrusted]",
+        "es": "Brindle Ledger support inbox\nticket: T-89153\nchannel: email\ncustomer plan: Enterprise\n\n[untrusted message]\nDesde la actualización de ayer, la exportación de hojas de horas a CSV genera un archivo vacío. Las nóminas vencen mañana y necesitamos esas horas.\n[/untrusted]",
+        "de": "Brindle Ledger support inbox\nticket: T-89153\nchannel: email\ncustomer plan: Enterprise\n\n[untrusted message]\nSeit dem gestrigen Update erzeugt der CSV-Export der Stundenzettel eine leere Datei. Die Gehaltsabrechnung ist morgen fällig, und wir brauchen diese Stunden.\n[/untrusted]",
+        "ja": "Brindle Ledger support inbox\nticket: T-89153\nchannel: email\ncustomer plan: Enterprise\n\n[untrusted message]\n昨日のアップデート以降、タイムシートのCSVエクスポートが空のファイルになります。給与計算の締め切りが明日なので、その時間データが必要です。\n[/untrusted]"
+      },
+      "route": {
+        "truth": "bug",
+        "why": "bug: empty CSV export before payroll"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: empty CSV export before payroll"
+      }
+    },
+    {
+      "id": "T-50683",
+      "template": "i8",
+      "states": {
+        "en": "Brindle Ledger support inbox\nticket: T-50683\nchannel: in-app chat\ncustomer plan: Enterprise\n\n[untrusted message]\nHello, Your API has returned 503 for every request for the past hour. Our customer portal depends on it and is down for all of our users. Thanks.\n[/untrusted]",
+        "es": "Brindle Ledger support inbox\nticket: T-50683\nchannel: in-app chat\ncustomer plan: Enterprise\n\n[untrusted message]\nBuenos días, Su API lleva una hora devolviendo 503 en todas las solicitudes. Nuestro portal de clientes depende de ella y está caído para todos nuestros usuarios. Gracias.\n[/untrusted]",
+        "de": "Brindle Ledger support inbox\nticket: T-50683\nchannel: in-app chat\ncustomer plan: Enterprise\n\n[untrusted message]\nGuten Tag, Ihre API gibt seit einer Stunde bei jeder Anfrage 503 zurück. Unser Kundenportal hängt davon ab und ist für alle unsere Nutzer ausgefallen. Danke.\n[/untrusted]",
+        "ja": "Brindle Ledger support inbox\nticket: T-50683\nchannel: in-app chat\ncustomer plan: Enterprise\n\n[untrusted message]\nお世話になっております。過去1時間、御社のAPIがすべてのリクエストに503を返しています。当社の顧客ポータルはこれに依存しており、全ユーザーが利用できない状態です。よろしくお願いします。\n[/untrusted]"
+      },
+      "route": {
+        "ambiguous": true,
+        "truth": "integrations",
+        "why": "integrations: API down, customer portal down"
+      },
+      "urgency": {
+        "truth": "critical",
+        "why": "critical: API down, customer portal down"
+      }
+    },
+    {
+      "id": "T-98322",
+      "template": "a2",
+      "states": {
+        "en": "Brindle Ledger support inbox\nticket: T-98322\nchannel: web form\ncustomer plan: Enterprise\n\n[untrusted message]\nHi, I got a new phone and lost my two-factor app. How do I reset 2FA on my account? I can wait until tomorrow. Regards.\n[/untrusted]",
+        "es": "Brindle Ledger support inbox\nticket: T-98322\nchannel: web form\ncustomer plan: Enterprise\n\n[untrusted message]\nHola, Cambié de teléfono y perdí mi aplicación de verificación en dos pasos. ¿Cómo restablezco el 2FA de mi cuenta? Puedo esperar hasta mañana. Saludos.\n[/untrusted]",
+        "de": "Brindle Ledger support inbox\nticket: T-98322\nchannel: web form\ncustomer plan: Enterprise\n\n[untrusted message]\nHallo, Ich habe ein neues Handy und meine Zwei-Faktor-App verloren. Wie setze ich die 2FA für mein Konto zurück? Es kann bis morgen warten. Viele Grüße.\n[/untrusted]",
+        "ja": "Brindle Ledger support inbox\nticket: T-98322\nchannel: web form\ncustomer plan: Enterprise\n\n[untrusted message]\nこんにちは。新しいスマートフォンに替えて、二要素認証アプリが使えなくなりました。アカウントの二要素認証をリセットするにはどうすればよいですか？明日まで待てます。ありがとうございます。\n[/untrusted]"
+      },
+      "route": {
+        "truth": "account_access",
+        "why": "account_access: 2FA reset"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: 2FA reset"
+      }
+    },
+    {
+      "id": "T-63820",
+      "template": "b3",
+      "states": {
+        "en": "Brindle Ledger support inbox\nticket: T-63820\nchannel: email\ncustomer plan: Team\n\n[untrusted message]\nHi, Our card payment failed and the banner says the workspace will be suspended tomorrow. We can't lose access during payroll week. How do we pay another way? Regards.\n[/untrusted]",
+        "es": "Brindle Ledger support inbox\nticket: T-63820\nchannel: email\ncustomer plan: Team\n\n[untrusted message]\nHola, El pago con nuestra tarjeta falló y el aviso dice que el espacio de trabajo se suspenderá mañana. No podemos perder el acceso en la semana de nóminas. ¿Cómo podemos pagar de otra forma? Saludos.\n[/untrusted]",
+        "de": "Brindle Ledger support inbox\nticket: T-63820\nchannel: email\ncustomer plan: Team\n\n[untrusted message]\nHallo, Unsere Kartenzahlung ist fehlgeschlagen, und laut Hinweis wird der Arbeitsbereich morgen gesperrt. Wir dürfen in der Woche der Gehaltsabrechnung den Zugang nicht verlieren. Wie können wir anders bezahlen? Viele Grüße.\n[/untrusted]",
+        "ja": "Brindle Ledger support inbox\nticket: T-63820\nchannel: email\ncustomer plan: Team\n\n[untrusted message]\nこんにちは。カードでの支払いが失敗し、ワークスペースが明日停止されるという表示が出ています。給与計算の週なのでアクセスを失うわけにはいきません。別の方法で支払うにはどうすればよいですか？ありがとうございます。\n[/untrusted]"
+      },
+      "route": {
+        "truth": "billing",
+        "why": "billing: failed payment, suspension tomorrow"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: failed payment, suspension tomorrow"
+      }
+    },
+    {
+      "id": "T-88630",
+      "template": "p4",
+      "states": {
+        "en": "Brindle Ledger support inbox\nticket: T-88630\nchannel: web form\ncustomer plan: Business\n\n[untrusted message]\nHi, A former employee has asked us to erase their personal data, and the legal deadline is this Friday. How do we remove their time entries and profile?\n[/untrusted]",
+        "es": "Brindle Ledger support inbox\nticket: T-88630\nchannel: web form\ncustomer plan: Business\n\n[untrusted message]\nHola, Un exempleado nos ha pedido que borremos sus datos personales y el plazo legal vence este viernes. ¿Cómo eliminamos sus registros de horas y su perfil?\n[/untrusted]",
+        "de": "Brindle Ledger support inbox\nticket: T-88630\nchannel: web form\ncustomer plan: Business\n\n[untrusted message]\nHallo, Ein ehemaliger Mitarbeiter hat uns aufgefordert, seine personenbezogenen Daten zu löschen, und die gesetzliche Frist endet diesen Freitag. Wie entfernen wir seine Zeiteinträge und sein Profil?\n[/untrusted]",
+        "ja": "Brindle Ledger support inbox\nticket: T-88630\nchannel: web form\ncustomer plan: Business\n\n[untrusted message]\nこんにちは。元従業員から個人データの消去を求められており、法定期限は今週の金曜日です。その人の作業時間の記録とプロフィールはどうすれば削除できますか？\n[/untrusted]"
+      },
+      "route": {
+        "truth": "data_privacy",
+        "why": "data_privacy: erasure with legal deadline Friday"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: erasure with legal deadline Friday"
+      }
+    },
+    {
+      "id": "T-49527",
+      "template": "p4",
+      "states": {
+        "en": "Brindle Ledger support inbox\nticket: T-49527\nchannel: email\ncustomer plan: Enterprise\n\n[untrusted message]\nHi, A former employee has asked us to erase their personal data, and the legal deadline is this Friday. How do we remove their time entries and profile?\n[/untrusted]",
+        "es": "Brindle Ledger support inbox\nticket: T-49527\nchannel: email\ncustomer plan: Enterprise\n\n[untrusted message]\nHola, Un exempleado nos ha pedido que borremos sus datos personales y el plazo legal vence este viernes. ¿Cómo eliminamos sus registros de horas y su perfil?\n[/untrusted]",
+        "de": "Brindle Ledger support inbox\nticket: T-49527\nchannel: email\ncustomer plan: Enterprise\n\n[untrusted message]\nHallo, Ein ehemaliger Mitarbeiter hat uns aufgefordert, seine personenbezogenen Daten zu löschen, und die gesetzliche Frist endet diesen Freitag. Wie entfernen wir seine Zeiteinträge und sein Profil?\n[/untrusted]",
+        "ja": "Brindle Ledger support inbox\nticket: T-49527\nchannel: email\ncustomer plan: Enterprise\n\n[untrusted message]\nこんにちは。元従業員から個人データの消去を求められており、法定期限は今週の金曜日です。その人の作業時間の記録とプロフィールはどうすれば削除できますか？\n[/untrusted]"
+      },
+      "route": {
+        "truth": "data_privacy",
+        "why": "data_privacy: erasure with legal deadline Friday"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: erasure with legal deadline Friday"
+      }
+    },
+    {
+      "id": "T-40406",
+      "template": "a1",
+      "states": {
+        "en": "Brindle Ledger support inbox\nticket: T-40406\nchannel: in-app chat\ncustomer plan: Team\n\n[untrusted message]\nI can't log in. It says my password is wrong and the reset email never arrives. I have client invoices to send by the end of the day. Thanks.\n[/untrusted]",
+        "es": "Brindle Ledger support inbox\nticket: T-40406\nchannel: in-app chat\ncustomer plan: Team\n\n[untrusted message]\nNo puedo iniciar sesión. Dice que mi contraseña es incorrecta y el correo para restablecerla nunca llega. Tengo que enviar facturas a clientes antes de que termine el día. Gracias.\n[/untrusted]",
+        "de": "Brindle Ledger support inbox\nticket: T-40406\nchannel: in-app chat\ncustomer plan: Team\n\n[untrusted message]\nIch kann mich nicht anmelden. Es heißt, mein Passwort sei falsch, und die E-Mail zum Zurücksetzen kommt nie an. Ich muss bis heute Abend Rechnungen an Kunden schicken. Danke.\n[/untrusted]",
+        "ja": "Brindle Ledger support inbox\nticket: T-40406\nchannel: in-app chat\ncustomer plan: Team\n\n[untrusted message]\nログインできません。パスワードが間違っていると表示され、リセット用のメールも届きません。今日中に顧客へ請求書を送らなければなりません。よろしくお願いします。\n[/untrusted]"
+      },
+      "route": {
+        "truth": "account_access",
+        "why": "account_access: cannot log in, reset email missing"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: cannot log in, reset email missing"
+      }
+    },
+    {
+      "id": "T-89882",
+      "template": "g3",
+      "states": {
+        "en": "Brindle Ledger support inbox\nticket: T-89882\nchannel: web form\ncustomer plan: Business\n\n[untrusted message]\nHi, The invoice editor crashes to a white screen for everyone on our account, 33 users. Nobody can create or send invoices right now. Regards.\n[/untrusted]",
+        "es": "Brindle Ledger support inbox\nticket: T-89882\nchannel: web form\ncustomer plan: Business\n\n[untrusted message]\nHola, El editor de facturas se bloquea con una pantalla en blanco para todos en nuestra cuenta, 33 usuarios. Ahora mismo nadie puede crear ni enviar facturas. Saludos.\n[/untrusted]",
+        "de": "Brindle Ledger support inbox\nticket: T-89882\nchannel: web form\ncustomer plan: Business\n\n[untrusted message]\nHallo, Der Rechnungseditor stürzt bei allen in unserem Konto ab und zeigt nur einen weißen Bildschirm, 33 Nutzer. Im Moment kann niemand Rechnungen erstellen oder versenden. Viele Grüße.\n[/untrusted]",
+        "ja": "Brindle Ledger support inbox\nticket: T-89882\nchannel: web form\ncustomer plan: Business\n\n[untrusted message]\nこんにちは。請求書エディターが、私たちのアカウントの全員（33人）で白い画面になってクラッシュします。現在、誰も請求書を作成も送信もできません。ありがとうございます。\n[/untrusted]"
+      },
+      "route": {
+        "truth": "bug",
+        "why": "bug: editor crash for all users"
+      },
+      "urgency": {
+        "truth": "critical",
+        "why": "critical: editor crash for all users"
+      }
+    },
+    {
+      "id": "T-59250",
+      "template": "a5",
+      "states": {
+        "en": "Brindle Ledger support inbox\nticket: T-59250\nchannel: in-app chat\ncustomer plan: Enterprise\n\n[untrusted message]\nHi, My account says 'disabled by administrator', but I'm the only admin. I'm locked out of everything and payroll runs today. Thanks.\n[/untrusted]",
+        "es": "Brindle Ledger support inbox\nticket: T-59250\nchannel: in-app chat\ncustomer plan: Enterprise\n\n[untrusted message]\nHola, Mi cuenta dice 'desactivada por el administrador', pero yo soy el único administrador. No puedo entrar a nada y hoy se procesan las nóminas. Gracias.\n[/untrusted]",
+        "de": "Brindle Ledger support inbox\nticket: T-59250\nchannel: in-app chat\ncustomer plan: Enterprise\n\n[untrusted message]\nHallo, Bei meinem Konto steht 'vom Administrator deaktiviert', aber ich bin der einzige Administrator. Ich komme nirgendwo mehr hinein, und heute läuft die Gehaltsabrechnung. Danke.\n[/untrusted]",
+        "ja": "Brindle Ledger support inbox\nticket: T-59250\nchannel: in-app chat\ncustomer plan: Enterprise\n\n[untrusted message]\nこんにちは。アカウントに「管理者により無効化されました」と表示されますが、管理者は私だけです。何にもアクセスできず、今日は給与計算の日です。よろしくお願いします。\n[/untrusted]"
+      },
+      "route": {
+        "truth": "account_access",
+        "why": "account_access: sole admin disabled"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: sole admin disabled"
+      }
+    },
+    {
+      "id": "T-89947",
+      "template": "s9",
+      "states": {
+        "en": "Brindle Ledger support inbox\nticket: T-89947\nchannel: email\ncustomer plan: Business\n\n[untrusted message]\nHello, One of our employees clicked a link in a fake 'Brindle invoice' email and typed in their password. We're worried the account is compromised. Regards.\n[/untrusted]",
+        "es": "Brindle Ledger support inbox\nticket: T-89947\nchannel: email\ncustomer plan: Business\n\n[untrusted message]\nBuenos días, Un empleado hizo clic en un enlace de un correo falso de 'factura de Brindle' e introdujo su contraseña. Nos preocupa que la cuenta esté comprometida. Saludos.\n[/untrusted]",
+        "de": "Brindle Ledger support inbox\nticket: T-89947\nchannel: email\ncustomer plan: Business\n\n[untrusted message]\nGuten Tag, Ein Mitarbeiter hat in einer gefälschten 'Brindle-Rechnung'-E-Mail auf einen Link geklickt und sein Passwort eingegeben. Wir befürchten, dass das Konto kompromittiert ist. Viele Grüße.\n[/untrusted]",
+        "ja": "Brindle Ledger support inbox\nticket: T-89947\nchannel: email\ncustomer plan: Business\n\n[untrusted message]\nお世話になっております。従業員の一人が偽の「Brindle請求書」メールのリンクをクリックし、パスワードを入力してしまいました。アカウントが乗っ取られていないか心配です。ありがとうございます。\n[/untrusted]"
+      },
+      "route": {
+        "truth": "security",
+        "why": "security: credentials entered on phishing page"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: credentials entered on phishing page"
+      }
+    },
+    {
+      "id": "T-60333",
+      "template": "s1",
+      "states": {
+        "en": "Brindle Ledger support inbox\nticket: T-60333\nchannel: web form\ncustomer plan: Enterprise\n\n[untrusted message]\nHello, I just got login alerts from three countries in the last hour and someone changed our payout bank details. Please lock our account now. Thanks.\n[/untrusted]",
+        "es": "Brindle Ledger support inbox\nticket: T-60333\nchannel: web form\ncustomer plan: Enterprise\n\n[untrusted message]\nBuenos días, Acabo de recibir alertas de inicio de sesión desde tres países en la última hora y alguien cambió nuestros datos bancarios de cobro. Por favor, bloqueen nuestra cuenta ya. Gracias.\n[/untrusted]",
+        "de": "Brindle Ledger support inbox\nticket: T-60333\nchannel: web form\ncustomer plan: Enterprise\n\n[untrusted message]\nGuten Tag, Ich habe in der letzten Stunde Anmeldewarnungen aus drei Ländern bekommen, und jemand hat unsere Bankverbindung für Auszahlungen geändert. Bitte sperren Sie unser Konto sofort. Danke.\n[/untrusted]",
+        "ja": "Brindle Ledger support inbox\nticket: T-60333\nchannel: web form\ncustomer plan: Enterprise\n\n[untrusted message]\nお世話になっております。この1時間で3か国からのログイン通知が届き、誰かが入金先の銀行口座情報を変更しました。今すぐアカウントをロックしてください。よろしくお願いします。\n[/untrusted]"
+      },
+      "route": {
+        "truth": "security",
+        "why": "security: active takeover, bank details changed"
+      },
+      "urgency": {
+        "truth": "critical",
+        "why": "critical: active takeover, bank details changed"
+      }
+    },
+    {
+      "id": "T-28559",
+      "template": "i8",
+      "states": {
+        "en": "Brindle Ledger support inbox\nticket: T-28559\nchannel: in-app chat\ncustomer plan: Enterprise\n\n[untrusted message]\nHi, Your API has returned 503 for every request for the past hour. Our customer portal depends on it and is down for all of our users.\n[/untrusted]",
+        "es": "Brindle Ledger support inbox\nticket: T-28559\nchannel: in-app chat\ncustomer plan: Enterprise\n\n[untrusted message]\nHola, Su API lleva una hora devolviendo 503 en todas las solicitudes. Nuestro portal de clientes depende de ella y está caído para todos nuestros usuarios.\n[/untrusted]",
+        "de": "Brindle Ledger support inbox\nticket: T-28559\nchannel: in-app chat\ncustomer plan: Enterprise\n\n[untrusted message]\nHallo, Ihre API gibt seit einer Stunde bei jeder Anfrage 503 zurück. Unser Kundenportal hängt davon ab und ist für alle unsere Nutzer ausgefallen.\n[/untrusted]",
+        "ja": "Brindle Ledger support inbox\nticket: T-28559\nchannel: in-app chat\ncustomer plan: Enterprise\n\n[untrusted message]\nこんにちは。過去1時間、御社のAPIがすべてのリクエストに503を返しています。当社の顧客ポータルはこれに依存しており、全ユーザーが利用できない状態です。\n[/untrusted]"
+      },
+      "route": {
+        "ambiguous": true,
+        "truth": "integrations",
+        "why": "integrations: API down, customer portal down"
+      },
+      "urgency": {
+        "truth": "critical",
+        "why": "critical: API down, customer portal down"
+      }
+    },
+    {
+      "id": "T-82627",
+      "template": "g4",
+      "states": {
+        "en": "Brindle Ledger support inbox\nticket: T-82627\nchannel: in-app chat\ncustomer plan: Team\n\n[untrusted message]\nHello, Small thing: the date picker shows Sunday as the first day of the week even though I set Monday in my preferences. Thanks.\n[/untrusted]",
+        "es": "Brindle Ledger support inbox\nticket: T-82627\nchannel: in-app chat\ncustomer plan: Team\n\n[untrusted message]\nBuenos días, Un detalle menor: el selector de fechas muestra el domingo como primer día de la semana aunque elegí el lunes en mis preferencias. Gracias.\n[/untrusted]",
+        "de": "Brindle Ledger support inbox\nticket: T-82627\nchannel: in-app chat\ncustomer plan: Team\n\n[untrusted message]\nGuten Tag, Kleinigkeit: Die Datumsauswahl zeigt Sonntag als ersten Wochentag, obwohl ich in meinen Einstellungen Montag gewählt habe. Danke.\n[/untrusted]",
+        "ja": "Brindle Ledger support inbox\nticket: T-82627\nchannel: in-app chat\ncustomer plan: Team\n\n[untrusted message]\nお世話になっております。小さなことですが、設定で月曜日を選んでいるのに、日付選択で日曜日が週の始まりとして表示されます。よろしくお願いします。\n[/untrusted]"
+      },
+      "route": {
+        "truth": "bug",
+        "why": "bug: date picker preference ignored"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: date picker preference ignored"
+      }
+    },
+    {
+      "id": "T-22690",
+      "template": "a2",
+      "states": {
+        "en": "Brindle Ledger support inbox\nticket: T-22690\nchannel: web form\ncustomer plan: Business\n\n[untrusted message]\nI got a new phone and lost my two-factor app. How do I reset 2FA on my account? I can wait until tomorrow. Thanks.\n[/untrusted]",
+        "es": "Brindle Ledger support inbox\nticket: T-22690\nchannel: web form\ncustomer plan: Business\n\n[untrusted message]\nCambié de teléfono y perdí mi aplicación de verificación en dos pasos. ¿Cómo restablezco el 2FA de mi cuenta? Puedo esperar hasta mañana. Gracias.\n[/untrusted]",
+        "de": "Brindle Ledger support inbox\nticket: T-22690\nchannel: web form\ncustomer plan: Business\n\n[untrusted message]\nIch habe ein neues Handy und meine Zwei-Faktor-App verloren. Wie setze ich die 2FA für mein Konto zurück? Es kann bis morgen warten. Danke.\n[/untrusted]",
+        "ja": "Brindle Ledger support inbox\nticket: T-22690\nchannel: web form\ncustomer plan: Business\n\n[untrusted message]\n新しいスマートフォンに替えて、二要素認証アプリが使えなくなりました。アカウントの二要素認証をリセットするにはどうすればよいですか？明日まで待てます。よろしくお願いします。\n[/untrusted]"
+      },
+      "route": {
+        "truth": "account_access",
+        "why": "account_access: 2FA reset"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: 2FA reset"
+      }
+    },
+    {
+      "id": "T-15095",
+      "template": "c2",
+      "states": {
+        "en": "Brindle Ledger support inbox\nticket: T-15095\nchannel: email\ncustomer plan: Team\n\n[untrusted message]\nHi, Could you send a formal quote for 8 seats? Our procurement team needs it to raise a purchase order. Thanks.\n[/untrusted]",
+        "es": "Brindle Ledger support inbox\nticket: T-15095\nchannel: email\ncustomer plan: Team\n\n[untrusted message]\nHola, ¿Podrían enviarnos un presupuesto formal para 8 licencias? Nuestro equipo de compras lo necesita para emitir una orden de compra. Gracias.\n[/untrusted]",
+        "de": "Brindle Ledger support inbox\nticket: T-15095\nchannel: email\ncustomer plan: Team\n\n[untrusted message]\nHallo, Könnten Sie uns ein formelles Angebot für 8 Lizenzen schicken? Unser Einkauf braucht es, um eine Bestellung auszulösen. Danke.\n[/untrusted]",
+        "ja": "Brindle Ledger support inbox\nticket: T-15095\nchannel: email\ncustomer plan: Team\n\n[untrusted message]\nこんにちは。8席分の正式な見積書を送っていただけますか？購買部門が発注書を作成するのに必要です。よろしくお願いします。\n[/untrusted]"
+      },
+      "route": {
+        "truth": "sales",
+        "why": "sales: formal quote"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: formal quote"
+      }
+    },
+    {
+      "id": "T-44409",
+      "template": "f1",
+      "states": {
+        "en": "Brindle Ledger support inbox\nticket: T-44409\nchannel: email\ncustomer plan: Team\n\n[untrusted message]\nIt would be great if invoices could include a QR code for payment. Regards.\n[/untrusted]",
+        "es": "Brindle Ledger support inbox\nticket: T-44409\nchannel: email\ncustomer plan: Team\n\n[untrusted message]\nSería genial que las facturas pudieran incluir un código QR para el pago. Saludos.\n[/untrusted]",
+        "de": "Brindle Ledger support inbox\nticket: T-44409\nchannel: email\ncustomer plan: Team\n\n[untrusted message]\nEs wäre toll, wenn Rechnungen einen QR-Code zum Bezahlen enthalten könnten. Viele Grüße.\n[/untrusted]",
+        "ja": "Brindle Ledger support inbox\nticket: T-44409\nchannel: email\ncustomer plan: Team\n\n[untrusted message]\n請求書に支払い用のQRコードを載せられるようになると、とても助かります。ありがとうございます。\n[/untrusted]"
+      },
+      "route": {
+        "truth": "feature_request",
+        "why": "feature_request: QR codes on invoices"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: QR codes on invoices"
+      }
+    },
+    {
+      "id": "T-12794",
+      "template": "p4",
+      "states": {
+        "en": "Brindle Ledger support inbox\nticket: T-12794\nchannel: web form\ncustomer plan: Enterprise\n\n[untrusted message]\nHi, A former employee has asked us to erase their personal data, and the legal deadline is this Friday. How do we remove their time entries and profile? Thanks.\n[/untrusted]",
+        "es": "Brindle Ledger support inbox\nticket: T-12794\nchannel: web form\ncustomer plan: Enterprise\n\n[untrusted message]\nHola, Un exempleado nos ha pedido que borremos sus datos personales y el plazo legal vence este viernes. ¿Cómo eliminamos sus registros de horas y su perfil? Gracias.\n[/untrusted]",
+        "de": "Brindle Ledger support inbox\nticket: T-12794\nchannel: web form\ncustomer plan: Enterprise\n\n[untrusted message]\nHallo, Ein ehemaliger Mitarbeiter hat uns aufgefordert, seine personenbezogenen Daten zu löschen, und die gesetzliche Frist endet diesen Freitag. Wie entfernen wir seine Zeiteinträge und sein Profil? Danke.\n[/untrusted]",
+        "ja": "Brindle Ledger support inbox\nticket: T-12794\nchannel: web form\ncustomer plan: Enterprise\n\n[untrusted message]\nこんにちは。元従業員から個人データの消去を求められており、法定期限は今週の金曜日です。その人の作業時間の記録とプロフィールはどうすれば削除できますか？よろしくお願いします。\n[/untrusted]"
+      },
+      "route": {
+        "truth": "data_privacy",
+        "why": "data_privacy: erasure with legal deadline Friday"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: erasure with legal deadline Friday"
+      }
+    }
+  ],
+  "questions": {
+    "en.en-rubric": {
+      "route": {
+        "kind": "pick",
+        "id": "ml.en.en-rubric.route",
+        "prompt": "Which support queue should handle this ticket?",
+        "options": [
+          "billing",
+          "account_access",
+          "bug",
+          "feature_request",
+          "data_privacy",
+          "integrations",
+          "security",
+          "sales"
+        ],
+        "criteria": {
+          "billing": "Charges, invoices, receipts, refunds of subscription fees, failed payments, changing the card on file or the billing address.",
+          "account_access": "Cannot log in, password resets, two-factor codes, single sign-on errors, locked or disabled accounts, changing the account email.",
+          "bug": "A feature of the product is broken, shows an error, or gives wrong results.",
+          "feature_request": "Asks for a capability the product does not have, or a change to how it works.",
+          "data_privacy": "Requests to export, correct or delete personal data; GDPR or CCPA questions; data processing agreements; data retention.",
+          "integrations": "Connecting or troubleshooting third-party apps and the API: Slack, QuickBooks, Xero, Zapier, webhooks, API keys, rate limits.",
+          "security": "Suspected account compromise, unrecognised logins, phishing that impersonates us, exposed credentials, vulnerability reports.",
+          "sales": "Buying, upgrading or adding seats, quotes, enterprise pricing, trials, demos, procurement paperwork."
+        }
+      },
+      "urgency": {
+        "kind": "rate",
+        "id": "ml.en.en-rubric.urgency",
+        "prompt": "How urgent is this ticket? low: a question, idea or feedback with no time pressure. normal: a request or a problem that does not stop anyone working, or has a workaround. high: blocks a person or team's work today with no workaround, or risks a missed payment or legal deadline within days. critical: an outage or data loss affecting many users, or a security breach in progress.",
+        "levels": ["low", "normal", "high", "critical"]
+      }
+    },
+    "es.en-rubric": {
+      "route": {
+        "kind": "pick",
+        "id": "ml.es.en-rubric.route",
+        "prompt": "Which support queue should handle this ticket?",
+        "options": [
+          "billing",
+          "account_access",
+          "bug",
+          "feature_request",
+          "data_privacy",
+          "integrations",
+          "security",
+          "sales"
+        ],
+        "criteria": {
+          "billing": "Charges, invoices, receipts, refunds of subscription fees, failed payments, changing the card on file or the billing address.",
+          "account_access": "Cannot log in, password resets, two-factor codes, single sign-on errors, locked or disabled accounts, changing the account email.",
+          "bug": "A feature of the product is broken, shows an error, or gives wrong results.",
+          "feature_request": "Asks for a capability the product does not have, or a change to how it works.",
+          "data_privacy": "Requests to export, correct or delete personal data; GDPR or CCPA questions; data processing agreements; data retention.",
+          "integrations": "Connecting or troubleshooting third-party apps and the API: Slack, QuickBooks, Xero, Zapier, webhooks, API keys, rate limits.",
+          "security": "Suspected account compromise, unrecognised logins, phishing that impersonates us, exposed credentials, vulnerability reports.",
+          "sales": "Buying, upgrading or adding seats, quotes, enterprise pricing, trials, demos, procurement paperwork."
+        }
+      },
+      "urgency": {
+        "kind": "rate",
+        "id": "ml.es.en-rubric.urgency",
+        "prompt": "How urgent is this ticket? low: a question, idea or feedback with no time pressure. normal: a request or a problem that does not stop anyone working, or has a workaround. high: blocks a person or team's work today with no workaround, or risks a missed payment or legal deadline within days. critical: an outage or data loss affecting many users, or a security breach in progress.",
+        "levels": ["low", "normal", "high", "critical"]
+      }
+    },
+    "es.translated": {
+      "route": {
+        "kind": "pick",
+        "id": "ml.es.translated.route",
+        "prompt": "¿Qué cola de soporte debe atender este ticket?",
+        "options": [
+          "facturación",
+          "acceso_a_la_cuenta",
+          "error",
+          "solicitud_de_función",
+          "privacidad_de_datos",
+          "integraciones",
+          "seguridad",
+          "ventas"
+        ],
+        "criteria": {
+          "facturación": "Cargos, facturas, recibos, reembolsos de cuotas de suscripción, pagos fallidos, cambio de la tarjeta registrada o de la dirección de facturación.",
+          "acceso_a_la_cuenta": "No se puede iniciar sesión, restablecimiento de contraseñas, códigos de verificación en dos pasos, errores de inicio de sesión único (SSO), cuentas bloqueadas o desactivadas, cambio del correo de la cuenta.",
+          "error": "Una función del producto no funciona, muestra un error o da resultados incorrectos.",
+          "solicitud_de_función": "Pide una capacidad que el producto no tiene o un cambio en su funcionamiento.",
+          "privacidad_de_datos": "Solicitudes para exportar, corregir o eliminar datos personales; preguntas sobre el RGPD o la CCPA; acuerdos de tratamiento de datos; conservación de datos.",
+          "integraciones": "Conexión o resolución de problemas con aplicaciones de terceros y la API: Slack, QuickBooks, Xero, Zapier, webhooks, claves de API, límites de uso.",
+          "seguridad": "Sospecha de cuenta comprometida, inicios de sesión no reconocidos, phishing que se hace pasar por nosotros, credenciales expuestas, informes de vulnerabilidades.",
+          "ventas": "Compra, mejora de plan o licencias adicionales, presupuestos, precios empresariales, pruebas, demostraciones, documentación de compras."
+        }
+      },
+      "urgency": {
+        "kind": "rate",
+        "id": "ml.es.translated.urgency",
+        "prompt": "¿Qué tan urgente es este ticket? baja: una pregunta, idea o comentario sin presión de tiempo. normal: una solicitud o un problema que no impide trabajar a nadie, o que tiene una solución provisional. alta: bloquea hoy el trabajo de una persona o un equipo sin solución provisional, o pone en riesgo un pago o un plazo legal en los próximos días. crítica: una caída o pérdida de datos que afecta a muchos usuarios, o una brecha de seguridad en curso.",
+        "levels": ["baja", "normal", "alta", "crítica"]
+      }
+    },
+    "de.en-rubric": {
+      "route": {
+        "kind": "pick",
+        "id": "ml.de.en-rubric.route",
+        "prompt": "Which support queue should handle this ticket?",
+        "options": [
+          "billing",
+          "account_access",
+          "bug",
+          "feature_request",
+          "data_privacy",
+          "integrations",
+          "security",
+          "sales"
+        ],
+        "criteria": {
+          "billing": "Charges, invoices, receipts, refunds of subscription fees, failed payments, changing the card on file or the billing address.",
+          "account_access": "Cannot log in, password resets, two-factor codes, single sign-on errors, locked or disabled accounts, changing the account email.",
+          "bug": "A feature of the product is broken, shows an error, or gives wrong results.",
+          "feature_request": "Asks for a capability the product does not have, or a change to how it works.",
+          "data_privacy": "Requests to export, correct or delete personal data; GDPR or CCPA questions; data processing agreements; data retention.",
+          "integrations": "Connecting or troubleshooting third-party apps and the API: Slack, QuickBooks, Xero, Zapier, webhooks, API keys, rate limits.",
+          "security": "Suspected account compromise, unrecognised logins, phishing that impersonates us, exposed credentials, vulnerability reports.",
+          "sales": "Buying, upgrading or adding seats, quotes, enterprise pricing, trials, demos, procurement paperwork."
+        }
+      },
+      "urgency": {
+        "kind": "rate",
+        "id": "ml.de.en-rubric.urgency",
+        "prompt": "How urgent is this ticket? low: a question, idea or feedback with no time pressure. normal: a request or a problem that does not stop anyone working, or has a workaround. high: blocks a person or team's work today with no workaround, or risks a missed payment or legal deadline within days. critical: an outage or data loss affecting many users, or a security breach in progress.",
+        "levels": ["low", "normal", "high", "critical"]
+      }
+    },
+    "de.translated": {
+      "route": {
+        "kind": "pick",
+        "id": "ml.de.translated.route",
+        "prompt": "Welche Support-Warteschlange soll dieses Ticket bearbeiten?",
+        "options": [
+          "abrechnung",
+          "kontozugang",
+          "fehler",
+          "funktionswunsch",
+          "datenschutz",
+          "integrationen",
+          "sicherheit",
+          "vertrieb"
+        ],
+        "criteria": {
+          "abrechnung": "Abbuchungen, Rechnungen, Belege, Erstattungen von Abogebühren, fehlgeschlagene Zahlungen, Ändern der hinterlegten Karte oder der Rechnungsadresse.",
+          "kontozugang": "Anmeldung nicht möglich, Passwort zurücksetzen, Zwei-Faktor-Codes, Fehler bei der Einmalanmeldung (SSO), gesperrte oder deaktivierte Konten, Ändern der Konto-E-Mail.",
+          "fehler": "Eine Funktion des Produkts ist defekt, zeigt einen Fehler an oder liefert falsche Ergebnisse.",
+          "funktionswunsch": "Wünscht eine Funktion, die das Produkt nicht hat, oder eine Änderung an seiner Funktionsweise.",
+          "datenschutz": "Anfragen zum Exportieren, Berichtigen oder Löschen personenbezogener Daten; Fragen zur DSGVO oder zum CCPA; Auftragsverarbeitungsverträge; Datenaufbewahrung.",
+          "integrationen": "Verbinden von Drittanbieter-Apps und der API oder Fehlersuche dabei: Slack, QuickBooks, Xero, Zapier, Webhooks, API-Schlüssel, Ratenlimits.",
+          "sicherheit": "Verdacht auf ein kompromittiertes Konto, unbekannte Anmeldungen, Phishing in unserem Namen, offengelegte Zugangsdaten, Meldungen von Sicherheitslücken.",
+          "vertrieb": "Kauf, Upgrade oder zusätzliche Lizenzen, Angebote, Enterprise-Preise, Testphasen, Demos, Beschaffungsunterlagen."
+        }
+      },
+      "urgency": {
+        "kind": "rate",
+        "id": "ml.de.translated.urgency",
+        "prompt": "Wie dringend ist dieses Ticket? niedrig: eine Frage, Idee oder Rückmeldung ohne Zeitdruck. normal: eine Anfrage oder ein Problem, das niemanden an der Arbeit hindert oder für das es einen Workaround gibt. hoch: blockiert heute die Arbeit einer Person oder eines Teams ohne Workaround oder gefährdet eine Zahlung oder gesetzliche Frist in den nächsten Tagen. kritisch: ein Ausfall oder Datenverlust, der viele Nutzer betrifft, oder ein laufender Sicherheitsvorfall.",
+        "levels": ["niedrig", "normal", "hoch", "kritisch"]
+      }
+    },
+    "ja.en-rubric": {
+      "route": {
+        "kind": "pick",
+        "id": "ml.ja.en-rubric.route",
+        "prompt": "Which support queue should handle this ticket?",
+        "options": [
+          "billing",
+          "account_access",
+          "bug",
+          "feature_request",
+          "data_privacy",
+          "integrations",
+          "security",
+          "sales"
+        ],
+        "criteria": {
+          "billing": "Charges, invoices, receipts, refunds of subscription fees, failed payments, changing the card on file or the billing address.",
+          "account_access": "Cannot log in, password resets, two-factor codes, single sign-on errors, locked or disabled accounts, changing the account email.",
+          "bug": "A feature of the product is broken, shows an error, or gives wrong results.",
+          "feature_request": "Asks for a capability the product does not have, or a change to how it works.",
+          "data_privacy": "Requests to export, correct or delete personal data; GDPR or CCPA questions; data processing agreements; data retention.",
+          "integrations": "Connecting or troubleshooting third-party apps and the API: Slack, QuickBooks, Xero, Zapier, webhooks, API keys, rate limits.",
+          "security": "Suspected account compromise, unrecognised logins, phishing that impersonates us, exposed credentials, vulnerability reports.",
+          "sales": "Buying, upgrading or adding seats, quotes, enterprise pricing, trials, demos, procurement paperwork."
+        }
+      },
+      "urgency": {
+        "kind": "rate",
+        "id": "ml.ja.en-rubric.urgency",
+        "prompt": "How urgent is this ticket? low: a question, idea or feedback with no time pressure. normal: a request or a problem that does not stop anyone working, or has a workaround. high: blocks a person or team's work today with no workaround, or risks a missed payment or legal deadline within days. critical: an outage or data loss affecting many users, or a security breach in progress.",
+        "levels": ["low", "normal", "high", "critical"]
+      }
+    },
+    "ja.translated": {
+      "route": {
+        "kind": "pick",
+        "id": "ml.ja.translated.route",
+        "prompt": "このチケットはどのサポートキューが対応すべきですか？",
+        "options": [
+          "請求",
+          "アカウントアクセス",
+          "不具合",
+          "機能要望",
+          "データプライバシー",
+          "連携",
+          "セキュリティ",
+          "営業"
+        ],
+        "criteria": {
+          "請求": "請求額、請求書、領収書、サブスクリプション料金の返金、支払いの失敗、登録カードや請求先住所の変更。",
+          "アカウントアクセス": "ログインできない、パスワードのリセット、二要素認証コード、シングルサインオンのエラー、ロックまたは無効化されたアカウント、アカウントのメールアドレス変更。",
+          "不具合": "製品の機能が壊れている、エラーが表示される、または誤った結果を返す。",
+          "機能要望": "製品にない機能の追加や、動作の変更を求めている。",
+          "データプライバシー": "個人データのエクスポート・訂正・削除の依頼、GDPRやCCPAに関する質問、データ処理契約、データの保存期間。",
+          "連携": "サードパーティアプリやAPIとの連携やトラブルシューティング：Slack、QuickBooks、Xero、Zapier、Webhook、APIキー、レート制限。",
+          "セキュリティ": "アカウント乗っ取りの疑い、身に覚えのないログイン、当社を装ったフィッシング、認証情報の流出、脆弱性の報告。",
+          "営業": "購入、プランのアップグレードや席の追加、見積もり、エンタープライズ価格、トライアル、デモ、購買手続きの書類。"
+        }
+      },
+      "urgency": {
+        "kind": "rate",
+        "id": "ml.ja.translated.urgency",
+        "prompt": "このチケットの緊急度はどれくらいですか？ 低：時間的な制約のない質問、アイデア、フィードバック。 通常：誰の作業も止めていない依頼や問題、または回避策がある問題。 高：回避策がなく、今日、個人やチームの作業を止めている、または数日以内に支払いや法的期限に間に合わないおそれがある。 緊急：多くのユーザーに影響する障害やデータ消失、または進行中のセキュリティ侵害。",
+        "levels": ["低", "通常", "高", "緊急"]
+      }
+    }
+  }
+}

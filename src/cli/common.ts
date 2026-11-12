@@ -1,13 +1,12 @@
 import { stat } from "node:fs/promises";
-import { borrowFor } from "../ledger/borrow.ts";
-import { type FittedThreshold, fitThreshold, scoredFromLedger } from "../ledger/calibration.ts";
+import { type ActBar, fitActBar, type GateEvidence, gateEvidence } from "../ledger/bars.ts";
+import type { BorrowedVia, EvidenceGrade } from "../ledger/evidence.ts";
 import {
-  type BorrowedVia,
-  type EvidenceGrade,
-  type FittedFrom,
-  gradeOf,
-} from "../ledger/evidence.ts";
-import { type DecisionRecord, JsonlLedger, settledWithoutAnswer } from "../ledger/ledger.ts";
+  type DecisionRecord,
+  JsonlLedger,
+  type LedgerHealth,
+  settledWithoutAnswer,
+} from "../ledger/ledger.ts";
 import type { CalibrationProfile } from "../ledger/profile.ts";
 import type { TrustRegistry } from "../ledger/sources.ts";
 import type { Action } from "../types.ts";
@@ -62,6 +61,7 @@ export const isCombined = (r: DecisionRecord): boolean => extra(r, "combined") =
 const ACTIONS: readonly Action[] = ["act", "review", "refuse"];
 export const isAction = (v: unknown): v is Action => ACTIONS.includes(v as Action);
 
+/** A line that names itself a decision row: an id, a question id and a verdict of a known kind. */
 const isRow = (r: unknown): r is DecisionRecord => {
   if (typeof r !== "object" || r === null) return false;
   const o = r as Record<string, unknown>;
@@ -74,6 +74,40 @@ const isRow = (r: unknown): r is DecisionRecord => {
     (v.kind === "judge" || v.kind === "pick" || v.kind === "rate")
   );
 };
+
+const probability = (x: unknown): boolean => typeof x === "number" && x >= 0 && x <= 1;
+
+/**
+ * True when a verdict's numbers are numbers: a probability where every command does arithmetic
+ * on one. A row whose p(yes) was written as a string crashed `trail` on its first `toFixed`.
+ */
+function verdictReadable(v: Record<string, unknown>): boolean {
+  if (!probability(v.confidence)) return false;
+  if (v.kind === "judge") return probability(v.pYes);
+  const ps = v.probabilities;
+  if (typeof ps !== "object" || ps === null) return false;
+  const values = Array.isArray(ps) ? ps : Object.values(ps);
+  const named = v.kind === "pick" ? typeof v.choice === "string" : typeof v.level === "string";
+  return named && values.every(probability);
+}
+
+/** A decision row whose verdict, members' verdicts and stated numbers can be read. */
+function readable(r: DecisionRecord): boolean {
+  const o = r as unknown as Record<string, unknown>;
+  const finiteOrAbsent = (x: unknown) =>
+    x === undefined || (typeof x === "number" && Number.isFinite(x));
+  if (!verdictReadable(r.verdict as unknown as Record<string, unknown>)) return false;
+  if (!finiteOrAbsent(o.go) || !finiteOrAbsent(o.confidence)) return false;
+  const members = o.members;
+  if (members === undefined) return true;
+  if (!Array.isArray(members)) return false;
+  return members.every((m) => {
+    if (typeof m !== "object" || m === null) return false;
+    const v = (m as Record<string, unknown>).verdict;
+    if ((m as Record<string, unknown>).failedOpen === true && v === undefined) return true;
+    return typeof v === "object" && v !== null && verdictReadable(v as Record<string, unknown>);
+  });
+}
 
 const finite = (v: unknown, fallback: number): number =>
   typeof v === "number" && Number.isFinite(v) ? v : fallback;
@@ -104,18 +138,60 @@ export async function loadLedger(path: string, command: string): Promise<Decisio
     throw new CliError(`ledger not found: ${path}`, command);
   }
   let rows: readonly unknown[];
+  const ledger = new JsonlLedger(path);
   try {
-    rows = await new JsonlLedger(path).all();
+    rows = await ledger.all();
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e);
     throw new CliError(`could not read ledger ${path}: ${message}`, command);
   }
-  return readRows(rows);
+  // The ledger reads past damage rather than failing every command (e2e T4-02); say what it
+  // left out, on stderr, so a damaged file is never read in silence and stdout stays the report.
+  const read = readLedgerRows(rows);
+  const note = describeHealth(ledger.health, read.malformed);
+  if (note !== undefined) process.stderr.write(`ratchet ${command}: ${path}: ${note}\n`);
+  return read.rows;
 }
 
-/** Keep the parsed lines that are decision rows and fill what older rows lack. */
-export const readRows = (rows: readonly unknown[]): DecisionRecord[] =>
-  rows.filter(isRow).map(normalise);
+/**
+ * One sentence on what a ledger read left out, or undefined when it read everything: lines the
+ * ledger could not parse, duplicate ids, a torn final line, and `malformed` decision rows whose
+ * verdict numbers were not numbers (`readLedgerRows`).
+ */
+export function describeHealth(h: LedgerHealth, malformed = 0): string | undefined {
+  const parts: string[] = [];
+  if (malformed > 0) {
+    parts.push(
+      `skipped ${malformed} decision ${malformed === 1 ? "row" : "rows"} whose verdict numbers are not numbers`,
+    );
+  }
+  if (h.skipped > 0)
+    parts.push(`skipped ${h.skipped} unreadable ${h.skipped === 1 ? "line" : "lines"}`);
+  if (h.duplicates > 0) {
+    parts.push(
+      `kept the first record of ${h.duplicates} duplicate ${h.duplicates === 1 ? "id" : "ids"}`,
+    );
+  }
+  if (h.torn) parts.push("ignored a torn final line (an append cut short or still in progress)");
+  return parts.length > 0 ? `${parts.join("; ")}.` : undefined;
+}
+
+/**
+ * The parsed lines that are decision rows with readable verdicts, older rows' missing fields
+ * filled, and how many decision rows were skipped because a verdict number (p(yes), a
+ * confidence, a probability, a member's) or a stated go or confidence was not a number.
+ */
+export function readLedgerRows(rows: readonly unknown[]): {
+  readonly rows: DecisionRecord[];
+  readonly malformed: number;
+} {
+  const decisions = rows.filter(isRow);
+  const good = decisions.filter(readable);
+  return { rows: good.map(normalise), malformed: decisions.length - good.length };
+}
+
+/** Keep the parsed lines that are readable decision rows and fill what older rows lack. */
+export const readRows = (rows: readonly unknown[]): DecisionRecord[] => readLedgerRows(rows).rows;
 
 // ---------------------------------------------------------------------------
 // Gates
@@ -173,73 +249,71 @@ export function findGate(groups: readonly GateGroup[], key: string, command: str
   throw new CliError(`no gate "${key}" in the ledger; ${known}`, command);
 }
 
-/** The levers a gate's grade is read with on the command line. */
+/**
+ * The levers a gate's bar and grade are read with on the command line. Unset levers take
+ * `REPORT_DEFAULTS`, the defaults `Gate.report()` and `Engine.report()` use.
+ */
 export interface GroupGradeOptions {
-  /** The promise a planned sample is read against for a measured grade. */
-  readonly target: number;
-  /** Labelled unselected rows an estimated grade needs. Default 30. */
+  /** The promise: what acting above the bar must deliver, and what a planned sample is read against. */
+  readonly target?: number;
+  /** Labelled unselected rows of the current configuration an estimated grade needs. */
   readonly minEstimated?: number;
+  /** Labelled rows the act bar needs at or above it. */
+  readonly minSupport?: number;
   /** Only rows this model answered enter the planned sample, as a pinned rollout reads them. */
   readonly model?: string;
   /** Evidence that is not this gate's labels, graded when nothing stronger exists. */
   readonly borrowed?: BorrowedVia;
   /**
-   * Profiles to borrow a bar from when the gate has no fitted bar of its own (`borrowFor`),
+   * Profiles to borrow a bar from until the gate's own labels grade it estimated (`borrowFor`),
    * matched against `model` when it is given, else the model its newest answered row recorded.
    */
   readonly profiles?: readonly CalibrationProfile[];
-  /** With `profiles`: labelled rows a bar of the gate's own needs at or above it. Default 30. */
-  readonly minSupport?: number;
 }
 
 /**
- * A gate's grade as every command reads it, from the gate's whole history in ledger order:
- * measured when the first acts of its current shadow phase reached `target` (exact 95% bound,
- * no wrong act), else estimated, borrowed or none. A battery member's rows are features of its
- * battery's decision, and no finite sample bounds a promise of 1, so neither is ever measured;
- * nor does a member borrow, since a profile describes a gate's decisions.
+ * A gate's act bar and grade as every command reads them (`gateEvidence`, the reader the
+ * engine's reports use too), from the gate's whole history in ledger order: the bar and an
+ * estimate read only the current configuration's rows; measured when the first acts of its
+ * current shadow phase reached `target` (exact 95% bound, no wrong act), else estimated,
+ * borrowed or none. A battery member's rows are features of its battery's decision, and no
+ * finite sample bounds a promise of 1, so neither is ever measured; nor does a member borrow,
+ * since a profile describes a gate's decisions.
  */
-export function gradeGroup(
+export function groupEvidence(
   group: GateGroup,
   trust: TrustRegistry,
-  opts: GroupGradeOptions,
-): EvidenceGrade {
-  const planned = group.memberOf === undefined && opts.target < 1;
-  const profiles = opts.profiles ?? [];
-  // A profile lends a bar only to a gate with none of its own.
-  const lends =
-    opts.borrowed === undefined &&
-    group.memberOf === undefined &&
-    profiles.length > 0 &&
-    fitGroup(group.rows, trust, opts.target, opts.minSupport ?? 30).fitted === undefined;
-  const borrowing = lends
-    ? borrowFor(group.rows, profiles, {
-        target: opts.target,
-        ...(opts.model !== undefined ? { model: opts.model } : {}),
-      })
-    : undefined;
-  return gradeOf(group.rows, {
-    ...(planned ? { plan: { target: opts.target } } : {}),
-    ...(planned && opts.model !== undefined ? { model: opts.model } : {}),
+  opts: GroupGradeOptions = {},
+): GateEvidence {
+  return gateEvidence(group.rows, {
+    levers: {
+      ...(opts.target !== undefined ? { target: opts.target } : {}),
+      ...(opts.minSupport !== undefined ? { minSupport: opts.minSupport } : {}),
+      ...(opts.minEstimated !== undefined ? { minEstimated: opts.minEstimated } : {}),
+    },
     trust,
-    ...(opts.minEstimated !== undefined ? { minEstimated: opts.minEstimated } : {}),
+    measurable: group.memberOf === undefined,
+    ...(opts.model !== undefined ? { model: opts.model, pin: opts.model } : {}),
     ...(opts.borrowed !== undefined ? { borrowed: opts.borrowed } : {}),
-    ...(borrowing !== undefined ? { borrowed: borrowing.via, stale: borrowing.stale } : {}),
+    ...(opts.profiles !== undefined ? { profiles: opts.profiles } : {}),
   });
 }
 
-/** A gate's own bar, and which of its labelled rows it was fitted on. */
-export interface GroupFit {
-  readonly fitted?: FittedThreshold;
-  /** Absent when no label from a trusted source exists. */
-  readonly fittedFrom?: FittedFrom;
-  readonly fitRows?: number;
-}
+/** A gate's grade alone, as `groupEvidence` reads it. */
+export const gradeGroup = (
+  group: GateGroup,
+  trust: TrustRegistry,
+  opts: GroupGradeOptions = {},
+): EvidenceGrade => groupEvidence(group, trust, opts).grade;
+
+/** A gate's own act bar, and which of its labelled rows it was fitted on. */
+export type GroupFit = ActBar;
 
 /**
- * The bar a gate's own labels support, as `report` fits it: on its unselected rows (shadow rows
- * and blind audits) when there are at least `minSupport` of them, else on every trusted
- * labelled row, which the oracle's confidence selected, so it is marked "all" and biased.
+ * The act bar a gate's own labels support, as `report` fits it (`fitActBar`): on the act side,
+ * conservatively, on the current configuration's unselected rows (shadow rows and blind audits)
+ * when there are at least `minSupport` of them, else on every trusted labelled row, which the
+ * oracle's confidence selected, so it is marked "all" and biased.
  */
 export function fitGroup(
   rows: readonly DecisionRecord[],
@@ -247,17 +321,7 @@ export function fitGroup(
   target: number,
   minSupport: number,
 ): GroupFit {
-  const trusted = scoredFromLedger(rows, { trust });
-  if (trusted.length === 0) return {};
-  const unselected = scoredFromLedger(rows, { unselectedOnly: true, trust });
-  const onUnselected = unselected.length >= minSupport;
-  const fitSet = onUnselected ? unselected : trusted;
-  const fitted = fitThreshold(fitSet, target, minSupport);
-  return {
-    fittedFrom: onUnselected ? "unselected" : "all",
-    fitRows: fitSet.length,
-    ...(fitted ? { fitted } : {}),
-  };
+  return fitActBar(rows, { trust, target, minSupport });
 }
 
 /** Oldest first; rows written in the same instant keep their file order. */

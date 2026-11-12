@@ -1,4 +1,5 @@
-import { judgeVerdictFrom, neutralVerdict } from "../questions.ts";
+import { matches } from "../floors.ts";
+import { isProbability, judgeVerdictFrom, neutralVerdict } from "../questions.ts";
 import type { Decision, Oracle, Question, Verdict } from "../types.ts";
 import { nowIso } from "./oracle.ts";
 
@@ -11,10 +12,15 @@ import { nowIso } from "./oracle.ts";
  */
 export type VerdictRule = (state: string, question: Question) => Verdict | undefined;
 
-/** Answer a judge question with a fixed yes-probability when the state matches. */
+/**
+ * Answer a judge question with a fixed yes-probability when the state matches. The pattern is
+ * tested from its start every time, so a `/g` or `/y` pattern answers the same state the same
+ * way twice (as floors do). A `pYes` outside [0, 1] is a configuration error and throws here.
+ */
 export function judgeIf(pattern: RegExp, pYes: number): VerdictRule {
+  if (!isProbability(pYes)) throw new Error(`judgeIf pYes ${String(pYes)} must be in [0, 1]`);
   return (state, q) =>
-    q.kind === "judge" && pattern.test(state) ? judgeVerdictFrom(q, pYes) : undefined;
+    q.kind === "judge" && matches(pattern, state) ? judgeVerdictFrom(q, pYes) : undefined;
 }
 
 export class RuleOracle implements Oracle {

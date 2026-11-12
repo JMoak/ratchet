@@ -145,7 +145,7 @@ note(
 // 5. Chains and the ratchet -----------------------------------------------------------
 heading("5. Chains: n dependent steps at p = 0.8 each, with and without verified commits");
 note(
-  "Unverified, success is 0.8^n. The ratchet verifies each step with an independent judge, resamples on a reject, and commits only verified work. That does not remove the dependence on n; it changes the base. With catch rate t and false-alarm rate f, a committed step is good with probability q = p(1-f) / (p(1-f) + (1-p)(1-t)): a 90% verifier lifts the base from 0.80 to 0.97, a 99% verifier to 0.9975. The retry cap and the act bar trim that a little. 'Claimed' counts chains the verifier passed; 'true' counts chains whose final state is actually good.",
+  "Unverified, success is 0.8^n. The ratchet verifies each step with an independent judge, resamples on a reject, and commits only verified work. That does not remove the dependence on n; it changes the base. With catch rate t and false-alarm rate f, a committed step is good with probability q = p(1-f) / (p(1-f) + (1-p)(1-t)): a 90% verifier lifts the base from 0.80 to 0.97, a 99% verifier to 0.9975. q is the precision of commits, so it says how often a chain that finishes is right, not how often it finishes; the retry cap and the act bar trim it a little. 'Claimed' counts chains the verifier passed; 'true' counts chains whose final state is actually good.",
 );
 {
   interface S {
@@ -208,6 +208,98 @@ note(
         "ratchet claimed",
         "ratchet true",
         "attempts per committed step",
+      ],
+      rows,
+    );
+  }
+
+  // Completion assumes independent attempts; a verifier whose dislike follows the instance breaks that.
+  const p = 0.8;
+  const t = 0.95;
+  const f = 0.15;
+  const again = 0.56;
+  const hardShare = f / again;
+  const maxAttempts = 3;
+  const accept = (fa: number) => p * (1 - fa) + (1 - p) * (1 - t);
+  const commits = (fa: number) => 1 - (1 - accept(fa)) ** maxAttempts;
+  const stepIndependent = commits(f);
+  const stepCorrelated = hardShare * commits(again) + (1 - hardShare) * commits(0);
+  note(
+    `Correlated false alarms. Whether a chain finishes is a different number from q: one attempt is accepted with probability a = p(1-f) + (1-p)(1-t), so a step commits within m attempts with probability 1 - (1-a)^m and a chain finishes with probability (1 - (1-a)^m)^n, but only if attempts are independent. A verifier that dislikes a step instance tends to dislike every fresh correct answer to it: live (T2), a held-back correct attempt was held back again 56% of the time against a 15% base rate, and chains finished 48% to 62% of the time where the formula said 74% to 99.8%. Below, each step is an independent task right with p = 0.8 (a wrong commit does not spoil later steps), the verifier catches ${pct(t, 0)} of wrong attempts, each step gets ${maxAttempts} attempts, and the mean false-alarm rate is f = ${pct(f, 0)} either way: independent per attempt, or concentrated on ${pct(hardShare, 1)} of step instances whose every correct attempt is held back with probability ${pct(again, 0)} (so a held-back correct attempt is held back again ${pct(again, 0)} of the time). Commit precision, q, barely moves; completion falls well below the formula. The correlated "predicted" column mixes the two kinds of instance, which only a ledger that records retries can measure.`,
+  );
+  {
+    interface Task {
+      /** Every committed step so far was right. */
+      readonly good: boolean;
+      /** This attempt is right. */
+      readonly ok: boolean;
+      readonly token: number;
+    }
+    const rows: (string | number)[][] = [];
+    for (const n of [1, 3, 5, 8, 10, 20]) {
+      const cells: string[] = [];
+      for (const correlated of [false, true]) {
+        const rand = rng(70 + n + (correlated ? 1000 : 0));
+        let hard: boolean[] = [];
+        const steps: Step<Task>[] = Array.from({ length: n }, (_, i) => ({
+          name: `s${i}`,
+          propose: async (st) => {
+            const ok = rand() < p;
+            return { good: st.good && ok, ok, token: rand() };
+          },
+          // The verifier errs at the rates above; a step instance it dislikes (`hard`) holds
+          // back correct work at the same rate on every attempt.
+          verify: async (_b, a) => {
+            const falseAlarm = correlated ? (hard[i] ? again : 0) : f;
+            const passes = a.ok ? rand() >= falseAlarm : rand() >= t;
+            return {
+              verdict: {
+                kind: "judge",
+                questionId: check.id,
+                pYes: passes ? 0.9 : 0.1,
+                confidence: 0.9,
+              },
+              oracle: "verifier",
+              latencyMs: 0,
+              cost: 0,
+              at: "2026-11-12T00:00:00.000Z",
+            } satisfies Decision;
+          },
+          maxAttempts,
+        }));
+        const runs = 2000;
+        let finished = 0;
+        let committedSteps = 0;
+        let rightSteps = 0;
+        for (let r = 0; r < runs; r++) {
+          hard = Array.from({ length: n }, () => rand() < hardShare);
+          const res = await runChain({ good: true, ok: true, token: 0 }, steps, {
+            actAbove: 0.7,
+          });
+          if (res.ok) finished++;
+          for (const state of res.checkpoints.slice(1)) {
+            committedSteps++;
+            if (state.ok) rightSteps++;
+          }
+        }
+        const predicted = (correlated ? stepCorrelated : stepIndependent) ** n;
+        cells.push(
+          pct(predicted),
+          pct(finished / runs),
+          pct(committedSteps ? rightSteps / committedSteps : 0),
+        );
+      }
+      rows.push([n, ...cells]);
+    }
+    table(
+      [
+        "steps",
+        "(1-(1-a)^m)^n",
+        "independent f: finished",
+        "independent f: q",
+        "correlated f: predicted",
+        "correlated f: finished",
+        "correlated f: q",
       ],
       rows,
     );

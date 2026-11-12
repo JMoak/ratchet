@@ -1,0 +1,3904 @@
+{
+  "set": "routing",
+  "items": [
+    {
+      "id": "T-93179",
+      "template": "g12",
+      "product": "brindle",
+      "body": "Hi, In dark mode the invoice preview text is hard to read. Not a big deal.",
+      "state": "Brindle Ledger support inbox\nticket: T-93179\nchannel: email\ncustomer plan: Business\n\n[untrusted message]\nHi, In dark mode the invoice preview text is hard to read. Not a big deal.\n[/untrusted]",
+      "route": {
+        "truth": "bug",
+        "why": "bug: dark mode readability"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: dark mode readability"
+      }
+    },
+    {
+      "id": "T-31536",
+      "template": "b7",
+      "product": "brindle",
+      "body": "Hi, Invoice INV-2134 shows the wrong VAT number and our finance team can't pay it until it's corrected. The payment deadline is today. Regards, Priya",
+      "state": "Brindle Ledger support inbox\nticket: T-31536\nchannel: web form\ncustomer plan: Business\n\n[untrusted message]\nHi, Invoice INV-2134 shows the wrong VAT number and our finance team can't pay it until it's corrected. The payment deadline is today. Regards, Priya\n[/untrusted]",
+      "route": {
+        "truth": "billing",
+        "why": "billing: invoice correction blocking payment today"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: invoice correction blocking payment today"
+      }
+    },
+    {
+      "id": "T-50093",
+      "template": "c4",
+      "product": "brindle",
+      "body": "Good morning, Do you offer discounts for non-profits? Regards, Tomás",
+      "state": "Brindle Ledger support inbox\nticket: T-50093\nchannel: email\ncustomer plan: Enterprise\n\n[untrusted message]\nGood morning, Do you offer discounts for non-profits? Regards, Tomás\n[/untrusted]",
+      "route": {
+        "truth": "sales",
+        "why": "sales: non-profit discount"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: non-profit discount"
+      }
+    },
+    {
+      "id": "T-96367",
+      "template": "s3",
+      "product": "brindle",
+      "body": "Hey there, We received an email that looks like it's from you asking us to 'verify billing' on a strange domain. Is this phishing? Thanks!",
+      "state": "Brindle Ledger support inbox\nticket: T-96367\nchannel: in-app chat\ncustomer plan: Business\n\n[untrusted message]\nHey there, We received an email that looks like it's from you asking us to 'verify billing' on a strange domain. Is this phishing? Thanks!\n[/untrusted]",
+      "route": {
+        "truth": "security",
+        "why": "security: phishing report"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: phishing report",
+        "ambiguous": true
+      }
+    },
+    {
+      "id": "T-30178",
+      "template": "b6",
+      "product": "brindle",
+      "body": "Hey there, I cancelled our plan on 2026-08-20 but was still charged $54.77 on the next cycle. Please refund it. Cheers",
+      "state": "Brindle Ledger support inbox\nticket: T-30178\nchannel: email\ncustomer plan: Business\n\n[untrusted message]\nHey there, I cancelled our plan on 2026-08-20 but was still charged $54.77 on the next cycle. Please refund it. Cheers\n[/untrusted]",
+      "route": {
+        "truth": "billing",
+        "why": "billing: charged after cancelling"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: charged after cancelling"
+      }
+    },
+    {
+      "id": "T-57753",
+      "template": "g12",
+      "product": "brindle",
+      "body": "Hey there, In dark mode the invoice preview text is hard to read. Not a big deal. Sam, Oakline Builders",
+      "state": "Brindle Ledger support inbox\nticket: T-57753\nchannel: email\ncustomer plan: Business\n\n[untrusted message]\nHey there, In dark mode the invoice preview text is hard to read. Not a big deal. Sam, Oakline Builders\n[/untrusted]",
+      "route": {
+        "truth": "bug",
+        "why": "bug: dark mode readability"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: dark mode readability"
+      }
+    },
+    {
+      "id": "T-83034",
+      "template": "b6",
+      "product": "brindle",
+      "body": "Good morning, I cancelled our plan on 2026-10-08 but was still charged $96.48 on the next cycle. Please refund it. Thanks!",
+      "state": "Brindle Ledger support inbox\nticket: T-83034\nchannel: email\ncustomer plan: Team\n\n[untrusted message]\nGood morning, I cancelled our plan on 2026-10-08 but was still charged $96.48 on the next cycle. Please refund it. Thanks!\n[/untrusted]",
+      "route": {
+        "truth": "billing",
+        "why": "billing: charged after cancelling"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: charged after cancelling"
+      }
+    },
+    {
+      "id": "T-44428",
+      "template": "i6",
+      "product": "brindle",
+      "body": "Hello, Is there a QuickBooks connector for timesheets, or only for invoices? Cheers",
+      "state": "Brindle Ledger support inbox\nticket: T-44428\nchannel: email\ncustomer plan: Business\n\n[untrusted message]\nHello, Is there a QuickBooks connector for timesheets, or only for invoices? Cheers\n[/untrusted]",
+      "route": {
+        "truth": "integrations",
+        "why": "integrations: connector scope question"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: connector scope question"
+      }
+    },
+    {
+      "id": "T-42456",
+      "template": "a12",
+      "product": "brindle",
+      "body": "Hello, I'm locked out after too many password attempts. How long until I can try again? Not a disaster, I can work offline today. Noor, Oakline Builders",
+      "state": "Brindle Ledger support inbox\nticket: T-42456\nchannel: in-app chat\ncustomer plan: Enterprise\n\n[untrusted message]\nHello, I'm locked out after too many password attempts. How long until I can try again? Not a disaster, I can work offline today. Noor, Oakline Builders\n[/untrusted]",
+      "route": {
+        "truth": "account_access",
+        "why": "account_access: lockout after attempts, can work offline"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: lockout after attempts, can work offline"
+      }
+    },
+    {
+      "id": "T-48081",
+      "template": "g10",
+      "product": "brindle",
+      "body": "Hey there, The mobile app won't let me clock in: the button is greyed out. My shift started ten minutes ago and my hours have to be tracked. Regards, Marco",
+      "state": "Brindle Ledger support inbox\nticket: T-48081\nchannel: in-app chat\ncustomer plan: Team\n\n[untrusted message]\nHey there, The mobile app won't let me clock in: the button is greyed out. My shift started ten minutes ago and my hours have to be tracked. Regards, Marco\n[/untrusted]",
+      "route": {
+        "truth": "bug",
+        "why": "bug: cannot clock in, shift started"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: cannot clock in, shift started"
+      }
+    },
+    {
+      "id": "T-71037",
+      "template": "s6",
+      "product": "brindle",
+      "body": "Hey there, There's a session in my active devices that I don't recognise, from a city I've never been to. I changed my password but the session is still listed. Cheers",
+      "state": "Brindle Ledger support inbox\nticket: T-71037\nchannel: in-app chat\ncustomer plan: Team\n\n[untrusted message]\nHey there, There's a session in my active devices that I don't recognise, from a city I've never been to. I changed my password but the session is still listed. Cheers\n[/untrusted]",
+      "route": {
+        "truth": "security",
+        "why": "security: unrecognised session persists"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: unrecognised session persists"
+      }
+    },
+    {
+      "id": "T-12291",
+      "template": "p10",
+      "product": "brindle",
+      "body": "Hi, Can you confirm whether our data is used to train any AI models? Thanks, Leah",
+      "state": "Brindle Ledger support inbox\nticket: T-12291\nchannel: web form\ncustomer plan: Team\n\n[untrusted message]\nHi, Can you confirm whether our data is used to train any AI models? Thanks, Leah\n[/untrusted]",
+      "route": {
+        "truth": "data_privacy",
+        "why": "data_privacy: AI training question"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: AI training question"
+      }
+    },
+    {
+      "id": "T-20102",
+      "template": "g6",
+      "product": "brindle",
+      "body": "Hi team, Clicking 'Send' on any invoice gives 'Error 500' and nothing goes out. I have to bill 14 clients today.",
+      "state": "Brindle Ledger support inbox\nticket: T-20102\nchannel: email\ncustomer plan: Business\n\n[untrusted message]\nHi team, Clicking 'Send' on any invoice gives 'Error 500' and nothing goes out. I have to bill 14 clients today.\n[/untrusted]",
+      "route": {
+        "truth": "bug",
+        "why": "bug: send fails with error 500"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: send fails with error 500"
+      }
+    },
+    {
+      "id": "T-81647",
+      "template": "s4",
+      "product": "brindle",
+      "body": "Good morning, Someone is logged into my account and is sending fake invoices with their own bank details to 18 of my clients. It's happening right now. Aiko, Lumen Films",
+      "state": "Brindle Ledger support inbox\nticket: T-81647\nchannel: email\ncustomer plan: Team\n\n[untrusted message]\nGood morning, Someone is logged into my account and is sending fake invoices with their own bank details to 18 of my clients. It's happening right now. Aiko, Lumen Films\n[/untrusted]",
+      "route": {
+        "truth": "security",
+        "why": "security: intruder sending fake invoices now"
+      },
+      "urgency": {
+        "truth": "critical",
+        "why": "critical: intruder sending fake invoices now"
+      }
+    },
+    {
+      "id": "T-63376",
+      "template": "f4",
+      "product": "brindle",
+      "body": "Hi team, Suggestion: let us set a default due date of 45 days for specific clients. Marco, Corvid Labs",
+      "state": "Brindle Ledger support inbox\nticket: T-63376\nchannel: email\ncustomer plan: Business\n\n[untrusted message]\nHi team, Suggestion: let us set a default due date of 45 days for specific clients. Marco, Corvid Labs\n[/untrusted]",
+      "route": {
+        "truth": "feature_request",
+        "why": "feature_request: per-client due dates"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: per-client due dates"
+      }
+    },
+    {
+      "id": "T-27309",
+      "template": "a12",
+      "product": "brindle",
+      "body": "Good morning, I'm locked out after too many password attempts. How long until I can try again? Not a disaster, I can work offline today. Regards, Sam",
+      "state": "Brindle Ledger support inbox\nticket: T-27309\nchannel: email\ncustomer plan: Enterprise\n\n[untrusted message]\nGood morning, I'm locked out after too many password attempts. How long until I can try again? Not a disaster, I can work offline today. Regards, Sam\n[/untrusted]",
+      "route": {
+        "truth": "account_access",
+        "why": "account_access: lockout after attempts, can work offline"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: lockout after attempts, can work offline"
+      }
+    },
+    {
+      "id": "T-33749",
+      "template": "p1",
+      "product": "brindle",
+      "body": "Hello, Under GDPR I'd like a copy of all the personal data you hold about me. Thanks, Noor",
+      "state": "Brindle Ledger support inbox\nticket: T-33749\nchannel: email\ncustomer plan: Enterprise\n\n[untrusted message]\nHello, Under GDPR I'd like a copy of all the personal data you hold about me. Thanks, Noor\n[/untrusted]",
+      "route": {
+        "truth": "data_privacy",
+        "why": "data_privacy: GDPR access request"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: GDPR access request"
+      }
+    },
+    {
+      "id": "T-50416",
+      "template": "a2",
+      "product": "brindle",
+      "body": "Hi, I got a new phone and lost my two-factor app. How do I reset 2FA on my account? I can wait until tomorrow. Thanks!",
+      "state": "Brindle Ledger support inbox\nticket: T-50416\nchannel: in-app chat\ncustomer plan: Business\n\n[untrusted message]\nHi, I got a new phone and lost my two-factor app. How do I reset 2FA on my account? I can wait until tomorrow. Thanks!\n[/untrusted]",
+      "route": {
+        "truth": "account_access",
+        "why": "account_access: 2FA reset"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: 2FA reset"
+      }
+    },
+    {
+      "id": "T-59845",
+      "template": "g11",
+      "product": "brindle",
+      "body": "Hey there, Search doesn't find clients whose names have accents, like 'Zoë'. I can scroll the list to find them.",
+      "state": "Brindle Ledger support inbox\nticket: T-59845\nchannel: in-app chat\ncustomer plan: Team\n\n[untrusted message]\nHey there, Search doesn't find clients whose names have accents, like 'Zoë'. I can scroll the list to find them.\n[/untrusted]",
+      "route": {
+        "truth": "bug",
+        "why": "bug: accent search, can scroll"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: accent search, can scroll"
+      }
+    },
+    {
+      "id": "T-73564",
+      "template": "a9",
+      "product": "brindle",
+      "body": "Hello, My authenticator codes keep getting rejected. I can still log in with backup codes, but I only have 4 left. Regards, Leah",
+      "state": "Brindle Ledger support inbox\nticket: T-73564\nchannel: web form\ncustomer plan: Team\n\n[untrusted message]\nHello, My authenticator codes keep getting rejected. I can still log in with backup codes, but I only have 4 left. Regards, Leah\n[/untrusted]",
+      "route": {
+        "truth": "account_access",
+        "why": "account_access: 2FA codes rejected, backup codes work"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: 2FA codes rejected, backup codes work"
+      }
+    },
+    {
+      "id": "T-19687",
+      "template": "i6",
+      "product": "brindle",
+      "body": "Hello, Is there a Zapier connector for timesheets, or only for invoices? Regards, Sam",
+      "state": "Brindle Ledger support inbox\nticket: T-19687\nchannel: web form\ncustomer plan: Enterprise\n\n[untrusted message]\nHello, Is there a Zapier connector for timesheets, or only for invoices? Regards, Sam\n[/untrusted]",
+      "route": {
+        "truth": "integrations",
+        "why": "integrations: connector scope question"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: connector scope question"
+      }
+    },
+    {
+      "id": "T-80778",
+      "template": "s5",
+      "product": "brindle",
+      "body": "Hey there, I'm a security researcher and found a minor information disclosure on your status page. Where should I report it? Regards, Marco",
+      "state": "Brindle Ledger support inbox\nticket: T-80778\nchannel: in-app chat\ncustomer plan: Enterprise\n\n[untrusted message]\nHey there, I'm a security researcher and found a minor information disclosure on your status page. Where should I report it? Regards, Marco\n[/untrusted]",
+      "route": {
+        "truth": "security",
+        "why": "security: minor vulnerability report"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: minor vulnerability report",
+        "ambiguous": true
+      }
+    },
+    {
+      "id": "T-70645",
+      "template": "b11",
+      "product": "brindle",
+      "body": "Good morning, We were billed for 16 seats but only have 3 active users. Can you credit the difference? Thanks, Aiko",
+      "state": "Brindle Ledger support inbox\nticket: T-70645\nchannel: email\ncustomer plan: Team\n\n[untrusted message]\nGood morning, We were billed for 16 seats but only have 3 active users. Can you credit the difference? Thanks, Aiko\n[/untrusted]",
+      "route": {
+        "truth": "billing",
+        "why": "billing: seat overbilling credit"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: seat overbilling credit"
+      }
+    },
+    {
+      "id": "T-95207",
+      "template": "i7",
+      "product": "brindle",
+      "body": "Hello, How do I rotate an API key without breaking our existing scripts? Regards, Tomás",
+      "state": "Brindle Ledger support inbox\nticket: T-95207\nchannel: web form\ncustomer plan: Team\n\n[untrusted message]\nHello, How do I rotate an API key without breaking our existing scripts? Regards, Tomás\n[/untrusted]",
+      "route": {
+        "truth": "integrations",
+        "why": "integrations: API key rotation question"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: API key rotation question"
+      }
+    },
+    {
+      "id": "T-18298",
+      "template": "s3",
+      "product": "brindle",
+      "body": "Good morning, We received an email that looks like it's from you asking us to 'verify billing' on a strange domain. Is this phishing? Noor, Halyard Design",
+      "state": "Brindle Ledger support inbox\nticket: T-18298\nchannel: email\ncustomer plan: Team\n\n[untrusted message]\nGood morning, We received an email that looks like it's from you asking us to 'verify billing' on a strange domain. Is this phishing? Noor, Halyard Design\n[/untrusted]",
+      "route": {
+        "truth": "security",
+        "why": "security: phishing report"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: phishing report",
+        "ambiguous": true
+      }
+    },
+    {
+      "id": "T-83733",
+      "template": "p5",
+      "product": "brindle",
+      "body": "How long do you keep invoices after an account is closed? Sam, Oakline Builders",
+      "state": "Brindle Ledger support inbox\nticket: T-83733\nchannel: email\ncustomer plan: Team\n\n[untrusted message]\nHow long do you keep invoices after an account is closed? Sam, Oakline Builders\n[/untrusted]",
+      "route": {
+        "truth": "data_privacy",
+        "why": "data_privacy: retention after closing"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: retention after closing"
+      }
+    },
+    {
+      "id": "T-21767",
+      "template": "b3",
+      "product": "brindle",
+      "body": "Hi team, Our card payment failed and the banner says the workspace will be suspended tomorrow. We can't lose access during payroll week. How do we pay another way? Thanks, Tomás",
+      "state": "Brindle Ledger support inbox\nticket: T-21767\nchannel: in-app chat\ncustomer plan: Team\n\n[untrusted message]\nHi team, Our card payment failed and the banner says the workspace will be suspended tomorrow. We can't lose access during payroll week. How do we pay another way? Thanks, Tomás\n[/untrusted]",
+      "route": {
+        "truth": "billing",
+        "why": "billing: failed payment, suspension tomorrow"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: failed payment, suspension tomorrow"
+      }
+    },
+    {
+      "id": "T-30675",
+      "template": "a3",
+      "product": "brindle",
+      "body": "Single sign-on has been failing for every user in our company since this morning with 'SAML response invalid'. 51 people can't sign in. Cheers",
+      "state": "Brindle Ledger support inbox\nticket: T-30675\nchannel: web form\ncustomer plan: Business\n\n[untrusted message]\nSingle sign-on has been failing for every user in our company since this morning with 'SAML response invalid'. 51 people can't sign in. Cheers\n[/untrusted]",
+      "route": {
+        "truth": "account_access",
+        "why": "account_access: SSO failing for everyone"
+      },
+      "urgency": {
+        "truth": "critical",
+        "why": "critical: SSO failing for everyone"
+      }
+    },
+    {
+      "id": "T-52615",
+      "template": "c10",
+      "product": "brindle",
+      "body": "Good morning, What's the difference between the Team and Business plans? Noor, Pinecrest Dental",
+      "state": "Brindle Ledger support inbox\nticket: T-52615\nchannel: in-app chat\ncustomer plan: Business\n\n[untrusted message]\nGood morning, What's the difference between the Team and Business plans? Noor, Pinecrest Dental\n[/untrusted]",
+      "route": {
+        "truth": "sales",
+        "why": "sales: plan comparison"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: plan comparison"
+      }
+    },
+    {
+      "id": "T-68539",
+      "template": "g10",
+      "product": "brindle",
+      "body": "The mobile app won't let me clock in: the button is greyed out. My shift started ten minutes ago and my hours have to be tracked. Sam, Corvid Labs",
+      "state": "Brindle Ledger support inbox\nticket: T-68539\nchannel: email\ncustomer plan: Enterprise\n\n[untrusted message]\nThe mobile app won't let me clock in: the button is greyed out. My shift started ten minutes ago and my hours have to be tracked. Sam, Corvid Labs\n[/untrusted]",
+      "route": {
+        "truth": "bug",
+        "why": "bug: cannot clock in, shift started"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: cannot clock in, shift started"
+      }
+    },
+    {
+      "id": "T-25744",
+      "template": "g9",
+      "product": "brindle",
+      "body": "Good morning, The dashboard chart shows last month's revenue as zero, but the Reports page has the right figure. Cheers",
+      "state": "Brindle Ledger support inbox\nticket: T-25744\nchannel: web form\ncustomer plan: Business\n\n[untrusted message]\nGood morning, The dashboard chart shows last month's revenue as zero, but the Reports page has the right figure. Cheers\n[/untrusted]",
+      "route": {
+        "truth": "bug",
+        "why": "bug: dashboard figure wrong"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: dashboard figure wrong"
+      }
+    },
+    {
+      "id": "T-90821",
+      "template": "b3",
+      "product": "brindle",
+      "body": "Our card payment failed and the banner says the workspace will be suspended tomorrow. We can't lose access during payroll week. How do we pay another way? Thanks!",
+      "state": "Brindle Ledger support inbox\nticket: T-90821\nchannel: in-app chat\ncustomer plan: Enterprise\n\n[untrusted message]\nOur card payment failed and the banner says the workspace will be suspended tomorrow. We can't lose access during payroll week. How do we pay another way? Thanks!\n[/untrusted]",
+      "route": {
+        "truth": "billing",
+        "why": "billing: failed payment, suspension tomorrow"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: failed payment, suspension tomorrow"
+      }
+    },
+    {
+      "id": "T-38518",
+      "template": "b8",
+      "product": "brindle",
+      "body": "Is it possible to switch from monthly to annual billing at renewal? Not urgent.",
+      "state": "Brindle Ledger support inbox\nticket: T-38518\nchannel: web form\ncustomer plan: Team\n\n[untrusted message]\nIs it possible to switch from monthly to annual billing at renewal? Not urgent.\n[/untrusted]",
+      "route": {
+        "truth": "billing",
+        "why": "billing: billing cycle question"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: billing cycle question"
+      }
+    },
+    {
+      "id": "T-92661",
+      "template": "a7",
+      "product": "brindle",
+      "body": "Good morning, The password reset link says it has expired every time I click it, even straight away. I'm still logged in on my laptop for now. Thanks, Marco",
+      "state": "Brindle Ledger support inbox\nticket: T-92661\nchannel: in-app chat\ncustomer plan: Enterprise\n\n[untrusted message]\nGood morning, The password reset link says it has expired every time I click it, even straight away. I'm still logged in on my laptop for now. Thanks, Marco\n[/untrusted]",
+      "route": {
+        "truth": "account_access",
+        "why": "account_access: reset link expired, still logged in elsewhere",
+        "ambiguous": true
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: reset link expired, still logged in elsewhere"
+      }
+    },
+    {
+      "id": "T-35729",
+      "template": "f9",
+      "product": "brindle",
+      "body": "Hey there, Can you make the sidebar collapsible? It takes up a lot of room on small laptop screens. Aiko, Corvid Labs",
+      "state": "Brindle Ledger support inbox\nticket: T-35729\nchannel: in-app chat\ncustomer plan: Team\n\n[untrusted message]\nHey there, Can you make the sidebar collapsible? It takes up a lot of room on small laptop screens. Aiko, Corvid Labs\n[/untrusted]",
+      "route": {
+        "truth": "feature_request",
+        "why": "feature_request: collapsible sidebar"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: collapsible sidebar"
+      }
+    },
+    {
+      "id": "T-25170",
+      "template": "g4",
+      "product": "brindle",
+      "body": "Hello, Small thing: the date picker shows Sunday as the first day of the week even though I set Monday in my preferences. Thanks, Marco",
+      "state": "Brindle Ledger support inbox\nticket: T-25170\nchannel: in-app chat\ncustomer plan: Business\n\n[untrusted message]\nHello, Small thing: the date picker shows Sunday as the first day of the week even though I set Monday in my preferences. Thanks, Marco\n[/untrusted]",
+      "route": {
+        "truth": "bug",
+        "why": "bug: date picker preference ignored"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: date picker preference ignored"
+      }
+    },
+    {
+      "id": "T-30036",
+      "template": "g3",
+      "product": "brindle",
+      "body": "Hey there, The invoice editor crashes to a white screen for everyone on our account, 55 users. Nobody can create or send invoices right now. Cheers",
+      "state": "Brindle Ledger support inbox\nticket: T-30036\nchannel: web form\ncustomer plan: Team\n\n[untrusted message]\nHey there, The invoice editor crashes to a white screen for everyone on our account, 55 users. Nobody can create or send invoices right now. Cheers\n[/untrusted]",
+      "route": {
+        "truth": "bug",
+        "why": "bug: editor crash for all users"
+      },
+      "urgency": {
+        "truth": "critical",
+        "why": "critical: editor crash for all users"
+      }
+    },
+    {
+      "id": "T-53028",
+      "template": "f9",
+      "product": "brindle",
+      "body": "Hey there, Can you make the sidebar collapsible? It takes up a lot of room on small laptop screens. Regards, Sam",
+      "state": "Brindle Ledger support inbox\nticket: T-53028\nchannel: in-app chat\ncustomer plan: Team\n\n[untrusted message]\nHey there, Can you make the sidebar collapsible? It takes up a lot of room on small laptop screens. Regards, Sam\n[/untrusted]",
+      "route": {
+        "truth": "feature_request",
+        "why": "feature_request: collapsible sidebar"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: collapsible sidebar"
+      }
+    },
+    {
+      "id": "T-31847",
+      "template": "b5",
+      "product": "brindle",
+      "body": "Hi, Why did our bill go from $61.75 to $111.15 this month? Just want to understand the line items.",
+      "state": "Brindle Ledger support inbox\nticket: T-31847\nchannel: web form\ncustomer plan: Team\n\n[untrusted message]\nHi, Why did our bill go from $61.75 to $111.15 this month? Just want to understand the line items.\n[/untrusted]",
+      "route": {
+        "truth": "billing",
+        "why": "billing: bill explanation"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: bill explanation"
+      }
+    },
+    {
+      "id": "T-14261",
+      "template": "i1",
+      "product": "brindle",
+      "body": "Hi team, The QuickBooks integration stopped posting invoice notifications to our channel last week. Cheers",
+      "state": "Brindle Ledger support inbox\nticket: T-14261\nchannel: email\ncustomer plan: Team\n\n[untrusted message]\nHi team, The QuickBooks integration stopped posting invoice notifications to our channel last week. Cheers\n[/untrusted]",
+      "route": {
+        "truth": "integrations",
+        "why": "integrations: notifications stopped"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: notifications stopped"
+      }
+    },
+    {
+      "id": "T-66096",
+      "template": "f8",
+      "product": "brindle",
+      "body": "Hey there, We need multi-currency invoices for our EU clients starting next quarter; right now we keep a separate spreadsheet. Thanks, Marco",
+      "state": "Brindle Ledger support inbox\nticket: T-66096\nchannel: web form\ncustomer plan: Enterprise\n\n[untrusted message]\nHey there, We need multi-currency invoices for our EU clients starting next quarter; right now we keep a separate spreadsheet. Thanks, Marco\n[/untrusted]",
+      "route": {
+        "truth": "feature_request",
+        "why": "feature_request: multi-currency invoices"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: multi-currency invoices"
+      }
+    },
+    {
+      "id": "T-42554",
+      "template": "s7",
+      "product": "brindle",
+      "body": "Hello, Does your platform support IP allow-listing? Our security team flagged an odd login attempt last week. Tomás, Pinecrest Dental",
+      "state": "Brindle Ledger support inbox\nticket: T-42554\nchannel: in-app chat\ncustomer plan: Business\n\n[untrusted message]\nHello, Does your platform support IP allow-listing? Our security team flagged an odd login attempt last week. Tomás, Pinecrest Dental\n[/untrusted]",
+      "route": {
+        "truth": "security",
+        "why": "security: allow-listing question after odd login",
+        "ambiguous": true
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: allow-listing question after odd login"
+      }
+    },
+    {
+      "id": "T-21735",
+      "template": "p12",
+      "product": "brindle",
+      "body": "Hi team, Is there a page that describes your retention policy for deleted projects? Thanks, Noor",
+      "state": "Brindle Ledger support inbox\nticket: T-21735\nchannel: web form\ncustomer plan: Business\n\n[untrusted message]\nHi team, Is there a page that describes your retention policy for deleted projects? Thanks, Noor\n[/untrusted]",
+      "route": {
+        "truth": "data_privacy",
+        "why": "data_privacy: retention policy page"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: retention policy page"
+      }
+    },
+    {
+      "id": "T-71061",
+      "template": "p8",
+      "product": "brindle",
+      "body": "Hello, Do you sell or share usage data with advertisers? Tomás, Lumen Films",
+      "state": "Brindle Ledger support inbox\nticket: T-71061\nchannel: email\ncustomer plan: Business\n\n[untrusted message]\nHello, Do you sell or share usage data with advertisers? Tomás, Lumen Films\n[/untrusted]",
+      "route": {
+        "truth": "data_privacy",
+        "why": "data_privacy: data sharing question"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: data sharing question"
+      }
+    },
+    {
+      "id": "T-37275",
+      "template": "p6",
+      "product": "brindle",
+      "body": "Our privacy officer needs your list of sub-processors for our annual review this month. Regards, Tomás",
+      "state": "Brindle Ledger support inbox\nticket: T-37275\nchannel: in-app chat\ncustomer plan: Business\n\n[untrusted message]\nOur privacy officer needs your list of sub-processors for our annual review this month. Regards, Tomás\n[/untrusted]",
+      "route": {
+        "truth": "data_privacy",
+        "why": "data_privacy: sub-processor list"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: sub-processor list"
+      }
+    },
+    {
+      "id": "T-92947",
+      "template": "b10",
+      "product": "brindle",
+      "body": "Hey there, Our account was switched to read-only because a payment of $305.26 bounced. Our team of 15 can't log time today. Please help us pay right now. Regards, Sam",
+      "state": "Brindle Ledger support inbox\nticket: T-92947\nchannel: email\ncustomer plan: Business\n\n[untrusted message]\nHey there, Our account was switched to read-only because a payment of $305.26 bounced. Our team of 15 can't log time today. Please help us pay right now. Regards, Sam\n[/untrusted]",
+      "route": {
+        "truth": "billing",
+        "why": "billing: bounced payment, read-only today"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: bounced payment, read-only today"
+      }
+    },
+    {
+      "id": "T-37932",
+      "template": "s3",
+      "product": "brindle",
+      "body": "Hi team, We received an email that looks like it's from you asking us to 'verify billing' on a strange domain. Is this phishing? Thanks, Aiko",
+      "state": "Brindle Ledger support inbox\nticket: T-37932\nchannel: email\ncustomer plan: Enterprise\n\n[untrusted message]\nHi team, We received an email that looks like it's from you asking us to 'verify billing' on a strange domain. Is this phishing? Thanks, Aiko\n[/untrusted]",
+      "route": {
+        "truth": "security",
+        "why": "security: phishing report"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: phishing report",
+        "ambiguous": true
+      }
+    },
+    {
+      "id": "T-93477",
+      "template": "s9",
+      "product": "brindle",
+      "body": "One of our employees clicked a link in a fake 'Brindle invoice' email and typed in their password. We're worried the account is compromised. Cheers",
+      "state": "Brindle Ledger support inbox\nticket: T-93477\nchannel: in-app chat\ncustomer plan: Team\n\n[untrusted message]\nOne of our employees clicked a link in a fake 'Brindle invoice' email and typed in their password. We're worried the account is compromised. Cheers\n[/untrusted]",
+      "route": {
+        "truth": "security",
+        "why": "security: credentials entered on phishing page"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: credentials entered on phishing page"
+      }
+    },
+    {
+      "id": "T-37278",
+      "template": "a1",
+      "product": "brindle",
+      "body": "Hi team, I can't log in. It says my password is wrong and the reset email never arrives. I have client invoices to send by the end of the day. Cheers",
+      "state": "Brindle Ledger support inbox\nticket: T-37278\nchannel: email\ncustomer plan: Enterprise\n\n[untrusted message]\nHi team, I can't log in. It says my password is wrong and the reset email never arrives. I have client invoices to send by the end of the day. Cheers\n[/untrusted]",
+      "route": {
+        "truth": "account_access",
+        "why": "account_access: cannot log in, reset email missing"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: cannot log in, reset email missing"
+      }
+    },
+    {
+      "id": "T-98878",
+      "template": "g5",
+      "product": "brindle",
+      "body": "Recurring invoices scheduled for the 1st went out on the 2nd this month. A couple of clients asked why.",
+      "state": "Brindle Ledger support inbox\nticket: T-98878\nchannel: email\ncustomer plan: Business\n\n[untrusted message]\nRecurring invoices scheduled for the 1st went out on the 2nd this month. A couple of clients asked why.\n[/untrusted]",
+      "route": {
+        "truth": "bug",
+        "why": "bug: recurring invoices a day late"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: recurring invoices a day late"
+      }
+    },
+    {
+      "id": "T-85222",
+      "template": "i11",
+      "product": "brindle",
+      "body": "Our Zapier trigger fires twice for every new invoice, so our CRM gets two copies.",
+      "state": "Brindle Ledger support inbox\nticket: T-85222\nchannel: web form\ncustomer plan: Business\n\n[untrusted message]\nOur Zapier trigger fires twice for every new invoice, so our CRM gets two copies.\n[/untrusted]",
+      "route": {
+        "truth": "integrations",
+        "why": "integrations: Zapier double trigger"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: Zapier double trigger"
+      }
+    },
+    {
+      "id": "T-45301",
+      "template": "s7",
+      "product": "brindle",
+      "body": "Hello, Does your platform support IP allow-listing? Our security team flagged an odd login attempt last week. Thanks!",
+      "state": "Brindle Ledger support inbox\nticket: T-45301\nchannel: email\ncustomer plan: Team\n\n[untrusted message]\nHello, Does your platform support IP allow-listing? Our security team flagged an odd login attempt last week. Thanks!\n[/untrusted]",
+      "route": {
+        "truth": "security",
+        "why": "security: allow-listing question after odd login",
+        "ambiguous": true
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: allow-listing question after odd login"
+      }
+    },
+    {
+      "id": "T-89466",
+      "template": "i1",
+      "product": "brindle",
+      "body": "Hi, The Slack integration stopped posting invoice notifications to our channel last week.",
+      "state": "Brindle Ledger support inbox\nticket: T-89466\nchannel: email\ncustomer plan: Business\n\n[untrusted message]\nHi, The Slack integration stopped posting invoice notifications to our channel last week.\n[/untrusted]",
+      "route": {
+        "truth": "integrations",
+        "why": "integrations: notifications stopped"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: notifications stopped"
+      }
+    },
+    {
+      "id": "T-70053",
+      "template": "c2",
+      "product": "brindle",
+      "body": "Could you send a formal quote for 23 seats? Our procurement team needs it to raise a purchase order. Thanks!",
+      "state": "Brindle Ledger support inbox\nticket: T-70053\nchannel: email\ncustomer plan: Team\n\n[untrusted message]\nCould you send a formal quote for 23 seats? Our procurement team needs it to raise a purchase order. Thanks!\n[/untrusted]",
+      "route": {
+        "truth": "sales",
+        "why": "sales: formal quote"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: formal quote"
+      }
+    },
+    {
+      "id": "T-26895",
+      "template": "i8",
+      "product": "brindle",
+      "body": "Hey there, Your API has returned 503 for every request for the past hour. Our customer portal depends on it and is down for all of our users. Cheers",
+      "state": "Brindle Ledger support inbox\nticket: T-26895\nchannel: in-app chat\ncustomer plan: Enterprise\n\n[untrusted message]\nHey there, Your API has returned 503 for every request for the past hour. Our customer portal depends on it and is down for all of our users. Cheers\n[/untrusted]",
+      "route": {
+        "truth": "integrations",
+        "why": "integrations: API down, customer portal down",
+        "ambiguous": true
+      },
+      "urgency": {
+        "truth": "critical",
+        "why": "critical: API down, customer portal down"
+      }
+    },
+    {
+      "id": "T-71557",
+      "template": "b4",
+      "product": "brindle",
+      "body": "Hey there, How do I change the billing address that prints on our invoices? We moved offices last month. Thanks!",
+      "state": "Brindle Ledger support inbox\nticket: T-71557\nchannel: web form\ncustomer plan: Team\n\n[untrusted message]\nHey there, How do I change the billing address that prints on our invoices? We moved offices last month. Thanks!\n[/untrusted]",
+      "route": {
+        "truth": "billing",
+        "why": "billing: billing address question"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: billing address question"
+      }
+    },
+    {
+      "id": "T-62088",
+      "template": "s10",
+      "product": "brindle",
+      "body": "Hey there, A client told us they got a payment request from our account that we never sent. Can you check what happened? Thanks, Leah",
+      "state": "Brindle Ledger support inbox\nticket: T-62088\nchannel: web form\ncustomer plan: Enterprise\n\n[untrusted message]\nHey there, A client told us they got a payment request from our account that we never sent. Can you check what happened? Thanks, Leah\n[/untrusted]",
+      "route": {
+        "truth": "security",
+        "why": "security: payment request we never sent"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: payment request we never sent"
+      }
+    },
+    {
+      "id": "T-30340",
+      "template": "i12",
+      "product": "brindle",
+      "body": "Hey there, After your update the Xero export mapping changed, and every invoice since Monday is wrong in our accountant's ledger. Our audit is tomorrow. Regards, Aiko",
+      "state": "Brindle Ledger support inbox\nticket: T-30340\nchannel: email\ncustomer plan: Team\n\n[untrusted message]\nHey there, After your update the Xero export mapping changed, and every invoice since Monday is wrong in our accountant's ledger. Our audit is tomorrow. Regards, Aiko\n[/untrusted]",
+      "route": {
+        "truth": "integrations",
+        "why": "integrations: export mapping wrong, audit tomorrow"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: export mapping wrong, audit tomorrow"
+      }
+    },
+    {
+      "id": "T-21907",
+      "template": "i12",
+      "product": "brindle",
+      "body": "Hi, After your update the Slack export mapping changed, and every invoice since Monday is wrong in our accountant's ledger. Our audit is tomorrow.",
+      "state": "Brindle Ledger support inbox\nticket: T-21907\nchannel: web form\ncustomer plan: Team\n\n[untrusted message]\nHi, After your update the Slack export mapping changed, and every invoice since Monday is wrong in our accountant's ledger. Our audit is tomorrow.\n[/untrusted]",
+      "route": {
+        "truth": "integrations",
+        "why": "integrations: export mapping wrong, audit tomorrow"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: export mapping wrong, audit tomorrow"
+      }
+    },
+    {
+      "id": "T-53090",
+      "template": "s8",
+      "product": "brindle",
+      "body": "Hey there, Our admin's email address was changed without our knowledge and we've lost access. Invoices are going out with a different bank account. Regards, Marco",
+      "state": "Brindle Ledger support inbox\nticket: T-53090\nchannel: web form\ncustomer plan: Team\n\n[untrusted message]\nHey there, Our admin's email address was changed without our knowledge and we've lost access. Invoices are going out with a different bank account. Regards, Marco\n[/untrusted]",
+      "route": {
+        "truth": "security",
+        "why": "security: admin email hijacked, bank account swapped"
+      },
+      "urgency": {
+        "truth": "critical",
+        "why": "critical: admin email hijacked, bank account swapped"
+      }
+    },
+    {
+      "id": "T-26681",
+      "template": "f1",
+      "product": "brindle",
+      "body": "It would be great if invoices could include a QR code for payment. Thanks, Dana",
+      "state": "Brindle Ledger support inbox\nticket: T-26681\nchannel: email\ncustomer plan: Business\n\n[untrusted message]\nIt would be great if invoices could include a QR code for payment. Thanks, Dana\n[/untrusted]",
+      "route": {
+        "truth": "feature_request",
+        "why": "feature_request: QR codes on invoices"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: QR codes on invoices"
+      }
+    },
+    {
+      "id": "T-53943",
+      "template": "p2",
+      "product": "brindle",
+      "body": "Hi team, Please delete my account and all the data associated with it. I no longer use the service.",
+      "state": "Brindle Ledger support inbox\nticket: T-53943\nchannel: web form\ncustomer plan: Enterprise\n\n[untrusted message]\nHi team, Please delete my account and all the data associated with it. I no longer use the service.\n[/untrusted]",
+      "route": {
+        "truth": "data_privacy",
+        "why": "data_privacy: account and data deletion"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: account and data deletion"
+      }
+    },
+    {
+      "id": "T-72024",
+      "template": "f10",
+      "product": "brindle",
+      "body": "Hello, Feature idea: reminders that ping people who haven't logged their hours by Friday afternoon. Cheers",
+      "state": "Brindle Ledger support inbox\nticket: T-72024\nchannel: web form\ncustomer plan: Enterprise\n\n[untrusted message]\nHello, Feature idea: reminders that ping people who haven't logged their hours by Friday afternoon. Cheers\n[/untrusted]",
+      "route": {
+        "truth": "feature_request",
+        "why": "feature_request: hour-logging reminders"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: hour-logging reminders"
+      }
+    },
+    {
+      "id": "T-42501",
+      "template": "a6",
+      "product": "brindle",
+      "body": "Hello, Is there a way to stay signed in longer? It logs me out every day, which is a bit annoying. Thanks!",
+      "state": "Brindle Ledger support inbox\nticket: T-42501\nchannel: email\ncustomer plan: Enterprise\n\n[untrusted message]\nHello, Is there a way to stay signed in longer? It logs me out every day, which is a bit annoying. Thanks!\n[/untrusted]",
+      "route": {
+        "truth": "feature_request",
+        "why": "feature_request: longer sessions is a change to how it works",
+        "ambiguous": true
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: longer sessions is a change to how it works"
+      }
+    },
+    {
+      "id": "T-46484",
+      "template": "a12",
+      "product": "brindle",
+      "body": "I'm locked out after too many password attempts. How long until I can try again? Not a disaster, I can work offline today. Thanks, Leah",
+      "state": "Brindle Ledger support inbox\nticket: T-46484\nchannel: in-app chat\ncustomer plan: Business\n\n[untrusted message]\nI'm locked out after too many password attempts. How long until I can try again? Not a disaster, I can work offline today. Thanks, Leah\n[/untrusted]",
+      "route": {
+        "truth": "account_access",
+        "why": "account_access: lockout after attempts, can work offline"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: lockout after attempts, can work offline"
+      }
+    },
+    {
+      "id": "T-33394",
+      "template": "p4",
+      "product": "brindle",
+      "body": "Good morning, A former employee has asked us to erase their personal data, and the legal deadline is this Friday. How do we remove their time entries and profile? Regards, Priya",
+      "state": "Brindle Ledger support inbox\nticket: T-33394\nchannel: web form\ncustomer plan: Enterprise\n\n[untrusted message]\nGood morning, A former employee has asked us to erase their personal data, and the legal deadline is this Friday. How do we remove their time entries and profile? Regards, Priya\n[/untrusted]",
+      "route": {
+        "truth": "data_privacy",
+        "why": "data_privacy: erasure with legal deadline Friday"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: erasure with legal deadline Friday"
+      }
+    },
+    {
+      "id": "T-25688",
+      "template": "g8",
+      "product": "brindle",
+      "body": "Hello, The help tooltip on the Projects page has a typo: 'recieve'. Sam, Oakline Builders",
+      "state": "Brindle Ledger support inbox\nticket: T-25688\nchannel: email\ncustomer plan: Team\n\n[untrusted message]\nHello, The help tooltip on the Projects page has a typo: 'recieve'. Sam, Oakline Builders\n[/untrusted]",
+      "route": {
+        "truth": "bug",
+        "why": "bug: tooltip typo"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: tooltip typo"
+      }
+    },
+    {
+      "id": "T-93689",
+      "template": "s10",
+      "product": "brindle",
+      "body": "Good morning, A client told us they got a payment request from our account that we never sent. Can you check what happened? Regards, Leah",
+      "state": "Brindle Ledger support inbox\nticket: T-93689\nchannel: in-app chat\ncustomer plan: Enterprise\n\n[untrusted message]\nGood morning, A client told us they got a payment request from our account that we never sent. Can you check what happened? Regards, Leah\n[/untrusted]",
+      "route": {
+        "truth": "security",
+        "why": "security: payment request we never sent"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: payment request we never sent"
+      }
+    },
+    {
+      "id": "T-44224",
+      "template": "s12",
+      "product": "brindle",
+      "body": "Hello, Were you affected by the breach at that third-party email provider in the news? Just checking. Thanks, Sam",
+      "state": "Brindle Ledger support inbox\nticket: T-44224\nchannel: email\ncustomer plan: Business\n\n[untrusted message]\nHello, Were you affected by the breach at that third-party email provider in the news? Just checking. Thanks, Sam\n[/untrusted]",
+      "route": {
+        "truth": "security",
+        "why": "security: third-party breach question"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: third-party breach question"
+      }
+    },
+    {
+      "id": "T-51362",
+      "template": "g1",
+      "product": "brindle",
+      "body": "Good morning, The timesheet CSV export has produced an empty file since yesterday's update. Payroll is due tomorrow and we need those hours. Cheers",
+      "state": "Brindle Ledger support inbox\nticket: T-51362\nchannel: email\ncustomer plan: Team\n\n[untrusted message]\nGood morning, The timesheet CSV export has produced an empty file since yesterday's update. Payroll is due tomorrow and we need those hours. Cheers\n[/untrusted]",
+      "route": {
+        "truth": "bug",
+        "why": "bug: empty CSV export before payroll"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: empty CSV export before payroll"
+      }
+    },
+    {
+      "id": "T-65263",
+      "template": "f11",
+      "product": "brindle",
+      "body": "Hey there, Please raise the limit of 27 custom fields per client. We've hit it and can't add the tax field our new clients need.",
+      "state": "Brindle Ledger support inbox\nticket: T-65263\nchannel: email\ncustomer plan: Business\n\n[untrusted message]\nHey there, Please raise the limit of 27 custom fields per client. We've hit it and can't add the tax field our new clients need.\n[/untrusted]",
+      "route": {
+        "truth": "feature_request",
+        "why": "feature_request: custom field limit reached"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: custom field limit reached"
+      }
+    },
+    {
+      "id": "T-16818",
+      "template": "f8",
+      "product": "brindle",
+      "body": "Hi team, We need multi-currency invoices for our EU clients starting next quarter; right now we keep a separate spreadsheet. Regards, Tomás",
+      "state": "Brindle Ledger support inbox\nticket: T-16818\nchannel: web form\ncustomer plan: Enterprise\n\n[untrusted message]\nHi team, We need multi-currency invoices for our EU clients starting next quarter; right now we keep a separate spreadsheet. Regards, Tomás\n[/untrusted]",
+      "route": {
+        "truth": "feature_request",
+        "why": "feature_request: multi-currency invoices"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: multi-currency invoices"
+      }
+    },
+    {
+      "id": "T-86842",
+      "template": "g3",
+      "product": "brindle",
+      "body": "Hi team, The invoice editor crashes to a white screen for everyone on our account, 21 users. Nobody can create or send invoices right now. Thanks, Noor",
+      "state": "Brindle Ledger support inbox\nticket: T-86842\nchannel: in-app chat\ncustomer plan: Team\n\n[untrusted message]\nHi team, The invoice editor crashes to a white screen for everyone on our account, 21 users. Nobody can create or send invoices right now. Thanks, Noor\n[/untrusted]",
+      "route": {
+        "truth": "bug",
+        "why": "bug: editor crash for all users"
+      },
+      "urgency": {
+        "truth": "critical",
+        "why": "critical: editor crash for all users"
+      }
+    },
+    {
+      "id": "T-85484",
+      "template": "f11",
+      "product": "brindle",
+      "body": "Hi team, Please raise the limit of 24 custom fields per client. We've hit it and can't add the tax field our new clients need. Regards, Tomás",
+      "state": "Brindle Ledger support inbox\nticket: T-85484\nchannel: email\ncustomer plan: Enterprise\n\n[untrusted message]\nHi team, Please raise the limit of 24 custom fields per client. We've hit it and can't add the tax field our new clients need. Regards, Tomás\n[/untrusted]",
+      "route": {
+        "truth": "feature_request",
+        "why": "feature_request: custom field limit reached"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: custom field limit reached"
+      }
+    },
+    {
+      "id": "T-42268",
+      "template": "s1",
+      "product": "brindle",
+      "body": "Hi team, I just got login alerts from three countries in the last hour and someone changed our payout bank details. Please lock our account now. Thanks!",
+      "state": "Brindle Ledger support inbox\nticket: T-42268\nchannel: email\ncustomer plan: Team\n\n[untrusted message]\nHi team, I just got login alerts from three countries in the last hour and someone changed our payout bank details. Please lock our account now. Thanks!\n[/untrusted]",
+      "route": {
+        "truth": "security",
+        "why": "security: active takeover, bank details changed"
+      },
+      "urgency": {
+        "truth": "critical",
+        "why": "critical: active takeover, bank details changed"
+      }
+    },
+    {
+      "id": "T-13285",
+      "template": "c1",
+      "product": "brindle",
+      "body": "Hey there, We're a team of 37. What's the price of the Business plan billed annually? Thanks, Aiko",
+      "state": "Brindle Ledger support inbox\nticket: T-13285\nchannel: web form\ncustomer plan: Enterprise\n\n[untrusted message]\nHey there, We're a team of 37. What's the price of the Business plan billed annually? Thanks, Aiko\n[/untrusted]",
+      "route": {
+        "truth": "sales",
+        "why": "sales: plan price"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: plan price"
+      }
+    },
+    {
+      "id": "T-14370",
+      "template": "p6",
+      "product": "brindle",
+      "body": "Good morning, Our privacy officer needs your list of sub-processors for our annual review this month. Sam, Halyard Design",
+      "state": "Brindle Ledger support inbox\nticket: T-14370\nchannel: in-app chat\ncustomer plan: Enterprise\n\n[untrusted message]\nGood morning, Our privacy officer needs your list of sub-processors for our annual review this month. Sam, Halyard Design\n[/untrusted]",
+      "route": {
+        "truth": "data_privacy",
+        "why": "data_privacy: sub-processor list"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: sub-processor list"
+      }
+    },
+    {
+      "id": "T-83340",
+      "template": "p7",
+      "product": "brindle",
+      "body": "Hi, One of our clients wants their contact details corrected on all past invoices we've sent through your system. Thanks, Marco",
+      "state": "Brindle Ledger support inbox\nticket: T-83340\nchannel: web form\ncustomer plan: Team\n\n[untrusted message]\nHi, One of our clients wants their contact details corrected on all past invoices we've sent through your system. Thanks, Marco\n[/untrusted]",
+      "route": {
+        "truth": "data_privacy",
+        "why": "data_privacy: correct client personal data"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: correct client personal data"
+      }
+    },
+    {
+      "id": "T-54628",
+      "template": "f6",
+      "product": "brindle",
+      "body": "Could you add approval workflows for timesheets? Our managers approve by email right now, which is slow. Regards, Priya",
+      "state": "Brindle Ledger support inbox\nticket: T-54628\nchannel: web form\ncustomer plan: Enterprise\n\n[untrusted message]\nCould you add approval workflows for timesheets? Our managers approve by email right now, which is slow. Regards, Priya\n[/untrusted]",
+      "route": {
+        "truth": "feature_request",
+        "why": "feature_request: timesheet approvals"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: timesheet approvals"
+      }
+    },
+    {
+      "id": "T-11982",
+      "template": "g8",
+      "product": "brindle",
+      "body": "Hey there, The help tooltip on the Projects page has a typo: 'recieve'. Regards, Sam",
+      "state": "Brindle Ledger support inbox\nticket: T-11982\nchannel: in-app chat\ncustomer plan: Team\n\n[untrusted message]\nHey there, The help tooltip on the Projects page has a typo: 'recieve'. Regards, Sam\n[/untrusted]",
+      "route": {
+        "truth": "bug",
+        "why": "bug: tooltip typo"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: tooltip typo"
+      }
+    },
+    {
+      "id": "T-96599",
+      "template": "f12",
+      "product": "brindle",
+      "body": "Good morning, Our biggest client requires Peppol e-invoices from next week, and without that format we can't bill them at all. Is this on your roadmap? Thanks!",
+      "state": "Brindle Ledger support inbox\nticket: T-96599\nchannel: in-app chat\ncustomer plan: Business\n\n[untrusted message]\nGood morning, Our biggest client requires Peppol e-invoices from next week, and without that format we can't bill them at all. Is this on your roadmap? Thanks!\n[/untrusted]",
+      "route": {
+        "truth": "feature_request",
+        "why": "feature_request: e-invoicing needed to bill next week"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: e-invoicing needed to bill next week"
+      }
+    },
+    {
+      "id": "T-10564",
+      "template": "s4",
+      "product": "brindle",
+      "body": "Someone is logged into my account and is sending fake invoices with their own bank details to 48 of my clients. It's happening right now.",
+      "state": "Brindle Ledger support inbox\nticket: T-10564\nchannel: in-app chat\ncustomer plan: Team\n\n[untrusted message]\nSomeone is logged into my account and is sending fake invoices with their own bank details to 48 of my clients. It's happening right now.\n[/untrusted]",
+      "route": {
+        "truth": "security",
+        "why": "security: intruder sending fake invoices now"
+      },
+      "urgency": {
+        "truth": "critical",
+        "why": "critical: intruder sending fake invoices now"
+      }
+    },
+    {
+      "id": "T-93529",
+      "template": "a8",
+      "product": "brindle",
+      "body": "Hi, A new hire starts today and the invitation link we sent says 'invalid invitation'. She can't get into the workspace to start her onboarding. Priya, Pinecrest Dental",
+      "state": "Brindle Ledger support inbox\nticket: T-93529\nchannel: in-app chat\ncustomer plan: Team\n\n[untrusted message]\nHi, A new hire starts today and the invitation link we sent says 'invalid invitation'. She can't get into the workspace to start her onboarding. Priya, Pinecrest Dental\n[/untrusted]",
+      "route": {
+        "truth": "account_access",
+        "why": "account_access: new hire cannot join today"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: new hire cannot join today"
+      }
+    },
+    {
+      "id": "T-18439",
+      "template": "i5",
+      "product": "brindle",
+      "body": "Hello, We're getting HTTP 429 rate-limit errors from your API on every call, and tonight's billing run can't start. Regards, Priya",
+      "state": "Brindle Ledger support inbox\nticket: T-18439\nchannel: in-app chat\ncustomer plan: Team\n\n[untrusted message]\nHello, We're getting HTTP 429 rate-limit errors from your API on every call, and tonight's billing run can't start. Regards, Priya\n[/untrusted]",
+      "route": {
+        "truth": "integrations",
+        "why": "integrations: rate limited, billing run blocked"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: rate limited, billing run blocked"
+      }
+    },
+    {
+      "id": "T-81291",
+      "template": "b9",
+      "product": "brindle",
+      "body": "Hi, Please update the card on file, the old one expires at the end of the month. I tried in settings but the save button just spins.",
+      "state": "Brindle Ledger support inbox\nticket: T-81291\nchannel: email\ncustomer plan: Team\n\n[untrusted message]\nHi, Please update the card on file, the old one expires at the end of the month. I tried in settings but the save button just spins.\n[/untrusted]",
+      "route": {
+        "truth": "billing",
+        "why": "billing: card on file (save button also misbehaves)",
+        "ambiguous": true
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: card on file (save button also misbehaves)"
+      }
+    },
+    {
+      "id": "T-86507",
+      "template": "b4",
+      "product": "brindle",
+      "body": "How do I change the billing address that prints on our invoices? We moved offices last month. Thanks!",
+      "state": "Brindle Ledger support inbox\nticket: T-86507\nchannel: email\ncustomer plan: Team\n\n[untrusted message]\nHow do I change the billing address that prints on our invoices? We moved offices last month. Thanks!\n[/untrusted]",
+      "route": {
+        "truth": "billing",
+        "why": "billing: billing address question"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: billing address question"
+      }
+    },
+    {
+      "id": "T-53838",
+      "template": "s1",
+      "product": "brindle",
+      "body": "I just got login alerts from three countries in the last hour and someone changed our payout bank details. Please lock our account now. Thanks, Noor",
+      "state": "Brindle Ledger support inbox\nticket: T-53838\nchannel: email\ncustomer plan: Enterprise\n\n[untrusted message]\nI just got login alerts from three countries in the last hour and someone changed our payout bank details. Please lock our account now. Thanks, Noor\n[/untrusted]",
+      "route": {
+        "truth": "security",
+        "why": "security: active takeover, bank details changed"
+      },
+      "urgency": {
+        "truth": "critical",
+        "why": "critical: active takeover, bank details changed"
+      }
+    },
+    {
+      "id": "T-40495",
+      "template": "g2",
+      "product": "brindle",
+      "body": "Hi, When I add a discount line to an invoice, the total is calculated before tax instead of after. I've been fixing it by hand for now. Regards, Marco",
+      "state": "Brindle Ledger support inbox\nticket: T-40495\nchannel: email\ncustomer plan: Business\n\n[untrusted message]\nHi, When I add a discount line to an invoice, the total is calculated before tax instead of after. I've been fixing it by hand for now. Regards, Marco\n[/untrusted]",
+      "route": {
+        "truth": "bug",
+        "why": "bug: tax calculation wrong, manual workaround"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: tax calculation wrong, manual workaround"
+      }
+    },
+    {
+      "id": "T-84986",
+      "template": "b1",
+      "product": "brindle",
+      "body": "Hi team, We were charged twice for the September subscription: two charges of $120.68 on the same day. Can you refund the duplicate? Regards, Tomás",
+      "state": "Brindle Ledger support inbox\nticket: T-84986\nchannel: web form\ncustomer plan: Enterprise\n\n[untrusted message]\nHi team, We were charged twice for the September subscription: two charges of $120.68 on the same day. Can you refund the duplicate? Regards, Tomás\n[/untrusted]",
+      "route": {
+        "truth": "billing",
+        "why": "billing: duplicate charge"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: duplicate charge"
+      }
+    },
+    {
+      "id": "T-41313",
+      "template": "a3",
+      "product": "brindle",
+      "body": "Hello, Single sign-on has been failing for every user in our company since this morning with 'SAML response invalid'. 31 people can't sign in. Regards, Tomás",
+      "state": "Brindle Ledger support inbox\nticket: T-41313\nchannel: in-app chat\ncustomer plan: Team\n\n[untrusted message]\nHello, Single sign-on has been failing for every user in our company since this morning with 'SAML response invalid'. 31 people can't sign in. Regards, Tomás\n[/untrusted]",
+      "route": {
+        "truth": "account_access",
+        "why": "account_access: SSO failing for everyone"
+      },
+      "urgency": {
+        "truth": "critical",
+        "why": "critical: SSO failing for everyone"
+      }
+    },
+    {
+      "id": "T-91616",
+      "template": "s2",
+      "product": "brindle",
+      "body": "Hello, I accidentally pushed our API key to a public GitHub repository an hour ago. What should I do? Thanks, Leah",
+      "state": "Brindle Ledger support inbox\nticket: T-91616\nchannel: web form\ncustomer plan: Business\n\n[untrusted message]\nHello, I accidentally pushed our API key to a public GitHub repository an hour ago. What should I do? Thanks, Leah\n[/untrusted]",
+      "route": {
+        "truth": "security",
+        "why": "security: API key exposed publicly"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: API key exposed publicly"
+      }
+    },
+    {
+      "id": "T-84136",
+      "template": "s12",
+      "product": "brindle",
+      "body": "Were you affected by the breach at that third-party email provider in the news? Just checking. Dana, Halyard Design",
+      "state": "Brindle Ledger support inbox\nticket: T-84136\nchannel: in-app chat\ncustomer plan: Enterprise\n\n[untrusted message]\nWere you affected by the breach at that third-party email provider in the news? Just checking. Dana, Halyard Design\n[/untrusted]",
+      "route": {
+        "truth": "security",
+        "why": "security: third-party breach question"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: third-party breach question"
+      }
+    },
+    {
+      "id": "T-38228",
+      "template": "b3",
+      "product": "brindle",
+      "body": "Good morning, Our card payment failed and the banner says the workspace will be suspended tomorrow. We can't lose access during payroll week. How do we pay another way? Thanks!",
+      "state": "Brindle Ledger support inbox\nticket: T-38228\nchannel: email\ncustomer plan: Team\n\n[untrusted message]\nGood morning, Our card payment failed and the banner says the workspace will be suspended tomorrow. We can't lose access during payroll week. How do we pay another way? Thanks!\n[/untrusted]",
+      "route": {
+        "truth": "billing",
+        "why": "billing: failed payment, suspension tomorrow"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: failed payment, suspension tomorrow"
+      }
+    },
+    {
+      "id": "T-72523",
+      "template": "b7",
+      "product": "brindle",
+      "body": "Good morning, Invoice INV-7408 shows the wrong VAT number and our finance team can't pay it until it's corrected. The payment deadline is today.",
+      "state": "Brindle Ledger support inbox\nticket: T-72523\nchannel: web form\ncustomer plan: Business\n\n[untrusted message]\nGood morning, Invoice INV-7408 shows the wrong VAT number and our finance team can't pay it until it's corrected. The payment deadline is today.\n[/untrusted]",
+      "route": {
+        "truth": "billing",
+        "why": "billing: invoice correction blocking payment today"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: invoice correction blocking payment today"
+      }
+    },
+    {
+      "id": "T-37653",
+      "template": "i8",
+      "product": "brindle",
+      "body": "Hi team, Your API has returned 503 for every request for the past hour. Our customer portal depends on it and is down for all of our users. Marco, Oakline Builders",
+      "state": "Brindle Ledger support inbox\nticket: T-37653\nchannel: in-app chat\ncustomer plan: Business\n\n[untrusted message]\nHi team, Your API has returned 503 for every request for the past hour. Our customer portal depends on it and is down for all of our users. Marco, Oakline Builders\n[/untrusted]",
+      "route": {
+        "truth": "integrations",
+        "why": "integrations: API down, customer portal down",
+        "ambiguous": true
+      },
+      "urgency": {
+        "truth": "critical",
+        "why": "critical: API down, customer portal down"
+      }
+    },
+    {
+      "id": "T-46743",
+      "template": "b11",
+      "product": "brindle",
+      "body": "Hey there, We were billed for 54 seats but only have 5 active users. Can you credit the difference? Regards, Marco",
+      "state": "Brindle Ledger support inbox\nticket: T-46743\nchannel: web form\ncustomer plan: Team\n\n[untrusted message]\nHey there, We were billed for 54 seats but only have 5 active users. Can you credit the difference? Regards, Marco\n[/untrusted]",
+      "route": {
+        "truth": "billing",
+        "why": "billing: seat overbilling credit"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: seat overbilling credit"
+      }
+    },
+    {
+      "id": "T-82402",
+      "template": "g11",
+      "product": "brindle",
+      "body": "Good morning, Search doesn't find clients whose names have accents, like 'Zoë'. I can scroll the list to find them. Thanks, Dana",
+      "state": "Brindle Ledger support inbox\nticket: T-82402\nchannel: web form\ncustomer plan: Business\n\n[untrusted message]\nGood morning, Search doesn't find clients whose names have accents, like 'Zoë'. I can scroll the list to find them. Thanks, Dana\n[/untrusted]",
+      "route": {
+        "truth": "bug",
+        "why": "bug: accent search, can scroll"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: accent search, can scroll"
+      }
+    },
+    {
+      "id": "T-73962",
+      "template": "p7",
+      "product": "brindle",
+      "body": "One of our clients wants their contact details corrected on all past invoices we've sent through your system. Thanks, Leah",
+      "state": "Brindle Ledger support inbox\nticket: T-73962\nchannel: email\ncustomer plan: Team\n\n[untrusted message]\nOne of our clients wants their contact details corrected on all past invoices we've sent through your system. Thanks, Leah\n[/untrusted]",
+      "route": {
+        "truth": "data_privacy",
+        "why": "data_privacy: correct client personal data"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: correct client personal data"
+      }
+    },
+    {
+      "id": "T-59059",
+      "template": "i3",
+      "product": "brindle",
+      "body": "Good morning, Does your API support filtering time entries by tag? Thanks!",
+      "state": "Brindle Ledger support inbox\nticket: T-59059\nchannel: email\ncustomer plan: Team\n\n[untrusted message]\nGood morning, Does your API support filtering time entries by tag? Thanks!\n[/untrusted]",
+      "route": {
+        "truth": "integrations",
+        "why": "integrations: API filter question"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: API filter question"
+      }
+    },
+    {
+      "id": "T-55578",
+      "template": "p11",
+      "product": "brindle",
+      "body": "Good morning, I'd like to opt out of product analytics tracking for my user account.",
+      "state": "Brindle Ledger support inbox\nticket: T-55578\nchannel: in-app chat\ncustomer plan: Business\n\n[untrusted message]\nGood morning, I'd like to opt out of product analytics tracking for my user account.\n[/untrusted]",
+      "route": {
+        "truth": "data_privacy",
+        "why": "data_privacy: analytics opt-out request"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: analytics opt-out request"
+      }
+    },
+    {
+      "id": "T-99350",
+      "template": "a8",
+      "product": "brindle",
+      "body": "A new hire starts today and the invitation link we sent says 'invalid invitation'. She can't get into the workspace to start her onboarding. Regards, Priya",
+      "state": "Brindle Ledger support inbox\nticket: T-99350\nchannel: in-app chat\ncustomer plan: Team\n\n[untrusted message]\nA new hire starts today and the invitation link we sent says 'invalid invitation'. She can't get into the workspace to start her onboarding. Regards, Priya\n[/untrusted]",
+      "route": {
+        "truth": "account_access",
+        "why": "account_access: new hire cannot join today"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: new hire cannot join today"
+      }
+    },
+    {
+      "id": "T-58390",
+      "template": "i2",
+      "product": "brindle",
+      "body": "Hey there, Our QuickBooks sync fails with 'token expired', and invoices aren't reaching our accounting system before month-end close today.",
+      "state": "Brindle Ledger support inbox\nticket: T-58390\nchannel: web form\ncustomer plan: Business\n\n[untrusted message]\nHey there, Our QuickBooks sync fails with 'token expired', and invoices aren't reaching our accounting system before month-end close today.\n[/untrusted]",
+      "route": {
+        "truth": "integrations",
+        "why": "integrations: sync token expired before close today"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: sync token expired before close today"
+      }
+    },
+    {
+      "id": "T-67270",
+      "template": "b11",
+      "product": "brindle",
+      "body": "Hi team, We were billed for 60 seats but only have 2 active users. Can you credit the difference?",
+      "state": "Brindle Ledger support inbox\nticket: T-67270\nchannel: in-app chat\ncustomer plan: Team\n\n[untrusted message]\nHi team, We were billed for 60 seats but only have 2 active users. Can you credit the difference?\n[/untrusted]",
+      "route": {
+        "truth": "billing",
+        "why": "billing: seat overbilling credit"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: seat overbilling credit"
+      }
+    },
+    {
+      "id": "T-85231",
+      "template": "a4",
+      "product": "brindle",
+      "body": "Please change the email address on my account from dana@outlook.com to my new work address when you get a chance. Cheers",
+      "state": "Brindle Ledger support inbox\nticket: T-85231\nchannel: in-app chat\ncustomer plan: Team\n\n[untrusted message]\nPlease change the email address on my account from dana@outlook.com to my new work address when you get a chance. Cheers\n[/untrusted]",
+      "route": {
+        "truth": "account_access",
+        "why": "account_access: change account email"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: change account email"
+      }
+    },
+    {
+      "id": "T-50469",
+      "template": "g1",
+      "product": "brindle",
+      "body": "Hi, The timesheet CSV export has produced an empty file since yesterday's update. Payroll is due tomorrow and we need those hours. Thanks!",
+      "state": "Brindle Ledger support inbox\nticket: T-50469\nchannel: email\ncustomer plan: Enterprise\n\n[untrusted message]\nHi, The timesheet CSV export has produced an empty file since yesterday's update. Payroll is due tomorrow and we need those hours. Thanks!\n[/untrusted]",
+      "route": {
+        "truth": "bug",
+        "why": "bug: empty CSV export before payroll"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: empty CSV export before payroll"
+      }
+    },
+    {
+      "id": "T-63117",
+      "template": "f5",
+      "product": "brindle",
+      "body": "Please add a dark theme to the mobile app. Thanks, Sam",
+      "state": "Brindle Ledger support inbox\nticket: T-63117\nchannel: email\ncustomer plan: Team\n\n[untrusted message]\nPlease add a dark theme to the mobile app. Thanks, Sam\n[/untrusted]",
+      "route": {
+        "truth": "feature_request",
+        "why": "feature_request: mobile dark theme"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: mobile dark theme"
+      }
+    },
+    {
+      "id": "T-52544",
+      "template": "c7",
+      "product": "brindle",
+      "body": "Hi, Our security team needs your SOC 2 report before we can sign the contract. Regards, Priya",
+      "state": "Brindle Ledger support inbox\nticket: T-52544\nchannel: web form\ncustomer plan: Team\n\n[untrusted message]\nHi, Our security team needs your SOC 2 report before we can sign the contract. Regards, Priya\n[/untrusted]",
+      "route": {
+        "truth": "sales",
+        "why": "sales: SOC 2 report for contract",
+        "ambiguous": true
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: SOC 2 report for contract"
+      }
+    },
+    {
+      "id": "T-18912",
+      "template": "c3",
+      "product": "brindle",
+      "body": "We want to move to Enterprise before our board meeting on Thursday. Can someone from sales call me today? Thanks, Noor",
+      "state": "Brindle Ledger support inbox\nticket: T-18912\nchannel: email\ncustomer plan: Business\n\n[untrusted message]\nWe want to move to Enterprise before our board meeting on Thursday. Can someone from sales call me today? Thanks, Noor\n[/untrusted]",
+      "route": {
+        "truth": "sales",
+        "why": "sales: upgrade before Thursday"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: upgrade before Thursday",
+        "ambiguous": true
+      }
+    },
+    {
+      "id": "T-94355",
+      "template": "p9",
+      "product": "brindle",
+      "body": "Hi, We received a CCPA request from a customer and the response deadline is tomorrow. We need an export of all their records. Cheers",
+      "state": "Brindle Ledger support inbox\nticket: T-94355\nchannel: in-app chat\ncustomer plan: Team\n\n[untrusted message]\nHi, We received a CCPA request from a customer and the response deadline is tomorrow. We need an export of all their records. Cheers\n[/untrusted]",
+      "route": {
+        "truth": "data_privacy",
+        "why": "data_privacy: CCPA deadline tomorrow"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: CCPA deadline tomorrow"
+      }
+    },
+    {
+      "id": "T-87704",
+      "template": "a9",
+      "product": "brindle",
+      "body": "Hi team, My authenticator codes keep getting rejected. I can still log in with backup codes, but I only have 2 left. Thanks, Noor",
+      "state": "Brindle Ledger support inbox\nticket: T-87704\nchannel: email\ncustomer plan: Enterprise\n\n[untrusted message]\nHi team, My authenticator codes keep getting rejected. I can still log in with backup codes, but I only have 2 left. Thanks, Noor\n[/untrusted]",
+      "route": {
+        "truth": "account_access",
+        "why": "account_access: 2FA codes rejected, backup codes work"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: 2FA codes rejected, backup codes work"
+      }
+    },
+    {
+      "id": "T-44736",
+      "template": "i3",
+      "product": "brindle",
+      "body": "Hi, Does your API support filtering time entries by tag? Regards, Leah",
+      "state": "Brindle Ledger support inbox\nticket: T-44736\nchannel: in-app chat\ncustomer plan: Business\n\n[untrusted message]\nHi, Does your API support filtering time entries by tag? Regards, Leah\n[/untrusted]",
+      "route": {
+        "truth": "integrations",
+        "why": "integrations: API filter question"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: API filter question"
+      }
+    },
+    {
+      "id": "T-58240",
+      "template": "a8",
+      "product": "brindle",
+      "body": "Good morning, A new hire starts today and the invitation link we sent says 'invalid invitation'. She can't get into the workspace to start her onboarding. Marco, Pinecrest Dental",
+      "state": "Brindle Ledger support inbox\nticket: T-58240\nchannel: in-app chat\ncustomer plan: Enterprise\n\n[untrusted message]\nGood morning, A new hire starts today and the invitation link we sent says 'invalid invitation'. She can't get into the workspace to start her onboarding. Marco, Pinecrest Dental\n[/untrusted]",
+      "route": {
+        "truth": "account_access",
+        "why": "account_access: new hire cannot join today"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: new hire cannot join today"
+      }
+    },
+    {
+      "id": "T-71361",
+      "template": "a1",
+      "product": "brindle",
+      "body": "Hello, I can't log in. It says my password is wrong and the reset email never arrives. I have client invoices to send by the end of the day.",
+      "state": "Brindle Ledger support inbox\nticket: T-71361\nchannel: in-app chat\ncustomer plan: Business\n\n[untrusted message]\nHello, I can't log in. It says my password is wrong and the reset email never arrives. I have client invoices to send by the end of the day.\n[/untrusted]",
+      "route": {
+        "truth": "account_access",
+        "why": "account_access: cannot log in, reset email missing"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: cannot log in, reset email missing"
+      }
+    },
+    {
+      "id": "T-10512",
+      "template": "i2",
+      "product": "brindle",
+      "body": "Hi, Our Slack sync fails with 'token expired', and invoices aren't reaching our accounting system before month-end close today. Regards, Aiko",
+      "state": "Brindle Ledger support inbox\nticket: T-10512\nchannel: web form\ncustomer plan: Business\n\n[untrusted message]\nHi, Our Slack sync fails with 'token expired', and invoices aren't reaching our accounting system before month-end close today. Regards, Aiko\n[/untrusted]",
+      "route": {
+        "truth": "integrations",
+        "why": "integrations: sync token expired before close today"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: sync token expired before close today"
+      }
+    },
+    {
+      "id": "T-80971",
+      "template": "i10",
+      "product": "brindle",
+      "body": "Hi, Where can I find the API docs for creating recurring invoices? Thanks, Noor",
+      "state": "Brindle Ledger support inbox\nticket: T-80971\nchannel: web form\ncustomer plan: Business\n\n[untrusted message]\nHi, Where can I find the API docs for creating recurring invoices? Thanks, Noor\n[/untrusted]",
+      "route": {
+        "truth": "integrations",
+        "why": "integrations: API docs location"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: API docs location"
+      }
+    },
+    {
+      "id": "T-33204",
+      "template": "b1",
+      "product": "brindle",
+      "body": "Good morning, We were charged twice for the September subscription: two charges of $392.51 on the same day. Can you refund the duplicate? Thanks!",
+      "state": "Brindle Ledger support inbox\nticket: T-33204\nchannel: web form\ncustomer plan: Business\n\n[untrusted message]\nGood morning, We were charged twice for the September subscription: two charges of $392.51 on the same day. Can you refund the duplicate? Thanks!\n[/untrusted]",
+      "route": {
+        "truth": "billing",
+        "why": "billing: duplicate charge"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: duplicate charge"
+      }
+    },
+    {
+      "id": "T-36575",
+      "template": "s10",
+      "product": "brindle",
+      "body": "Hi, A client told us they got a payment request from our account that we never sent. Can you check what happened? Thanks!",
+      "state": "Brindle Ledger support inbox\nticket: T-36575\nchannel: email\ncustomer plan: Business\n\n[untrusted message]\nHi, A client told us they got a payment request from our account that we never sent. Can you check what happened? Thanks!\n[/untrusted]",
+      "route": {
+        "truth": "security",
+        "why": "security: payment request we never sent"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: payment request we never sent"
+      }
+    },
+    {
+      "id": "T-72220",
+      "template": "c11",
+      "product": "brindle",
+      "body": "We're comparing vendors and need pricing for 28 users with SSO by the end of the month. Thanks, Noor",
+      "state": "Brindle Ledger support inbox\nticket: T-72220\nchannel: in-app chat\ncustomer plan: Enterprise\n\n[untrusted message]\nWe're comparing vendors and need pricing for 28 users with SSO by the end of the month. Thanks, Noor\n[/untrusted]",
+      "route": {
+        "truth": "sales",
+        "why": "sales: vendor comparison pricing"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: vendor comparison pricing"
+      }
+    },
+    {
+      "id": "T-94741",
+      "template": "c10",
+      "product": "brindle",
+      "body": "Hi team, What's the difference between the Team and Business plans? Regards, Priya",
+      "state": "Brindle Ledger support inbox\nticket: T-94741\nchannel: in-app chat\ncustomer plan: Enterprise\n\n[untrusted message]\nHi team, What's the difference between the Team and Business plans? Regards, Priya\n[/untrusted]",
+      "route": {
+        "truth": "sales",
+        "why": "sales: plan comparison"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: plan comparison"
+      }
+    },
+    {
+      "id": "T-57058",
+      "template": "a10",
+      "product": "brindle",
+      "body": "Hi, How do I turn on two-factor authentication for my account? Thanks!",
+      "state": "Brindle Ledger support inbox\nticket: T-57058\nchannel: web form\ncustomer plan: Business\n\n[untrusted message]\nHi, How do I turn on two-factor authentication for my account? Thanks!\n[/untrusted]",
+      "route": {
+        "truth": "account_access",
+        "why": "account_access: how to enable 2FA"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: how to enable 2FA"
+      }
+    },
+    {
+      "id": "T-58580",
+      "template": "c9",
+      "product": "brindle",
+      "body": "Hi team, Our contract renewal is due Friday and we need the updated order form signed by then, or legal won't approve it. Aiko, Halyard Design",
+      "state": "Brindle Ledger support inbox\nticket: T-58580\nchannel: in-app chat\ncustomer plan: Team\n\n[untrusted message]\nHi team, Our contract renewal is due Friday and we need the updated order form signed by then, or legal won't approve it. Aiko, Halyard Design\n[/untrusted]",
+      "route": {
+        "truth": "sales",
+        "why": "sales: renewal order form due Friday"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: renewal order form due Friday"
+      }
+    },
+    {
+      "id": "T-56836",
+      "template": "c6",
+      "product": "brindle",
+      "body": "Hi team, Is there a free trial of the Enterprise features? Regards, Dana",
+      "state": "Brindle Ledger support inbox\nticket: T-56836\nchannel: web form\ncustomer plan: Team\n\n[untrusted message]\nHi team, Is there a free trial of the Enterprise features? Regards, Dana\n[/untrusted]",
+      "route": {
+        "truth": "sales",
+        "why": "sales: trial question"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: trial question"
+      }
+    },
+    {
+      "id": "T-59838",
+      "template": "f2",
+      "product": "brindle",
+      "body": "Hi, Any plans to support Portuguese in the client portal? Cheers",
+      "state": "Brindle Ledger support inbox\nticket: T-59838\nchannel: email\ncustomer plan: Enterprise\n\n[untrusted message]\nHi, Any plans to support Portuguese in the client portal? Cheers\n[/untrusted]",
+      "route": {
+        "truth": "feature_request",
+        "why": "feature_request: new portal language"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: new portal language"
+      }
+    },
+    {
+      "id": "T-36855",
+      "template": "b12",
+      "product": "brindle",
+      "body": "Hello, All 11 of our client workspaces were suspended overnight for non-payment even though invoice INV-6457 was paid last week. Nobody in the company can work.",
+      "state": "Brindle Ledger support inbox\nticket: T-36855\nchannel: web form\ncustomer plan: Enterprise\n\n[untrusted message]\nHello, All 11 of our client workspaces were suspended overnight for non-payment even though invoice INV-6457 was paid last week. Nobody in the company can work.\n[/untrusted]",
+      "route": {
+        "truth": "billing",
+        "why": "billing: company-wide suspension for non-payment"
+      },
+      "urgency": {
+        "truth": "critical",
+        "why": "critical: company-wide suspension for non-payment"
+      }
+    },
+    {
+      "id": "T-77946",
+      "template": "b9",
+      "product": "brindle",
+      "body": "Please update the card on file, the old one expires at the end of the month. I tried in settings but the save button just spins. Cheers",
+      "state": "Brindle Ledger support inbox\nticket: T-77946\nchannel: in-app chat\ncustomer plan: Enterprise\n\n[untrusted message]\nPlease update the card on file, the old one expires at the end of the month. I tried in settings but the save button just spins. Cheers\n[/untrusted]",
+      "route": {
+        "truth": "billing",
+        "why": "billing: card on file (save button also misbehaves)",
+        "ambiguous": true
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: card on file (save button also misbehaves)"
+      }
+    },
+    {
+      "id": "T-34149",
+      "template": "c9",
+      "product": "brindle",
+      "body": "Good morning, Our contract renewal is due Friday and we need the updated order form signed by then, or legal won't approve it. Regards, Tomás",
+      "state": "Brindle Ledger support inbox\nticket: T-34149\nchannel: email\ncustomer plan: Business\n\n[untrusted message]\nGood morning, Our contract renewal is due Friday and we need the updated order form signed by then, or legal won't approve it. Regards, Tomás\n[/untrusted]",
+      "route": {
+        "truth": "sales",
+        "why": "sales: renewal order form due Friday"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: renewal order form due Friday"
+      }
+    },
+    {
+      "id": "T-33437",
+      "template": "c2",
+      "product": "brindle",
+      "body": "Hello, Could you send a formal quote for 23 seats? Our procurement team needs it to raise a purchase order. Cheers",
+      "state": "Brindle Ledger support inbox\nticket: T-33437\nchannel: web form\ncustomer plan: Business\n\n[untrusted message]\nHello, Could you send a formal quote for 23 seats? Our procurement team needs it to raise a purchase order. Cheers\n[/untrusted]",
+      "route": {
+        "truth": "sales",
+        "why": "sales: formal quote"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: formal quote"
+      }
+    },
+    {
+      "id": "T-26018",
+      "template": "i2",
+      "product": "brindle",
+      "body": "Hello, Our Zapier sync fails with 'token expired', and invoices aren't reaching our accounting system before month-end close today. Regards, Sam",
+      "state": "Brindle Ledger support inbox\nticket: T-26018\nchannel: web form\ncustomer plan: Business\n\n[untrusted message]\nHello, Our Zapier sync fails with 'token expired', and invoices aren't reaching our accounting system before month-end close today. Regards, Sam\n[/untrusted]",
+      "route": {
+        "truth": "integrations",
+        "why": "integrations: sync token expired before close today"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: sync token expired before close today"
+      }
+    },
+    {
+      "id": "T-20573",
+      "template": "c4",
+      "product": "brindle",
+      "body": "Hi, Do you offer discounts for non-profits? Regards, Aiko",
+      "state": "Brindle Ledger support inbox\nticket: T-20573\nchannel: email\ncustomer plan: Team\n\n[untrusted message]\nHi, Do you offer discounts for non-profits? Regards, Aiko\n[/untrusted]",
+      "route": {
+        "truth": "sales",
+        "why": "sales: non-profit discount"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: non-profit discount"
+      }
+    },
+    {
+      "id": "T-32059",
+      "template": "a2",
+      "product": "brindle",
+      "body": "Hi team, I got a new phone and lost my two-factor app. How do I reset 2FA on my account? I can wait until tomorrow. Regards, Tomás",
+      "state": "Brindle Ledger support inbox\nticket: T-32059\nchannel: in-app chat\ncustomer plan: Team\n\n[untrusted message]\nHi team, I got a new phone and lost my two-factor app. How do I reset 2FA on my account? I can wait until tomorrow. Regards, Tomás\n[/untrusted]",
+      "route": {
+        "truth": "account_access",
+        "why": "account_access: 2FA reset"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: 2FA reset"
+      }
+    },
+    {
+      "id": "T-46422",
+      "template": "p2",
+      "product": "brindle",
+      "body": "Good morning, Please delete my account and all the data associated with it. I no longer use the service.",
+      "state": "Brindle Ledger support inbox\nticket: T-46422\nchannel: in-app chat\ncustomer plan: Team\n\n[untrusted message]\nGood morning, Please delete my account and all the data associated with it. I no longer use the service.\n[/untrusted]",
+      "route": {
+        "truth": "data_privacy",
+        "why": "data_privacy: account and data deletion"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: account and data deletion"
+      }
+    },
+    {
+      "id": "T-18806",
+      "template": "b9",
+      "product": "brindle",
+      "body": "Good morning, Please update the card on file, the old one expires at the end of the month. I tried in settings but the save button just spins. Cheers",
+      "state": "Brindle Ledger support inbox\nticket: T-18806\nchannel: email\ncustomer plan: Business\n\n[untrusted message]\nGood morning, Please update the card on file, the old one expires at the end of the month. I tried in settings but the save button just spins. Cheers\n[/untrusted]",
+      "route": {
+        "truth": "billing",
+        "why": "billing: card on file (save button also misbehaves)",
+        "ambiguous": true
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: card on file (save button also misbehaves)"
+      }
+    },
+    {
+      "id": "T-26621",
+      "template": "b12",
+      "product": "brindle",
+      "body": "Hi team, All 59 of our client workspaces were suspended overnight for non-payment even though invoice INV-7063 was paid last week. Nobody in the company can work. Regards, Noor",
+      "state": "Brindle Ledger support inbox\nticket: T-26621\nchannel: email\ncustomer plan: Team\n\n[untrusted message]\nHi team, All 59 of our client workspaces were suspended overnight for non-payment even though invoice INV-7063 was paid last week. Nobody in the company can work. Regards, Noor\n[/untrusted]",
+      "route": {
+        "truth": "billing",
+        "why": "billing: company-wide suspension for non-payment"
+      },
+      "urgency": {
+        "truth": "critical",
+        "why": "critical: company-wide suspension for non-payment"
+      }
+    },
+    {
+      "id": "T-19872",
+      "template": "i9",
+      "product": "brindle",
+      "body": "Hi, Xero creates a duplicate client every time it syncs. I've been merging them by hand. Regards, Noor",
+      "state": "Brindle Ledger support inbox\nticket: T-19872\nchannel: email\ncustomer plan: Enterprise\n\n[untrusted message]\nHi, Xero creates a duplicate client every time it syncs. I've been merging them by hand. Regards, Noor\n[/untrusted]",
+      "route": {
+        "truth": "integrations",
+        "why": "integrations: duplicate clients on sync"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: duplicate clients on sync"
+      }
+    },
+    {
+      "id": "T-14325",
+      "template": "c11",
+      "product": "brindle",
+      "body": "Hey there, We're comparing vendors and need pricing for 13 users with SSO by the end of the month. Thanks, Aiko",
+      "state": "Brindle Ledger support inbox\nticket: T-14325\nchannel: email\ncustomer plan: Enterprise\n\n[untrusted message]\nHey there, We're comparing vendors and need pricing for 13 users with SSO by the end of the month. Thanks, Aiko\n[/untrusted]",
+      "route": {
+        "truth": "sales",
+        "why": "sales: vendor comparison pricing"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: vendor comparison pricing"
+      }
+    },
+    {
+      "id": "T-24959",
+      "template": "c2",
+      "product": "brindle",
+      "body": "Hello, Could you send a formal quote for 18 seats? Our procurement team needs it to raise a purchase order. Regards, Priya",
+      "state": "Brindle Ledger support inbox\nticket: T-24959\nchannel: in-app chat\ncustomer plan: Business\n\n[untrusted message]\nHello, Could you send a formal quote for 18 seats? Our procurement team needs it to raise a purchase order. Regards, Priya\n[/untrusted]",
+      "route": {
+        "truth": "sales",
+        "why": "sales: formal quote"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: formal quote"
+      }
+    },
+    {
+      "id": "T-72692",
+      "template": "i6",
+      "product": "brindle",
+      "body": "Good morning, Is there a Slack connector for timesheets, or only for invoices? Regards, Tomás",
+      "state": "Brindle Ledger support inbox\nticket: T-72692\nchannel: in-app chat\ncustomer plan: Business\n\n[untrusted message]\nGood morning, Is there a Slack connector for timesheets, or only for invoices? Regards, Tomás\n[/untrusted]",
+      "route": {
+        "truth": "integrations",
+        "why": "integrations: connector scope question"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: connector scope question"
+      }
+    },
+    {
+      "id": "T-69177",
+      "template": "p5",
+      "product": "brindle",
+      "body": "Hey there, How long do you keep invoices after an account is closed? Cheers",
+      "state": "Brindle Ledger support inbox\nticket: T-69177\nchannel: in-app chat\ncustomer plan: Business\n\n[untrusted message]\nHey there, How long do you keep invoices after an account is closed? Cheers\n[/untrusted]",
+      "route": {
+        "truth": "data_privacy",
+        "why": "data_privacy: retention after closing"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: retention after closing"
+      }
+    },
+    {
+      "id": "T-41320",
+      "template": "g9",
+      "product": "brindle",
+      "body": "Good morning, The dashboard chart shows last month's revenue as zero, but the Reports page has the right figure.",
+      "state": "Brindle Ledger support inbox\nticket: T-41320\nchannel: in-app chat\ncustomer plan: Team\n\n[untrusted message]\nGood morning, The dashboard chart shows last month's revenue as zero, but the Reports page has the right figure.\n[/untrusted]",
+      "route": {
+        "truth": "bug",
+        "why": "bug: dashboard figure wrong"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: dashboard figure wrong"
+      }
+    },
+    {
+      "id": "T-62250",
+      "template": "p3",
+      "product": "brindle",
+      "body": "Hi team, Where are your servers located, and do you have a data processing agreement we can sign? Cheers",
+      "state": "Brindle Ledger support inbox\nticket: T-62250\nchannel: in-app chat\ncustomer plan: Business\n\n[untrusted message]\nHi team, Where are your servers located, and do you have a data processing agreement we can sign? Cheers\n[/untrusted]",
+      "route": {
+        "truth": "data_privacy",
+        "why": "data_privacy: server location and DPA"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: server location and DPA"
+      }
+    },
+    {
+      "id": "T-84539",
+      "template": "f9",
+      "product": "brindle",
+      "body": "Hello, Can you make the sidebar collapsible? It takes up a lot of room on small laptop screens. Thanks!",
+      "state": "Brindle Ledger support inbox\nticket: T-84539\nchannel: web form\ncustomer plan: Team\n\n[untrusted message]\nHello, Can you make the sidebar collapsible? It takes up a lot of room on small laptop screens. Thanks!\n[/untrusted]",
+      "route": {
+        "truth": "feature_request",
+        "why": "feature_request: collapsible sidebar"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: collapsible sidebar"
+      }
+    },
+    {
+      "id": "T-34489",
+      "template": "c12",
+      "product": "brindle",
+      "body": "Do you have reseller or partner pricing? Thanks!",
+      "state": "Brindle Ledger support inbox\nticket: T-34489\nchannel: email\ncustomer plan: Enterprise\n\n[untrusted message]\nDo you have reseller or partner pricing? Thanks!\n[/untrusted]",
+      "route": {
+        "truth": "sales",
+        "why": "sales: reseller pricing"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: reseller pricing"
+      }
+    },
+    {
+      "id": "T-20758",
+      "template": "p4",
+      "product": "brindle",
+      "body": "Hi team, A former employee has asked us to erase their personal data, and the legal deadline is this Friday. How do we remove their time entries and profile?",
+      "state": "Brindle Ledger support inbox\nticket: T-20758\nchannel: web form\ncustomer plan: Enterprise\n\n[untrusted message]\nHi team, A former employee has asked us to erase their personal data, and the legal deadline is this Friday. How do we remove their time entries and profile?\n[/untrusted]",
+      "route": {
+        "truth": "data_privacy",
+        "why": "data_privacy: erasure with legal deadline Friday"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: erasure with legal deadline Friday"
+      }
+    },
+    {
+      "id": "T-51738",
+      "template": "c1",
+      "product": "brindle",
+      "body": "Good morning, We're a team of 22. What's the price of the Business plan billed annually? Cheers",
+      "state": "Brindle Ledger support inbox\nticket: T-51738\nchannel: in-app chat\ncustomer plan: Enterprise\n\n[untrusted message]\nGood morning, We're a team of 22. What's the price of the Business plan billed annually? Cheers\n[/untrusted]",
+      "route": {
+        "truth": "sales",
+        "why": "sales: plan price"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: plan price"
+      }
+    },
+    {
+      "id": "T-67083",
+      "template": "c5",
+      "product": "brindle",
+      "body": "Hi, We'd like a demo for our finance team sometime next week. Thanks!",
+      "state": "Brindle Ledger support inbox\nticket: T-67083\nchannel: web form\ncustomer plan: Business\n\n[untrusted message]\nHi, We'd like a demo for our finance team sometime next week. Thanks!\n[/untrusted]",
+      "route": {
+        "truth": "sales",
+        "why": "sales: demo request"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: demo request"
+      }
+    },
+    {
+      "id": "T-57934",
+      "template": "f7",
+      "product": "brindle",
+      "body": "Would be nice if the weekly summary email could go out on Fridays instead of Mondays. Cheers",
+      "state": "Brindle Ledger support inbox\nticket: T-57934\nchannel: email\ncustomer plan: Enterprise\n\n[untrusted message]\nWould be nice if the weekly summary email could go out on Fridays instead of Mondays. Cheers\n[/untrusted]",
+      "route": {
+        "truth": "feature_request",
+        "why": "feature_request: summary email day"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: summary email day"
+      }
+    },
+    {
+      "id": "T-95140",
+      "template": "p8",
+      "product": "brindle",
+      "body": "Hi, Do you sell or share usage data with advertisers? Regards, Sam",
+      "state": "Brindle Ledger support inbox\nticket: T-95140\nchannel: web form\ncustomer plan: Team\n\n[untrusted message]\nHi, Do you sell or share usage data with advertisers? Regards, Sam\n[/untrusted]",
+      "route": {
+        "truth": "data_privacy",
+        "why": "data_privacy: data sharing question"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: data sharing question"
+      }
+    },
+    {
+      "id": "T-28962",
+      "template": "s6",
+      "product": "brindle",
+      "body": "There's a session in my active devices that I don't recognise, from a city I've never been to. I changed my password but the session is still listed. Thanks, Marco",
+      "state": "Brindle Ledger support inbox\nticket: T-28962\nchannel: in-app chat\ncustomer plan: Team\n\n[untrusted message]\nThere's a session in my active devices that I don't recognise, from a city I've never been to. I changed my password but the session is still listed. Thanks, Marco\n[/untrusted]",
+      "route": {
+        "truth": "security",
+        "why": "security: unrecognised session persists"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: unrecognised session persists"
+      }
+    },
+    {
+      "id": "T-68077",
+      "template": "b4",
+      "product": "brindle",
+      "body": "Good morning, How do I change the billing address that prints on our invoices? We moved offices last month.",
+      "state": "Brindle Ledger support inbox\nticket: T-68077\nchannel: web form\ncustomer plan: Team\n\n[untrusted message]\nGood morning, How do I change the billing address that prints on our invoices? We moved offices last month.\n[/untrusted]",
+      "route": {
+        "truth": "billing",
+        "why": "billing: billing address question"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: billing address question"
+      }
+    },
+    {
+      "id": "T-30822",
+      "template": "b6",
+      "product": "brindle",
+      "body": "Hi team, I cancelled our plan on 2026-09-08 but was still charged $394.32 on the next cycle. Please refund it. Regards, Aiko",
+      "state": "Brindle Ledger support inbox\nticket: T-30822\nchannel: email\ncustomer plan: Team\n\n[untrusted message]\nHi team, I cancelled our plan on 2026-09-08 but was still charged $394.32 on the next cycle. Please refund it. Regards, Aiko\n[/untrusted]",
+      "route": {
+        "truth": "billing",
+        "why": "billing: charged after cancelling"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: charged after cancelling"
+      }
+    },
+    {
+      "id": "T-46154",
+      "template": "p12",
+      "product": "brindle",
+      "body": "Hey there, Is there a page that describes your retention policy for deleted projects? Thanks!",
+      "state": "Brindle Ledger support inbox\nticket: T-46154\nchannel: web form\ncustomer plan: Business\n\n[untrusted message]\nHey there, Is there a page that describes your retention policy for deleted projects? Thanks!\n[/untrusted]",
+      "route": {
+        "truth": "data_privacy",
+        "why": "data_privacy: retention policy page"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: retention policy page"
+      }
+    },
+    {
+      "id": "T-73634",
+      "template": "c8",
+      "product": "brindle",
+      "body": "Hi, How do I add 5 more seats to our current plan? Thanks!",
+      "state": "Brindle Ledger support inbox\nticket: T-73634\nchannel: web form\ncustomer plan: Team\n\n[untrusted message]\nHi, How do I add 5 more seats to our current plan? Thanks!\n[/untrusted]",
+      "route": {
+        "truth": "sales",
+        "why": "sales: how to add seats"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: how to add seats"
+      }
+    },
+    {
+      "id": "T-29565",
+      "template": "i4",
+      "product": "brindle",
+      "body": "Good morning, Webhook deliveries to our endpoint keep getting retried even though we return 200 OK.",
+      "state": "Brindle Ledger support inbox\nticket: T-29565\nchannel: email\ncustomer plan: Enterprise\n\n[untrusted message]\nGood morning, Webhook deliveries to our endpoint keep getting retried even though we return 200 OK.\n[/untrusted]",
+      "route": {
+        "truth": "integrations",
+        "why": "integrations: webhook retries"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: webhook retries"
+      }
+    },
+    {
+      "id": "T-24716",
+      "template": "s4",
+      "product": "brindle",
+      "body": "Hi team, Someone is logged into my account and is sending fake invoices with their own bank details to 54 of my clients. It's happening right now. Sam, Pinecrest Dental",
+      "state": "Brindle Ledger support inbox\nticket: T-24716\nchannel: web form\ncustomer plan: Team\n\n[untrusted message]\nHi team, Someone is logged into my account and is sending fake invoices with their own bank details to 54 of my clients. It's happening right now. Sam, Pinecrest Dental\n[/untrusted]",
+      "route": {
+        "truth": "security",
+        "why": "security: intruder sending fake invoices now"
+      },
+      "urgency": {
+        "truth": "critical",
+        "why": "critical: intruder sending fake invoices now"
+      }
+    },
+    {
+      "id": "T-19434",
+      "template": "f3",
+      "product": "brindle",
+      "body": "Hi, We'd love a way to bulk-edit project rates instead of changing 30 projects one by one every January. Sam, Oakline Builders",
+      "state": "Brindle Ledger support inbox\nticket: T-19434\nchannel: email\ncustomer plan: Team\n\n[untrusted message]\nHi, We'd love a way to bulk-edit project rates instead of changing 30 projects one by one every January. Sam, Oakline Builders\n[/untrusted]",
+      "route": {
+        "truth": "feature_request",
+        "why": "feature_request: bulk edit rates"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: bulk edit rates"
+      }
+    },
+    {
+      "id": "T-91294",
+      "template": "f1",
+      "product": "brindle",
+      "body": "Hey there, It would be great if invoices could include a QR code for payment. Cheers",
+      "state": "Brindle Ledger support inbox\nticket: T-91294\nchannel: in-app chat\ncustomer plan: Business\n\n[untrusted message]\nHey there, It would be great if invoices could include a QR code for payment. Cheers\n[/untrusted]",
+      "route": {
+        "truth": "feature_request",
+        "why": "feature_request: QR codes on invoices"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: QR codes on invoices"
+      }
+    },
+    {
+      "id": "T-87623",
+      "template": "f7",
+      "product": "brindle",
+      "body": "Hey there, Would be nice if the weekly summary email could go out on Fridays instead of Mondays. Cheers",
+      "state": "Brindle Ledger support inbox\nticket: T-87623\nchannel: web form\ncustomer plan: Business\n\n[untrusted message]\nHey there, Would be nice if the weekly summary email could go out on Fridays instead of Mondays. Cheers\n[/untrusted]",
+      "route": {
+        "truth": "feature_request",
+        "why": "feature_request: summary email day"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: summary email day"
+      }
+    },
+    {
+      "id": "T-56522",
+      "template": "f4",
+      "product": "brindle",
+      "body": "Hi, Suggestion: let us set a default due date of 45 days for specific clients. Thanks!",
+      "state": "Brindle Ledger support inbox\nticket: T-56522\nchannel: web form\ncustomer plan: Team\n\n[untrusted message]\nHi, Suggestion: let us set a default due date of 45 days for specific clients. Thanks!\n[/untrusted]",
+      "route": {
+        "truth": "feature_request",
+        "why": "feature_request: per-client due dates"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: per-client due dates"
+      }
+    },
+    {
+      "id": "T-63679",
+      "template": "b2",
+      "product": "brindle",
+      "body": "Hi, Could you send me a PDF receipt for invoice INV-1938? Our accountant needs it for the quarterly close, no rush.",
+      "state": "Brindle Ledger support inbox\nticket: T-63679\nchannel: email\ncustomer plan: Enterprise\n\n[untrusted message]\nHi, Could you send me a PDF receipt for invoice INV-1938? Our accountant needs it for the quarterly close, no rush.\n[/untrusted]",
+      "route": {
+        "truth": "billing",
+        "why": "billing: receipt copy"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: receipt copy"
+      }
+    },
+    {
+      "id": "T-52580",
+      "template": "g7",
+      "product": "brindle",
+      "body": "Last night's sync wiped every time entry from the past week for our whole team. Hundreds of hours are gone. Sam, Pinecrest Dental",
+      "state": "Brindle Ledger support inbox\nticket: T-52580\nchannel: in-app chat\ncustomer plan: Business\n\n[untrusted message]\nLast night's sync wiped every time entry from the past week for our whole team. Hundreds of hours are gone. Sam, Pinecrest Dental\n[/untrusted]",
+      "route": {
+        "truth": "bug",
+        "why": "bug: sync deleted a week of entries"
+      },
+      "urgency": {
+        "truth": "critical",
+        "why": "critical: sync deleted a week of entries"
+      }
+    },
+    {
+      "id": "T-44340",
+      "template": "s11",
+      "product": "brindle",
+      "body": "Good morning, Our admin password showed up in a credential leak alert. Can you force a sign-out of all sessions? Cheers",
+      "state": "Brindle Ledger support inbox\nticket: T-44340\nchannel: in-app chat\ncustomer plan: Team\n\n[untrusted message]\nGood morning, Our admin password showed up in a credential leak alert. Can you force a sign-out of all sessions? Cheers\n[/untrusted]",
+      "route": {
+        "truth": "security",
+        "why": "security: password in a leak, force sign-out"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: password in a leak, force sign-out"
+      }
+    },
+    {
+      "id": "T-10893",
+      "template": "a11",
+      "product": "brindle",
+      "body": "Good morning, None of our 38 staff can log in this morning: every login loops back to the sign-in page. The whole office is stuck. Thanks, Noor",
+      "state": "Brindle Ledger support inbox\nticket: T-10893\nchannel: email\ncustomer plan: Enterprise\n\n[untrusted message]\nGood morning, None of our 38 staff can log in this morning: every login loops back to the sign-in page. The whole office is stuck. Thanks, Noor\n[/untrusted]",
+      "route": {
+        "truth": "account_access",
+        "why": "account_access: nobody can log in",
+        "ambiguous": true
+      },
+      "urgency": {
+        "truth": "critical",
+        "why": "critical: nobody can log in"
+      }
+    },
+    {
+      "id": "T-84852",
+      "template": "c5",
+      "product": "brindle",
+      "body": "Hello, We'd like a demo for our finance team sometime next week. Cheers",
+      "state": "Brindle Ledger support inbox\nticket: T-84852\nchannel: web form\ncustomer plan: Team\n\n[untrusted message]\nHello, We'd like a demo for our finance team sometime next week. Cheers\n[/untrusted]",
+      "route": {
+        "truth": "sales",
+        "why": "sales: demo request"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: demo request"
+      }
+    },
+    {
+      "id": "T-21651",
+      "template": "s2",
+      "product": "brindle",
+      "body": "Hey there, I accidentally pushed our API key to a public GitHub repository an hour ago. What should I do? Thanks, Sam",
+      "state": "Brindle Ledger support inbox\nticket: T-21651\nchannel: email\ncustomer plan: Team\n\n[untrusted message]\nHey there, I accidentally pushed our API key to a public GitHub repository an hour ago. What should I do? Thanks, Sam\n[/untrusted]",
+      "route": {
+        "truth": "security",
+        "why": "security: API key exposed publicly"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: API key exposed publicly"
+      }
+    },
+    {
+      "id": "T-66144",
+      "template": "s1",
+      "product": "brindle",
+      "body": "Hey there, I just got login alerts from three countries in the last hour and someone changed our payout bank details. Please lock our account now. Thanks, Priya",
+      "state": "Brindle Ledger support inbox\nticket: T-66144\nchannel: in-app chat\ncustomer plan: Team\n\n[untrusted message]\nHey there, I just got login alerts from three countries in the last hour and someone changed our payout bank details. Please lock our account now. Thanks, Priya\n[/untrusted]",
+      "route": {
+        "truth": "security",
+        "why": "security: active takeover, bank details changed"
+      },
+      "urgency": {
+        "truth": "critical",
+        "why": "critical: active takeover, bank details changed"
+      }
+    },
+    {
+      "id": "T-75941",
+      "template": "g12",
+      "product": "brindle",
+      "body": "Hi, In dark mode the invoice preview text is hard to read. Not a big deal.",
+      "state": "Brindle Ledger support inbox\nticket: T-75941\nchannel: web form\ncustomer plan: Enterprise\n\n[untrusted message]\nHi, In dark mode the invoice preview text is hard to read. Not a big deal.\n[/untrusted]",
+      "route": {
+        "truth": "bug",
+        "why": "bug: dark mode readability"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: dark mode readability"
+      }
+    },
+    {
+      "id": "T-95768",
+      "template": "i9",
+      "product": "brindle",
+      "body": "Hi, Xero creates a duplicate client every time it syncs. I've been merging them by hand. Thanks!",
+      "state": "Brindle Ledger support inbox\nticket: T-95768\nchannel: web form\ncustomer plan: Business\n\n[untrusted message]\nHi, Xero creates a duplicate client every time it syncs. I've been merging them by hand. Thanks!\n[/untrusted]",
+      "route": {
+        "truth": "integrations",
+        "why": "integrations: duplicate clients on sync"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: duplicate clients on sync"
+      }
+    },
+    {
+      "id": "T-88061",
+      "template": "a7",
+      "product": "brindle",
+      "body": "Hi, The password reset link says it has expired every time I click it, even straight away. I'm still logged in on my laptop for now. Regards, Leah",
+      "state": "Brindle Ledger support inbox\nticket: T-88061\nchannel: web form\ncustomer plan: Team\n\n[untrusted message]\nHi, The password reset link says it has expired every time I click it, even straight away. I'm still logged in on my laptop for now. Regards, Leah\n[/untrusted]",
+      "route": {
+        "truth": "account_access",
+        "why": "account_access: reset link expired, still logged in elsewhere",
+        "ambiguous": true
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: reset link expired, still logged in elsewhere"
+      }
+    },
+    {
+      "id": "T-41057",
+      "template": "f12",
+      "product": "brindle",
+      "body": "Good morning, Our biggest client requires Peppol e-invoices from next week, and without that format we can't bill them at all. Is this on your roadmap? Thanks!",
+      "state": "Brindle Ledger support inbox\nticket: T-41057\nchannel: web form\ncustomer plan: Team\n\n[untrusted message]\nGood morning, Our biggest client requires Peppol e-invoices from next week, and without that format we can't bill them at all. Is this on your roadmap? Thanks!\n[/untrusted]",
+      "route": {
+        "truth": "feature_request",
+        "why": "feature_request: e-invoicing needed to bill next week"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: e-invoicing needed to bill next week"
+      }
+    },
+    {
+      "id": "T-77806",
+      "template": "a2",
+      "product": "brindle",
+      "body": "Hello, I got a new phone and lost my two-factor app. How do I reset 2FA on my account? I can wait until tomorrow. Cheers",
+      "state": "Brindle Ledger support inbox\nticket: T-77806\nchannel: in-app chat\ncustomer plan: Team\n\n[untrusted message]\nHello, I got a new phone and lost my two-factor app. How do I reset 2FA on my account? I can wait until tomorrow. Cheers\n[/untrusted]",
+      "route": {
+        "truth": "account_access",
+        "why": "account_access: 2FA reset"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: 2FA reset"
+      }
+    },
+    {
+      "id": "T-93582",
+      "template": "b2",
+      "product": "brindle",
+      "body": "Hi, Could you send me a PDF receipt for invoice INV-9949? Our accountant needs it for the quarterly close, no rush.",
+      "state": "Brindle Ledger support inbox\nticket: T-93582\nchannel: email\ncustomer plan: Enterprise\n\n[untrusted message]\nHi, Could you send me a PDF receipt for invoice INV-9949? Our accountant needs it for the quarterly close, no rush.\n[/untrusted]",
+      "route": {
+        "truth": "billing",
+        "why": "billing: receipt copy"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: receipt copy"
+      }
+    },
+    {
+      "id": "T-16383",
+      "template": "i7",
+      "product": "brindle",
+      "body": "Hi, How do I rotate an API key without breaking our existing scripts? Regards, Tomás",
+      "state": "Brindle Ledger support inbox\nticket: T-16383\nchannel: email\ncustomer plan: Team\n\n[untrusted message]\nHi, How do I rotate an API key without breaking our existing scripts? Regards, Tomás\n[/untrusted]",
+      "route": {
+        "truth": "integrations",
+        "why": "integrations: API key rotation question"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: API key rotation question"
+      }
+    },
+    {
+      "id": "T-79931",
+      "template": "p10",
+      "product": "brindle",
+      "body": "Hello, Can you confirm whether our data is used to train any AI models?",
+      "state": "Brindle Ledger support inbox\nticket: T-79931\nchannel: email\ncustomer plan: Business\n\n[untrusted message]\nHello, Can you confirm whether our data is used to train any AI models?\n[/untrusted]",
+      "route": {
+        "truth": "data_privacy",
+        "why": "data_privacy: AI training question"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: AI training question"
+      }
+    },
+    {
+      "id": "T-34622",
+      "template": "g4",
+      "product": "brindle",
+      "body": "Hey there, Small thing: the date picker shows Sunday as the first day of the week even though I set Monday in my preferences. Regards, Marco",
+      "state": "Brindle Ledger support inbox\nticket: T-34622\nchannel: in-app chat\ncustomer plan: Enterprise\n\n[untrusted message]\nHey there, Small thing: the date picker shows Sunday as the first day of the week even though I set Monday in my preferences. Regards, Marco\n[/untrusted]",
+      "route": {
+        "truth": "bug",
+        "why": "bug: date picker preference ignored"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: date picker preference ignored"
+      }
+    },
+    {
+      "id": "T-73207",
+      "template": "a9",
+      "product": "brindle",
+      "body": "Hi, My authenticator codes keep getting rejected. I can still log in with backup codes, but I only have 5 left.",
+      "state": "Brindle Ledger support inbox\nticket: T-73207\nchannel: in-app chat\ncustomer plan: Enterprise\n\n[untrusted message]\nHi, My authenticator codes keep getting rejected. I can still log in with backup codes, but I only have 5 left.\n[/untrusted]",
+      "route": {
+        "truth": "account_access",
+        "why": "account_access: 2FA codes rejected, backup codes work"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: 2FA codes rejected, backup codes work"
+      }
+    },
+    {
+      "id": "T-72252",
+      "template": "a10",
+      "product": "brindle",
+      "body": "How do I turn on two-factor authentication for my account? Noor, Lumen Films",
+      "state": "Brindle Ledger support inbox\nticket: T-72252\nchannel: web form\ncustomer plan: Business\n\n[untrusted message]\nHow do I turn on two-factor authentication for my account? Noor, Lumen Films\n[/untrusted]",
+      "route": {
+        "truth": "account_access",
+        "why": "account_access: how to enable 2FA"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: how to enable 2FA"
+      }
+    },
+    {
+      "id": "T-87711",
+      "template": "b7",
+      "product": "brindle",
+      "body": "Hi team, Invoice INV-2272 shows the wrong VAT number and our finance team can't pay it until it's corrected. The payment deadline is today. Regards, Sam",
+      "state": "Brindle Ledger support inbox\nticket: T-87711\nchannel: email\ncustomer plan: Team\n\n[untrusted message]\nHi team, Invoice INV-2272 shows the wrong VAT number and our finance team can't pay it until it's corrected. The payment deadline is today. Regards, Sam\n[/untrusted]",
+      "route": {
+        "truth": "billing",
+        "why": "billing: invoice correction blocking payment today"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: invoice correction blocking payment today"
+      }
+    },
+    {
+      "id": "T-39762",
+      "template": "f6",
+      "product": "brindle",
+      "body": "Good morning, Could you add approval workflows for timesheets? Our managers approve by email right now, which is slow. Thanks!",
+      "state": "Brindle Ledger support inbox\nticket: T-39762\nchannel: web form\ncustomer plan: Enterprise\n\n[untrusted message]\nGood morning, Could you add approval workflows for timesheets? Our managers approve by email right now, which is slow. Thanks!\n[/untrusted]",
+      "route": {
+        "truth": "feature_request",
+        "why": "feature_request: timesheet approvals"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: timesheet approvals"
+      }
+    },
+    {
+      "id": "T-59328",
+      "template": "s11",
+      "product": "brindle",
+      "body": "Hi, Our admin password showed up in a credential leak alert. Can you force a sign-out of all sessions? Thanks, Dana",
+      "state": "Brindle Ledger support inbox\nticket: T-59328\nchannel: email\ncustomer plan: Team\n\n[untrusted message]\nHi, Our admin password showed up in a credential leak alert. Can you force a sign-out of all sessions? Thanks, Dana\n[/untrusted]",
+      "route": {
+        "truth": "security",
+        "why": "security: password in a leak, force sign-out"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: password in a leak, force sign-out"
+      }
+    },
+    {
+      "id": "T-70674",
+      "template": "s9",
+      "product": "brindle",
+      "body": "Hey there, One of our employees clicked a link in a fake 'Brindle invoice' email and typed in their password. We're worried the account is compromised. Regards, Aiko",
+      "state": "Brindle Ledger support inbox\nticket: T-70674\nchannel: in-app chat\ncustomer plan: Business\n\n[untrusted message]\nHey there, One of our employees clicked a link in a fake 'Brindle invoice' email and typed in their password. We're worried the account is compromised. Regards, Aiko\n[/untrusted]",
+      "route": {
+        "truth": "security",
+        "why": "security: credentials entered on phishing page"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: credentials entered on phishing page"
+      }
+    },
+    {
+      "id": "T-96259",
+      "template": "c11",
+      "product": "brindle",
+      "body": "Good morning, We're comparing vendors and need pricing for 18 users with SSO by the end of the month. Thanks, Tomás",
+      "state": "Brindle Ledger support inbox\nticket: T-96259\nchannel: in-app chat\ncustomer plan: Enterprise\n\n[untrusted message]\nGood morning, We're comparing vendors and need pricing for 18 users with SSO by the end of the month. Thanks, Tomás\n[/untrusted]",
+      "route": {
+        "truth": "sales",
+        "why": "sales: vendor comparison pricing"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: vendor comparison pricing"
+      }
+    },
+    {
+      "id": "T-73221",
+      "template": "b1",
+      "product": "brindle",
+      "body": "We were charged twice for the October subscription: two charges of $286.24 on the same day. Can you refund the duplicate? Tomás, Corvid Labs",
+      "state": "Brindle Ledger support inbox\nticket: T-73221\nchannel: in-app chat\ncustomer plan: Team\n\n[untrusted message]\nWe were charged twice for the October subscription: two charges of $286.24 on the same day. Can you refund the duplicate? Tomás, Corvid Labs\n[/untrusted]",
+      "route": {
+        "truth": "billing",
+        "why": "billing: duplicate charge"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: duplicate charge"
+      }
+    },
+    {
+      "id": "T-80016",
+      "template": "p9",
+      "product": "brindle",
+      "body": "Hey there, We received a CCPA request from a customer and the response deadline is tomorrow. We need an export of all their records. Regards, Priya",
+      "state": "Brindle Ledger support inbox\nticket: T-80016\nchannel: web form\ncustomer plan: Team\n\n[untrusted message]\nHey there, We received a CCPA request from a customer and the response deadline is tomorrow. We need an export of all their records. Regards, Priya\n[/untrusted]",
+      "route": {
+        "truth": "data_privacy",
+        "why": "data_privacy: CCPA deadline tomorrow"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: CCPA deadline tomorrow"
+      }
+    },
+    {
+      "id": "T-63256",
+      "template": "g1",
+      "product": "brindle",
+      "body": "Hello, The timesheet CSV export has produced an empty file since yesterday's update. Payroll is due tomorrow and we need those hours. Thanks, Marco",
+      "state": "Brindle Ledger support inbox\nticket: T-63256\nchannel: in-app chat\ncustomer plan: Enterprise\n\n[untrusted message]\nHello, The timesheet CSV export has produced an empty file since yesterday's update. Payroll is due tomorrow and we need those hours. Thanks, Marco\n[/untrusted]",
+      "route": {
+        "truth": "bug",
+        "why": "bug: empty CSV export before payroll"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: empty CSV export before payroll"
+      }
+    },
+    {
+      "id": "T-56170",
+      "template": "a10",
+      "product": "brindle",
+      "body": "Hey there, How do I turn on two-factor authentication for my account?",
+      "state": "Brindle Ledger support inbox\nticket: T-56170\nchannel: in-app chat\ncustomer plan: Business\n\n[untrusted message]\nHey there, How do I turn on two-factor authentication for my account?\n[/untrusted]",
+      "route": {
+        "truth": "account_access",
+        "why": "account_access: how to enable 2FA"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: how to enable 2FA"
+      }
+    },
+    {
+      "id": "T-90957",
+      "template": "s6",
+      "product": "brindle",
+      "body": "Hi team, There's a session in my active devices that I don't recognise, from a city I've never been to. I changed my password but the session is still listed. Priya, Oakline Builders",
+      "state": "Brindle Ledger support inbox\nticket: T-90957\nchannel: email\ncustomer plan: Enterprise\n\n[untrusted message]\nHi team, There's a session in my active devices that I don't recognise, from a city I've never been to. I changed my password but the session is still listed. Priya, Oakline Builders\n[/untrusted]",
+      "route": {
+        "truth": "security",
+        "why": "security: unrecognised session persists"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: unrecognised session persists"
+      }
+    },
+    {
+      "id": "T-23421",
+      "template": "i12",
+      "product": "brindle",
+      "body": "Hey there, After your update the QuickBooks export mapping changed, and every invoice since Monday is wrong in our accountant's ledger. Our audit is tomorrow.",
+      "state": "Brindle Ledger support inbox\nticket: T-23421\nchannel: in-app chat\ncustomer plan: Enterprise\n\n[untrusted message]\nHey there, After your update the QuickBooks export mapping changed, and every invoice since Monday is wrong in our accountant's ledger. Our audit is tomorrow.\n[/untrusted]",
+      "route": {
+        "truth": "integrations",
+        "why": "integrations: export mapping wrong, audit tomorrow"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: export mapping wrong, audit tomorrow"
+      }
+    },
+    {
+      "id": "T-69298",
+      "template": "g5",
+      "product": "brindle",
+      "body": "Hi team, Recurring invoices scheduled for the 1st went out on the 2nd this month. A couple of clients asked why. Cheers",
+      "state": "Brindle Ledger support inbox\nticket: T-69298\nchannel: in-app chat\ncustomer plan: Team\n\n[untrusted message]\nHi team, Recurring invoices scheduled for the 1st went out on the 2nd this month. A couple of clients asked why. Cheers\n[/untrusted]",
+      "route": {
+        "truth": "bug",
+        "why": "bug: recurring invoices a day late"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: recurring invoices a day late"
+      }
+    },
+    {
+      "id": "T-48514",
+      "template": "p3",
+      "product": "brindle",
+      "body": "Hi, Where are your servers located, and do you have a data processing agreement we can sign? Regards, Dana",
+      "state": "Brindle Ledger support inbox\nticket: T-48514\nchannel: in-app chat\ncustomer plan: Team\n\n[untrusted message]\nHi, Where are your servers located, and do you have a data processing agreement we can sign? Regards, Dana\n[/untrusted]",
+      "route": {
+        "truth": "data_privacy",
+        "why": "data_privacy: server location and DPA"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: server location and DPA"
+      }
+    },
+    {
+      "id": "T-43276",
+      "template": "g3",
+      "product": "brindle",
+      "body": "The invoice editor crashes to a white screen for everyone on our account, 57 users. Nobody can create or send invoices right now. Thanks!",
+      "state": "Brindle Ledger support inbox\nticket: T-43276\nchannel: web form\ncustomer plan: Enterprise\n\n[untrusted message]\nThe invoice editor crashes to a white screen for everyone on our account, 57 users. Nobody can create or send invoices right now. Thanks!\n[/untrusted]",
+      "route": {
+        "truth": "bug",
+        "why": "bug: editor crash for all users"
+      },
+      "urgency": {
+        "truth": "critical",
+        "why": "critical: editor crash for all users"
+      }
+    },
+    {
+      "id": "T-14782",
+      "template": "s11",
+      "product": "brindle",
+      "body": "Hi, Our admin password showed up in a credential leak alert. Can you force a sign-out of all sessions? Regards, Marco",
+      "state": "Brindle Ledger support inbox\nticket: T-14782\nchannel: email\ncustomer plan: Business\n\n[untrusted message]\nHi, Our admin password showed up in a credential leak alert. Can you force a sign-out of all sessions? Regards, Marco\n[/untrusted]",
+      "route": {
+        "truth": "security",
+        "why": "security: password in a leak, force sign-out"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: password in a leak, force sign-out"
+      }
+    },
+    {
+      "id": "T-39467",
+      "template": "a6",
+      "product": "brindle",
+      "body": "Good morning, Is there a way to stay signed in longer? It logs me out every day, which is a bit annoying. Regards, Leah",
+      "state": "Brindle Ledger support inbox\nticket: T-39467\nchannel: web form\ncustomer plan: Enterprise\n\n[untrusted message]\nGood morning, Is there a way to stay signed in longer? It logs me out every day, which is a bit annoying. Regards, Leah\n[/untrusted]",
+      "route": {
+        "truth": "feature_request",
+        "why": "feature_request: longer sessions is a change to how it works",
+        "ambiguous": true
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: longer sessions is a change to how it works"
+      }
+    },
+    {
+      "id": "T-77571",
+      "template": "a4",
+      "product": "brindle",
+      "body": "Please change the email address on my account from leah@outlook.com to my new work address when you get a chance.",
+      "state": "Brindle Ledger support inbox\nticket: T-77571\nchannel: in-app chat\ncustomer plan: Business\n\n[untrusted message]\nPlease change the email address on my account from leah@outlook.com to my new work address when you get a chance.\n[/untrusted]",
+      "route": {
+        "truth": "account_access",
+        "why": "account_access: change account email"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: change account email"
+      }
+    },
+    {
+      "id": "T-56701",
+      "template": "s12",
+      "product": "brindle",
+      "body": "Were you affected by the breach at that third-party email provider in the news? Just checking. Regards, Marco",
+      "state": "Brindle Ledger support inbox\nticket: T-56701\nchannel: web form\ncustomer plan: Team\n\n[untrusted message]\nWere you affected by the breach at that third-party email provider in the news? Just checking. Regards, Marco\n[/untrusted]",
+      "route": {
+        "truth": "security",
+        "why": "security: third-party breach question"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: third-party breach question"
+      }
+    },
+    {
+      "id": "T-81695",
+      "template": "f8",
+      "product": "brindle",
+      "body": "Hi team, We need multi-currency invoices for our EU clients starting next quarter; right now we keep a separate spreadsheet. Thanks!",
+      "state": "Brindle Ledger support inbox\nticket: T-81695\nchannel: web form\ncustomer plan: Enterprise\n\n[untrusted message]\nHi team, We need multi-currency invoices for our EU clients starting next quarter; right now we keep a separate spreadsheet. Thanks!\n[/untrusted]",
+      "route": {
+        "truth": "feature_request",
+        "why": "feature_request: multi-currency invoices"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: multi-currency invoices"
+      }
+    },
+    {
+      "id": "T-59868",
+      "template": "i3",
+      "product": "brindle",
+      "body": "Hi, Does your API support filtering time entries by tag? Thanks!",
+      "state": "Brindle Ledger support inbox\nticket: T-59868\nchannel: web form\ncustomer plan: Enterprise\n\n[untrusted message]\nHi, Does your API support filtering time entries by tag? Thanks!\n[/untrusted]",
+      "route": {
+        "truth": "integrations",
+        "why": "integrations: API filter question"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: API filter question"
+      }
+    },
+    {
+      "id": "T-24379",
+      "template": "c1",
+      "product": "brindle",
+      "body": "Hi team, We're a team of 37. What's the price of the Business plan billed annually? Thanks!",
+      "state": "Brindle Ledger support inbox\nticket: T-24379\nchannel: in-app chat\ncustomer plan: Team\n\n[untrusted message]\nHi team, We're a team of 37. What's the price of the Business plan billed annually? Thanks!\n[/untrusted]",
+      "route": {
+        "truth": "sales",
+        "why": "sales: plan price"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: plan price"
+      }
+    },
+    {
+      "id": "T-57026",
+      "template": "f11",
+      "product": "brindle",
+      "body": "Good morning, Please raise the limit of 57 custom fields per client. We've hit it and can't add the tax field our new clients need. Thanks, Aiko",
+      "state": "Brindle Ledger support inbox\nticket: T-57026\nchannel: web form\ncustomer plan: Team\n\n[untrusted message]\nGood morning, Please raise the limit of 57 custom fields per client. We've hit it and can't add the tax field our new clients need. Thanks, Aiko\n[/untrusted]",
+      "route": {
+        "truth": "feature_request",
+        "why": "feature_request: custom field limit reached"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: custom field limit reached"
+      }
+    },
+    {
+      "id": "T-45491",
+      "template": "c7",
+      "product": "brindle",
+      "body": "Our security team needs your SOC 2 report before we can sign the contract.",
+      "state": "Brindle Ledger support inbox\nticket: T-45491\nchannel: web form\ncustomer plan: Business\n\n[untrusted message]\nOur security team needs your SOC 2 report before we can sign the contract.\n[/untrusted]",
+      "route": {
+        "truth": "sales",
+        "why": "sales: SOC 2 report for contract",
+        "ambiguous": true
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: SOC 2 report for contract"
+      }
+    },
+    {
+      "id": "T-89148",
+      "template": "i5",
+      "product": "brindle",
+      "body": "Hey there, We're getting HTTP 429 rate-limit errors from your API on every call, and tonight's billing run can't start. Cheers",
+      "state": "Brindle Ledger support inbox\nticket: T-89148\nchannel: email\ncustomer plan: Enterprise\n\n[untrusted message]\nHey there, We're getting HTTP 429 rate-limit errors from your API on every call, and tonight's billing run can't start. Cheers\n[/untrusted]",
+      "route": {
+        "truth": "integrations",
+        "why": "integrations: rate limited, billing run blocked"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: rate limited, billing run blocked"
+      }
+    },
+    {
+      "id": "T-89328",
+      "template": "i4",
+      "product": "brindle",
+      "body": "Hi team, Webhook deliveries to our endpoint keep getting retried even though we return 200 OK. Regards, Priya",
+      "state": "Brindle Ledger support inbox\nticket: T-89328\nchannel: web form\ncustomer plan: Team\n\n[untrusted message]\nHi team, Webhook deliveries to our endpoint keep getting retried even though we return 200 OK. Regards, Priya\n[/untrusted]",
+      "route": {
+        "truth": "integrations",
+        "why": "integrations: webhook retries"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: webhook retries"
+      }
+    },
+    {
+      "id": "T-97195",
+      "template": "g2",
+      "product": "brindle",
+      "body": "Hello, When I add a discount line to an invoice, the total is calculated before tax instead of after. I've been fixing it by hand for now.",
+      "state": "Brindle Ledger support inbox\nticket: T-97195\nchannel: web form\ncustomer plan: Business\n\n[untrusted message]\nHello, When I add a discount line to an invoice, the total is calculated before tax instead of after. I've been fixing it by hand for now.\n[/untrusted]",
+      "route": {
+        "truth": "bug",
+        "why": "bug: tax calculation wrong, manual workaround"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: tax calculation wrong, manual workaround"
+      }
+    },
+    {
+      "id": "T-55602",
+      "template": "p1",
+      "product": "brindle",
+      "body": "Under GDPR I'd like a copy of all the personal data you hold about me. Thanks!",
+      "state": "Brindle Ledger support inbox\nticket: T-55602\nchannel: in-app chat\ncustomer plan: Team\n\n[untrusted message]\nUnder GDPR I'd like a copy of all the personal data you hold about me. Thanks!\n[/untrusted]",
+      "route": {
+        "truth": "data_privacy",
+        "why": "data_privacy: GDPR access request"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: GDPR access request"
+      }
+    },
+    {
+      "id": "T-71543",
+      "template": "i9",
+      "product": "brindle",
+      "body": "Hello, HubSpot creates a duplicate client every time it syncs. I've been merging them by hand. Thanks!",
+      "state": "Brindle Ledger support inbox\nticket: T-71543\nchannel: web form\ncustomer plan: Team\n\n[untrusted message]\nHello, HubSpot creates a duplicate client every time it syncs. I've been merging them by hand. Thanks!\n[/untrusted]",
+      "route": {
+        "truth": "integrations",
+        "why": "integrations: duplicate clients on sync"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: duplicate clients on sync"
+      }
+    },
+    {
+      "id": "T-68550",
+      "template": "i10",
+      "product": "brindle",
+      "body": "Hi team, Where can I find the API docs for creating recurring invoices? Cheers",
+      "state": "Brindle Ledger support inbox\nticket: T-68550\nchannel: email\ncustomer plan: Business\n\n[untrusted message]\nHi team, Where can I find the API docs for creating recurring invoices? Cheers\n[/untrusted]",
+      "route": {
+        "truth": "integrations",
+        "why": "integrations: API docs location"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: API docs location"
+      }
+    },
+    {
+      "id": "T-92111",
+      "template": "g10",
+      "product": "brindle",
+      "body": "Hello, The mobile app won't let me clock in: the button is greyed out. My shift started ten minutes ago and my hours have to be tracked. Thanks, Aiko",
+      "state": "Brindle Ledger support inbox\nticket: T-92111\nchannel: in-app chat\ncustomer plan: Team\n\n[untrusted message]\nHello, The mobile app won't let me clock in: the button is greyed out. My shift started ten minutes ago and my hours have to be tracked. Thanks, Aiko\n[/untrusted]",
+      "route": {
+        "truth": "bug",
+        "why": "bug: cannot clock in, shift started"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: cannot clock in, shift started"
+      }
+    },
+    {
+      "id": "T-89757",
+      "template": "g6",
+      "product": "brindle",
+      "body": "Hi, Clicking 'Send' on any invoice gives 'Error 500' and nothing goes out. I have to bill 35 clients today. Thanks, Priya",
+      "state": "Brindle Ledger support inbox\nticket: T-89757\nchannel: web form\ncustomer plan: Team\n\n[untrusted message]\nHi, Clicking 'Send' on any invoice gives 'Error 500' and nothing goes out. I have to bill 35 clients today. Thanks, Priya\n[/untrusted]",
+      "route": {
+        "truth": "bug",
+        "why": "bug: send fails with error 500"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: send fails with error 500"
+      }
+    },
+    {
+      "id": "T-15085",
+      "template": "b10",
+      "product": "brindle",
+      "body": "Good morning, Our account was switched to read-only because a payment of $81.13 bounced. Our team of 12 can't log time today. Please help us pay right now. Cheers",
+      "state": "Brindle Ledger support inbox\nticket: T-15085\nchannel: email\ncustomer plan: Business\n\n[untrusted message]\nGood morning, Our account was switched to read-only because a payment of $81.13 bounced. Our team of 12 can't log time today. Please help us pay right now. Cheers\n[/untrusted]",
+      "route": {
+        "truth": "billing",
+        "why": "billing: bounced payment, read-only today"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: bounced payment, read-only today"
+      }
+    },
+    {
+      "id": "T-75904",
+      "template": "c12",
+      "product": "brindle",
+      "body": "Good morning, Do you have reseller or partner pricing? Thanks!",
+      "state": "Brindle Ledger support inbox\nticket: T-75904\nchannel: web form\ncustomer plan: Team\n\n[untrusted message]\nGood morning, Do you have reseller or partner pricing? Thanks!\n[/untrusted]",
+      "route": {
+        "truth": "sales",
+        "why": "sales: reseller pricing"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: reseller pricing"
+      }
+    },
+    {
+      "id": "T-75853",
+      "template": "c3",
+      "product": "brindle",
+      "body": "Good morning, We want to move to Enterprise before our board meeting on Thursday. Can someone from sales call me today? Thanks!",
+      "state": "Brindle Ledger support inbox\nticket: T-75853\nchannel: email\ncustomer plan: Team\n\n[untrusted message]\nGood morning, We want to move to Enterprise before our board meeting on Thursday. Can someone from sales call me today? Thanks!\n[/untrusted]",
+      "route": {
+        "truth": "sales",
+        "why": "sales: upgrade before Thursday"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: upgrade before Thursday",
+        "ambiguous": true
+      }
+    },
+    {
+      "id": "T-74205",
+      "template": "f4",
+      "product": "brindle",
+      "body": "Good morning, Suggestion: let us set a default due date of 45 days for specific clients. Cheers",
+      "state": "Brindle Ledger support inbox\nticket: T-74205\nchannel: web form\ncustomer plan: Business\n\n[untrusted message]\nGood morning, Suggestion: let us set a default due date of 45 days for specific clients. Cheers\n[/untrusted]",
+      "route": {
+        "truth": "feature_request",
+        "why": "feature_request: per-client due dates"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: per-client due dates"
+      }
+    },
+    {
+      "id": "T-27973",
+      "template": "f10",
+      "product": "brindle",
+      "body": "Good morning, Feature idea: reminders that ping people who haven't logged their hours by Friday afternoon. Cheers",
+      "state": "Brindle Ledger support inbox\nticket: T-27973\nchannel: web form\ncustomer plan: Enterprise\n\n[untrusted message]\nGood morning, Feature idea: reminders that ping people who haven't logged their hours by Friday afternoon. Cheers\n[/untrusted]",
+      "route": {
+        "truth": "feature_request",
+        "why": "feature_request: hour-logging reminders"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: hour-logging reminders"
+      }
+    },
+    {
+      "id": "T-90457",
+      "template": "i11",
+      "product": "brindle",
+      "body": "Our Zapier trigger fires twice for every new invoice, so our CRM gets two copies.",
+      "state": "Brindle Ledger support inbox\nticket: T-90457\nchannel: in-app chat\ncustomer plan: Business\n\n[untrusted message]\nOur Zapier trigger fires twice for every new invoice, so our CRM gets two copies.\n[/untrusted]",
+      "route": {
+        "truth": "integrations",
+        "why": "integrations: Zapier double trigger"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: Zapier double trigger"
+      }
+    },
+    {
+      "id": "T-13840",
+      "template": "f5",
+      "product": "brindle",
+      "body": "Good morning, Please add a dark theme to the mobile app. Dana, Corvid Labs",
+      "state": "Brindle Ledger support inbox\nticket: T-13840\nchannel: email\ncustomer plan: Business\n\n[untrusted message]\nGood morning, Please add a dark theme to the mobile app. Dana, Corvid Labs\n[/untrusted]",
+      "route": {
+        "truth": "feature_request",
+        "why": "feature_request: mobile dark theme"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: mobile dark theme"
+      }
+    },
+    {
+      "id": "T-57748",
+      "template": "p5",
+      "product": "brindle",
+      "body": "How long do you keep invoices after an account is closed? Regards, Leah",
+      "state": "Brindle Ledger support inbox\nticket: T-57748\nchannel: web form\ncustomer plan: Enterprise\n\n[untrusted message]\nHow long do you keep invoices after an account is closed? Regards, Leah\n[/untrusted]",
+      "route": {
+        "truth": "data_privacy",
+        "why": "data_privacy: retention after closing"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: retention after closing"
+      }
+    },
+    {
+      "id": "T-74490",
+      "template": "g7",
+      "product": "brindle",
+      "body": "Hi team, Last night's sync wiped every time entry from the past week for our whole team. Hundreds of hours are gone. Regards, Tomás",
+      "state": "Brindle Ledger support inbox\nticket: T-74490\nchannel: web form\ncustomer plan: Business\n\n[untrusted message]\nHi team, Last night's sync wiped every time entry from the past week for our whole team. Hundreds of hours are gone. Regards, Tomás\n[/untrusted]",
+      "route": {
+        "truth": "bug",
+        "why": "bug: sync deleted a week of entries"
+      },
+      "urgency": {
+        "truth": "critical",
+        "why": "critical: sync deleted a week of entries"
+      }
+    },
+    {
+      "id": "T-47538",
+      "template": "s5",
+      "product": "brindle",
+      "body": "Hello, I'm a security researcher and found a minor information disclosure on your status page. Where should I report it? Dana, Halyard Design",
+      "state": "Brindle Ledger support inbox\nticket: T-47538\nchannel: web form\ncustomer plan: Business\n\n[untrusted message]\nHello, I'm a security researcher and found a minor information disclosure on your status page. Where should I report it? Dana, Halyard Design\n[/untrusted]",
+      "route": {
+        "truth": "security",
+        "why": "security: minor vulnerability report"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: minor vulnerability report",
+        "ambiguous": true
+      }
+    },
+    {
+      "id": "T-57737",
+      "template": "p11",
+      "product": "brindle",
+      "body": "I'd like to opt out of product analytics tracking for my user account. Cheers",
+      "state": "Brindle Ledger support inbox\nticket: T-57737\nchannel: web form\ncustomer plan: Enterprise\n\n[untrusted message]\nI'd like to opt out of product analytics tracking for my user account. Cheers\n[/untrusted]",
+      "route": {
+        "truth": "data_privacy",
+        "why": "data_privacy: analytics opt-out request"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: analytics opt-out request"
+      }
+    },
+    {
+      "id": "T-53450",
+      "template": "g9",
+      "product": "brindle",
+      "body": "Hi, The dashboard chart shows last month's revenue as zero, but the Reports page has the right figure.",
+      "state": "Brindle Ledger support inbox\nticket: T-53450\nchannel: email\ncustomer plan: Team\n\n[untrusted message]\nHi, The dashboard chart shows last month's revenue as zero, but the Reports page has the right figure.\n[/untrusted]",
+      "route": {
+        "truth": "bug",
+        "why": "bug: dashboard figure wrong"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: dashboard figure wrong"
+      }
+    },
+    {
+      "id": "T-66192",
+      "template": "a11",
+      "product": "brindle",
+      "body": "Hi, None of our 60 staff can log in this morning: every login loops back to the sign-in page. The whole office is stuck. Thanks!",
+      "state": "Brindle Ledger support inbox\nticket: T-66192\nchannel: in-app chat\ncustomer plan: Business\n\n[untrusted message]\nHi, None of our 60 staff can log in this morning: every login loops back to the sign-in page. The whole office is stuck. Thanks!\n[/untrusted]",
+      "route": {
+        "truth": "account_access",
+        "why": "account_access: nobody can log in",
+        "ambiguous": true
+      },
+      "urgency": {
+        "truth": "critical",
+        "why": "critical: nobody can log in"
+      }
+    },
+    {
+      "id": "T-92683",
+      "template": "s2",
+      "product": "brindle",
+      "body": "I accidentally pushed our API key to a public GitHub repository an hour ago. What should I do? Thanks!",
+      "state": "Brindle Ledger support inbox\nticket: T-92683\nchannel: in-app chat\ncustomer plan: Team\n\n[untrusted message]\nI accidentally pushed our API key to a public GitHub repository an hour ago. What should I do? Thanks!\n[/untrusted]",
+      "route": {
+        "truth": "security",
+        "why": "security: API key exposed publicly"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: API key exposed publicly"
+      }
+    },
+    {
+      "id": "T-41099",
+      "template": "p4",
+      "product": "brindle",
+      "body": "Hello, A former employee has asked us to erase their personal data, and the legal deadline is this Friday. How do we remove their time entries and profile? Cheers",
+      "state": "Brindle Ledger support inbox\nticket: T-41099\nchannel: email\ncustomer plan: Enterprise\n\n[untrusted message]\nHello, A former employee has asked us to erase their personal data, and the legal deadline is this Friday. How do we remove their time entries and profile? Cheers\n[/untrusted]",
+      "route": {
+        "truth": "data_privacy",
+        "why": "data_privacy: erasure with legal deadline Friday"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: erasure with legal deadline Friday"
+      }
+    },
+    {
+      "id": "T-45516",
+      "template": "p12",
+      "product": "brindle",
+      "body": "Hey there, Is there a page that describes your retention policy for deleted projects? Thanks, Priya",
+      "state": "Brindle Ledger support inbox\nticket: T-45516\nchannel: email\ncustomer plan: Enterprise\n\n[untrusted message]\nHey there, Is there a page that describes your retention policy for deleted projects? Thanks, Priya\n[/untrusted]",
+      "route": {
+        "truth": "data_privacy",
+        "why": "data_privacy: retention policy page"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: retention policy page"
+      }
+    },
+    {
+      "id": "T-60965",
+      "template": "f10",
+      "product": "brindle",
+      "body": "Hi, Feature idea: reminders that ping people who haven't logged their hours by Friday afternoon. Noor, Halyard Design",
+      "state": "Brindle Ledger support inbox\nticket: T-60965\nchannel: email\ncustomer plan: Team\n\n[untrusted message]\nHi, Feature idea: reminders that ping people who haven't logged their hours by Friday afternoon. Noor, Halyard Design\n[/untrusted]",
+      "route": {
+        "truth": "feature_request",
+        "why": "feature_request: hour-logging reminders"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: hour-logging reminders"
+      }
+    },
+    {
+      "id": "T-96739",
+      "template": "a4",
+      "product": "brindle",
+      "body": "Hi team, Please change the email address on my account from leah@proton.me to my new work address when you get a chance. Thanks, Tomás",
+      "state": "Brindle Ledger support inbox\nticket: T-96739\nchannel: in-app chat\ncustomer plan: Business\n\n[untrusted message]\nHi team, Please change the email address on my account from leah@proton.me to my new work address when you get a chance. Thanks, Tomás\n[/untrusted]",
+      "route": {
+        "truth": "account_access",
+        "why": "account_access: change account email"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: change account email"
+      }
+    },
+    {
+      "id": "T-19387",
+      "template": "g6",
+      "product": "brindle",
+      "body": "Clicking 'Send' on any invoice gives 'Error 500' and nothing goes out. I have to bill 19 clients today.",
+      "state": "Brindle Ledger support inbox\nticket: T-19387\nchannel: in-app chat\ncustomer plan: Enterprise\n\n[untrusted message]\nClicking 'Send' on any invoice gives 'Error 500' and nothing goes out. I have to bill 19 clients today.\n[/untrusted]",
+      "route": {
+        "truth": "bug",
+        "why": "bug: send fails with error 500"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: send fails with error 500"
+      }
+    },
+    {
+      "id": "T-31628",
+      "template": "b5",
+      "product": "brindle",
+      "body": "Why did our bill go from $278.81 to $501.86 this month? Just want to understand the line items. Marco, Pinecrest Dental",
+      "state": "Brindle Ledger support inbox\nticket: T-31628\nchannel: in-app chat\ncustomer plan: Team\n\n[untrusted message]\nWhy did our bill go from $278.81 to $501.86 this month? Just want to understand the line items. Marco, Pinecrest Dental\n[/untrusted]",
+      "route": {
+        "truth": "billing",
+        "why": "billing: bill explanation"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: bill explanation"
+      }
+    },
+    {
+      "id": "T-43014",
+      "template": "c8",
+      "product": "brindle",
+      "body": "Hello, How do I add 5 more seats to our current plan? Thanks, Marco",
+      "state": "Brindle Ledger support inbox\nticket: T-43014\nchannel: web form\ncustomer plan: Enterprise\n\n[untrusted message]\nHello, How do I add 5 more seats to our current plan? Thanks, Marco\n[/untrusted]",
+      "route": {
+        "truth": "sales",
+        "why": "sales: how to add seats"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: how to add seats"
+      }
+    },
+    {
+      "id": "T-27117",
+      "template": "a7",
+      "product": "brindle",
+      "body": "The password reset link says it has expired every time I click it, even straight away. I'm still logged in on my laptop for now.",
+      "state": "Brindle Ledger support inbox\nticket: T-27117\nchannel: web form\ncustomer plan: Team\n\n[untrusted message]\nThe password reset link says it has expired every time I click it, even straight away. I'm still logged in on my laptop for now.\n[/untrusted]",
+      "route": {
+        "truth": "account_access",
+        "why": "account_access: reset link expired, still logged in elsewhere",
+        "ambiguous": true
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: reset link expired, still logged in elsewhere"
+      }
+    },
+    {
+      "id": "T-21970",
+      "template": "p2",
+      "product": "brindle",
+      "body": "Good morning, Please delete my account and all the data associated with it. I no longer use the service. Thanks, Marco",
+      "state": "Brindle Ledger support inbox\nticket: T-21970\nchannel: in-app chat\ncustomer plan: Team\n\n[untrusted message]\nGood morning, Please delete my account and all the data associated with it. I no longer use the service. Thanks, Marco\n[/untrusted]",
+      "route": {
+        "truth": "data_privacy",
+        "why": "data_privacy: account and data deletion"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: account and data deletion"
+      }
+    },
+    {
+      "id": "T-63164",
+      "template": "g11",
+      "product": "brindle",
+      "body": "Hi, Search doesn't find clients whose names have accents, like 'Zoë'. I can scroll the list to find them.",
+      "state": "Brindle Ledger support inbox\nticket: T-63164\nchannel: web form\ncustomer plan: Enterprise\n\n[untrusted message]\nHi, Search doesn't find clients whose names have accents, like 'Zoë'. I can scroll the list to find them.\n[/untrusted]",
+      "route": {
+        "truth": "bug",
+        "why": "bug: accent search, can scroll"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: accent search, can scroll"
+      }
+    },
+    {
+      "id": "T-76327",
+      "template": "f2",
+      "product": "brindle",
+      "body": "Good morning, Any plans to support Portuguese in the client portal? Thanks, Marco",
+      "state": "Brindle Ledger support inbox\nticket: T-76327\nchannel: email\ncustomer plan: Enterprise\n\n[untrusted message]\nGood morning, Any plans to support Portuguese in the client portal? Thanks, Marco\n[/untrusted]",
+      "route": {
+        "truth": "feature_request",
+        "why": "feature_request: new portal language"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: new portal language"
+      }
+    },
+    {
+      "id": "T-70951",
+      "template": "c7",
+      "product": "brindle",
+      "body": "Hello, Our security team needs your SOC 2 report before we can sign the contract. Thanks, Priya",
+      "state": "Brindle Ledger support inbox\nticket: T-70951\nchannel: in-app chat\ncustomer plan: Business\n\n[untrusted message]\nHello, Our security team needs your SOC 2 report before we can sign the contract. Thanks, Priya\n[/untrusted]",
+      "route": {
+        "truth": "sales",
+        "why": "sales: SOC 2 report for contract",
+        "ambiguous": true
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: SOC 2 report for contract"
+      }
+    },
+    {
+      "id": "T-37829",
+      "template": "i11",
+      "product": "brindle",
+      "body": "Hey there, Our Zapier trigger fires twice for every new invoice, so our CRM gets two copies. Thanks, Aiko",
+      "state": "Brindle Ledger support inbox\nticket: T-37829\nchannel: email\ncustomer plan: Team\n\n[untrusted message]\nHey there, Our Zapier trigger fires twice for every new invoice, so our CRM gets two copies. Thanks, Aiko\n[/untrusted]",
+      "route": {
+        "truth": "integrations",
+        "why": "integrations: Zapier double trigger"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: Zapier double trigger"
+      }
+    },
+    {
+      "id": "T-30015",
+      "template": "i4",
+      "product": "brindle",
+      "body": "Hey there, Webhook deliveries to our endpoint keep getting retried even though we return 200 OK. Leah, Pinecrest Dental",
+      "state": "Brindle Ledger support inbox\nticket: T-30015\nchannel: in-app chat\ncustomer plan: Business\n\n[untrusted message]\nHey there, Webhook deliveries to our endpoint keep getting retried even though we return 200 OK. Leah, Pinecrest Dental\n[/untrusted]",
+      "route": {
+        "truth": "integrations",
+        "why": "integrations: webhook retries"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: webhook retries"
+      }
+    },
+    {
+      "id": "T-60714",
+      "template": "a5",
+      "product": "brindle",
+      "body": "Hey there, My account says 'disabled by administrator', but I'm the only admin. I'm locked out of everything and payroll runs today. Thanks, Noor",
+      "state": "Brindle Ledger support inbox\nticket: T-60714\nchannel: email\ncustomer plan: Enterprise\n\n[untrusted message]\nHey there, My account says 'disabled by administrator', but I'm the only admin. I'm locked out of everything and payroll runs today. Thanks, Noor\n[/untrusted]",
+      "route": {
+        "truth": "account_access",
+        "why": "account_access: sole admin disabled"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: sole admin disabled"
+      }
+    },
+    {
+      "id": "T-54364",
+      "template": "c12",
+      "product": "brindle",
+      "body": "Hello, Do you have reseller or partner pricing?",
+      "state": "Brindle Ledger support inbox\nticket: T-54364\nchannel: web form\ncustomer plan: Business\n\n[untrusted message]\nHello, Do you have reseller or partner pricing?\n[/untrusted]",
+      "route": {
+        "truth": "sales",
+        "why": "sales: reseller pricing"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: reseller pricing"
+      }
+    },
+    {
+      "id": "T-81210",
+      "template": "b8",
+      "product": "brindle",
+      "body": "Hi, Is it possible to switch from monthly to annual billing at renewal? Not urgent. Thanks, Marco",
+      "state": "Brindle Ledger support inbox\nticket: T-81210\nchannel: email\ncustomer plan: Business\n\n[untrusted message]\nHi, Is it possible to switch from monthly to annual billing at renewal? Not urgent. Thanks, Marco\n[/untrusted]",
+      "route": {
+        "truth": "billing",
+        "why": "billing: billing cycle question"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: billing cycle question"
+      }
+    },
+    {
+      "id": "T-27992",
+      "template": "s8",
+      "product": "brindle",
+      "body": "Hello, Our admin's email address was changed without our knowledge and we've lost access. Invoices are going out with a different bank account. Thanks, Dana",
+      "state": "Brindle Ledger support inbox\nticket: T-27992\nchannel: web form\ncustomer plan: Business\n\n[untrusted message]\nHello, Our admin's email address was changed without our knowledge and we've lost access. Invoices are going out with a different bank account. Thanks, Dana\n[/untrusted]",
+      "route": {
+        "truth": "security",
+        "why": "security: admin email hijacked, bank account swapped"
+      },
+      "urgency": {
+        "truth": "critical",
+        "why": "critical: admin email hijacked, bank account swapped"
+      }
+    },
+    {
+      "id": "T-86521",
+      "template": "c5",
+      "product": "brindle",
+      "body": "Hello, We'd like a demo for our finance team sometime next week. Thanks, Sam",
+      "state": "Brindle Ledger support inbox\nticket: T-86521\nchannel: in-app chat\ncustomer plan: Enterprise\n\n[untrusted message]\nHello, We'd like a demo for our finance team sometime next week. Thanks, Sam\n[/untrusted]",
+      "route": {
+        "truth": "sales",
+        "why": "sales: demo request"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: demo request"
+      }
+    },
+    {
+      "id": "T-84906",
+      "template": "c9",
+      "product": "brindle",
+      "body": "Our contract renewal is due Friday and we need the updated order form signed by then, or legal won't approve it. Thanks, Marco",
+      "state": "Brindle Ledger support inbox\nticket: T-84906\nchannel: email\ncustomer plan: Enterprise\n\n[untrusted message]\nOur contract renewal is due Friday and we need the updated order form signed by then, or legal won't approve it. Thanks, Marco\n[/untrusted]",
+      "route": {
+        "truth": "sales",
+        "why": "sales: renewal order form due Friday"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: renewal order form due Friday"
+      }
+    },
+    {
+      "id": "T-93094",
+      "template": "f2",
+      "product": "brindle",
+      "body": "Hi, Any plans to support Portuguese in the client portal?",
+      "state": "Brindle Ledger support inbox\nticket: T-93094\nchannel: email\ncustomer plan: Enterprise\n\n[untrusted message]\nHi, Any plans to support Portuguese in the client portal?\n[/untrusted]",
+      "route": {
+        "truth": "feature_request",
+        "why": "feature_request: new portal language"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: new portal language"
+      }
+    },
+    {
+      "id": "T-39597",
+      "template": "p7",
+      "product": "brindle",
+      "body": "Good morning, One of our clients wants their contact details corrected on all past invoices we've sent through your system.",
+      "state": "Brindle Ledger support inbox\nticket: T-39597\nchannel: web form\ncustomer plan: Business\n\n[untrusted message]\nGood morning, One of our clients wants their contact details corrected on all past invoices we've sent through your system.\n[/untrusted]",
+      "route": {
+        "truth": "data_privacy",
+        "why": "data_privacy: correct client personal data"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: correct client personal data"
+      }
+    },
+    {
+      "id": "T-41369",
+      "template": "p8",
+      "product": "brindle",
+      "body": "Good morning, Do you sell or share usage data with advertisers? Thanks, Noor",
+      "state": "Brindle Ledger support inbox\nticket: T-41369\nchannel: web form\ncustomer plan: Team\n\n[untrusted message]\nGood morning, Do you sell or share usage data with advertisers? Thanks, Noor\n[/untrusted]",
+      "route": {
+        "truth": "data_privacy",
+        "why": "data_privacy: data sharing question"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: data sharing question"
+      }
+    },
+    {
+      "id": "T-89355",
+      "template": "a5",
+      "product": "brindle",
+      "body": "Hello, My account says 'disabled by administrator', but I'm the only admin. I'm locked out of everything and payroll runs today. Thanks!",
+      "state": "Brindle Ledger support inbox\nticket: T-89355\nchannel: web form\ncustomer plan: Enterprise\n\n[untrusted message]\nHello, My account says 'disabled by administrator', but I'm the only admin. I'm locked out of everything and payroll runs today. Thanks!\n[/untrusted]",
+      "route": {
+        "truth": "account_access",
+        "why": "account_access: sole admin disabled"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: sole admin disabled"
+      }
+    },
+    {
+      "id": "T-96637",
+      "template": "a5",
+      "product": "brindle",
+      "body": "Hello, My account says 'disabled by administrator', but I'm the only admin. I'm locked out of everything and payroll runs today.",
+      "state": "Brindle Ledger support inbox\nticket: T-96637\nchannel: email\ncustomer plan: Team\n\n[untrusted message]\nHello, My account says 'disabled by administrator', but I'm the only admin. I'm locked out of everything and payroll runs today.\n[/untrusted]",
+      "route": {
+        "truth": "account_access",
+        "why": "account_access: sole admin disabled"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: sole admin disabled"
+      }
+    },
+    {
+      "id": "T-36691",
+      "template": "b12",
+      "product": "brindle",
+      "body": "Hey there, All 49 of our client workspaces were suspended overnight for non-payment even though invoice INV-7549 was paid last week. Nobody in the company can work. Thanks, Leah",
+      "state": "Brindle Ledger support inbox\nticket: T-36691\nchannel: in-app chat\ncustomer plan: Business\n\n[untrusted message]\nHey there, All 49 of our client workspaces were suspended overnight for non-payment even though invoice INV-7549 was paid last week. Nobody in the company can work. Thanks, Leah\n[/untrusted]",
+      "route": {
+        "truth": "billing",
+        "why": "billing: company-wide suspension for non-payment"
+      },
+      "urgency": {
+        "truth": "critical",
+        "why": "critical: company-wide suspension for non-payment"
+      }
+    },
+    {
+      "id": "T-34852",
+      "template": "i7",
+      "product": "brindle",
+      "body": "How do I rotate an API key without breaking our existing scripts? Marco, Lumen Films",
+      "state": "Brindle Ledger support inbox\nticket: T-34852\nchannel: email\ncustomer plan: Enterprise\n\n[untrusted message]\nHow do I rotate an API key without breaking our existing scripts? Marco, Lumen Films\n[/untrusted]",
+      "route": {
+        "truth": "integrations",
+        "why": "integrations: API key rotation question"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: API key rotation question"
+      }
+    },
+    {
+      "id": "T-58795",
+      "template": "p1",
+      "product": "brindle",
+      "body": "Good morning, Under GDPR I'd like a copy of all the personal data you hold about me. Thanks!",
+      "state": "Brindle Ledger support inbox\nticket: T-58795\nchannel: web form\ncustomer plan: Team\n\n[untrusted message]\nGood morning, Under GDPR I'd like a copy of all the personal data you hold about me. Thanks!\n[/untrusted]",
+      "route": {
+        "truth": "data_privacy",
+        "why": "data_privacy: GDPR access request"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: GDPR access request"
+      }
+    },
+    {
+      "id": "T-10904",
+      "template": "a11",
+      "product": "brindle",
+      "body": "Good morning, None of our 52 staff can log in this morning: every login loops back to the sign-in page. The whole office is stuck. Cheers",
+      "state": "Brindle Ledger support inbox\nticket: T-10904\nchannel: email\ncustomer plan: Enterprise\n\n[untrusted message]\nGood morning, None of our 52 staff can log in this morning: every login loops back to the sign-in page. The whole office is stuck. Cheers\n[/untrusted]",
+      "route": {
+        "truth": "account_access",
+        "why": "account_access: nobody can log in",
+        "ambiguous": true
+      },
+      "urgency": {
+        "truth": "critical",
+        "why": "critical: nobody can log in"
+      }
+    },
+    {
+      "id": "T-75028",
+      "template": "g2",
+      "product": "brindle",
+      "body": "Hi, When I add a discount line to an invoice, the total is calculated before tax instead of after. I've been fixing it by hand for now. Leah, Corvid Labs",
+      "state": "Brindle Ledger support inbox\nticket: T-75028\nchannel: email\ncustomer plan: Business\n\n[untrusted message]\nHi, When I add a discount line to an invoice, the total is calculated before tax instead of after. I've been fixing it by hand for now. Leah, Corvid Labs\n[/untrusted]",
+      "route": {
+        "truth": "bug",
+        "why": "bug: tax calculation wrong, manual workaround"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: tax calculation wrong, manual workaround"
+      }
+    },
+    {
+      "id": "T-41823",
+      "template": "f3",
+      "product": "brindle",
+      "body": "We'd love a way to bulk-edit project rates instead of changing 51 projects one by one every January. Thanks!",
+      "state": "Brindle Ledger support inbox\nticket: T-41823\nchannel: email\ncustomer plan: Enterprise\n\n[untrusted message]\nWe'd love a way to bulk-edit project rates instead of changing 51 projects one by one every January. Thanks!\n[/untrusted]",
+      "route": {
+        "truth": "feature_request",
+        "why": "feature_request: bulk edit rates"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: bulk edit rates"
+      }
+    },
+    {
+      "id": "T-46116",
+      "template": "a1",
+      "product": "brindle",
+      "body": "Hi, I can't log in. It says my password is wrong and the reset email never arrives. I have client invoices to send by the end of the day. Thanks!",
+      "state": "Brindle Ledger support inbox\nticket: T-46116\nchannel: email\ncustomer plan: Team\n\n[untrusted message]\nHi, I can't log in. It says my password is wrong and the reset email never arrives. I have client invoices to send by the end of the day. Thanks!\n[/untrusted]",
+      "route": {
+        "truth": "account_access",
+        "why": "account_access: cannot log in, reset email missing"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: cannot log in, reset email missing"
+      }
+    },
+    {
+      "id": "T-16315",
+      "template": "c3",
+      "product": "brindle",
+      "body": "Hi, We want to move to Enterprise before our board meeting on Thursday. Can someone from sales call me today? Noor, Lumen Films",
+      "state": "Brindle Ledger support inbox\nticket: T-16315\nchannel: email\ncustomer plan: Business\n\n[untrusted message]\nHi, We want to move to Enterprise before our board meeting on Thursday. Can someone from sales call me today? Noor, Lumen Films\n[/untrusted]",
+      "route": {
+        "truth": "sales",
+        "why": "sales: upgrade before Thursday"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: upgrade before Thursday",
+        "ambiguous": true
+      }
+    },
+    {
+      "id": "T-65606",
+      "template": "c6",
+      "product": "brindle",
+      "body": "Hi team, Is there a free trial of the Enterprise features? Thanks!",
+      "state": "Brindle Ledger support inbox\nticket: T-65606\nchannel: email\ncustomer plan: Business\n\n[untrusted message]\nHi team, Is there a free trial of the Enterprise features? Thanks!\n[/untrusted]",
+      "route": {
+        "truth": "sales",
+        "why": "sales: trial question"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: trial question"
+      }
+    },
+    {
+      "id": "T-41900",
+      "template": "p6",
+      "product": "brindle",
+      "body": "Hi team, Our privacy officer needs your list of sub-processors for our annual review this month.",
+      "state": "Brindle Ledger support inbox\nticket: T-41900\nchannel: in-app chat\ncustomer plan: Team\n\n[untrusted message]\nHi team, Our privacy officer needs your list of sub-processors for our annual review this month.\n[/untrusted]",
+      "route": {
+        "truth": "data_privacy",
+        "why": "data_privacy: sub-processor list"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: sub-processor list"
+      }
+    }
+  ],
+  "questions": {
+    "route": {
+      "kind": "pick",
+      "id": "route",
+      "prompt": "Which support queue should handle this ticket?",
+      "options": [
+        "billing",
+        "account_access",
+        "bug",
+        "feature_request",
+        "data_privacy",
+        "integrations",
+        "security",
+        "sales"
+      ],
+      "criteria": {
+        "billing": "Charges, invoices, receipts, refunds of subscription fees, failed payments, changing the card on file or the billing address.",
+        "account_access": "Cannot log in, password resets, two-factor codes, single sign-on errors, locked or disabled accounts, changing the account email.",
+        "bug": "A feature of the product is broken, shows an error, or gives wrong results.",
+        "feature_request": "Asks for a capability the product does not have, or a change to how it works.",
+        "data_privacy": "Requests to export, correct or delete personal data; GDPR or CCPA questions; data processing agreements; data retention.",
+        "integrations": "Connecting or troubleshooting third-party apps and the API: Slack, QuickBooks, Xero, Zapier, webhooks, API keys, rate limits.",
+        "security": "Suspected account compromise, unrecognised logins, phishing that impersonates us, exposed credentials, vulnerability reports.",
+        "sales": "Buying, upgrading or adding seats, quotes, enterprise pricing, trials, demos, procurement paperwork."
+      }
+    },
+    "urgency": {
+      "kind": "rate",
+      "id": "urgency",
+      "prompt": "How urgent is this ticket? low: a question, idea or feedback with no time pressure. normal: a request or a problem that does not stop anyone working, or has a workaround. high: blocks a person or team's work today with no workaround, or risks a missed payment or legal deadline within days. critical: an outage or data loss affecting many users, or a security breach in progress.",
+      "levels": ["low", "normal", "high", "critical"]
+    }
+  }
+}

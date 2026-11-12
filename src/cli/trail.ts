@@ -1,4 +1,4 @@
-import { describeGrade, type EvidenceGrade } from "../ledger/evidence.ts";
+import { describeGrade, type EvidenceGrade, REPORT_DEFAULTS } from "../ledger/evidence.ts";
 import type { DecisionRecord, Mode } from "../ledger/ledger.ts";
 import type { CalibrationProfile } from "../ledger/profile.ts";
 import { type TrustClass, trustRegistry } from "../ledger/sources.ts";
@@ -40,10 +40,10 @@ that bounded it, what the application did, and the label when one has arrived.
   --min-estimated <n>  Labelled unselected rows an estimated grade needs. Default 30.
   --trust <p>=<c>    Read labels whose source starts <p> as trust class <c>, as in
                      "ratchet report". Repeatable.
-  --profile <file>   A calibration profile a bar with no fitted bar under it may be
-                     graded borrowed from, as in "ratchet report". Repeatable.
-  --min-support <n>  With --profile: labelled rows a fitted bar needs at or above it.
-                     Default 30.
+  --profile <file>   A calibration profile a bar may be graded borrowed from until the
+                     rows under it grade estimated, as in "ratchet report". Repeatable.
+  --min-support <n>  Labelled rows an act bar needs at or above it, as in "ratchet
+                     report". Default 30.
   --json             JSON instead of text.
 
 Member answers exist on rows written since members were recorded; older compound rows show
@@ -164,15 +164,15 @@ export interface TrailOptions {
   readonly gate?: string;
   readonly request?: string;
   readonly last?: number;
-  /** The promise a bar's grade is read against. Default 0.98, as in `ratchet report`. */
+  /** The promise a bar's grade is read against. Default `REPORT_DEFAULTS.target`, as in `ratchet report`. */
   readonly target?: number;
-  /** Labelled unselected rows an estimated grade needs. Default 30. */
+  /** Labelled unselected rows an estimated grade needs. Default `REPORT_DEFAULTS.minEstimated`. */
   readonly minEstimated?: number;
   /** Trust classes laid over `DEFAULT_TRUST`, as `--trust` gives them. */
   readonly labelTrust?: Readonly<Record<string, TrustClass>>;
-  /** Profiles a bar with no fitted bar under it may be graded borrowed from. */
+  /** Profiles a bar may be graded borrowed from until the rows under it grade estimated. */
   readonly profiles?: readonly CalibrationProfile[];
-  /** With `profiles`: labelled rows a fitted bar needs at or above it. Default 30. */
+  /** Labelled rows an act bar needs at or above it. Default `REPORT_DEFAULTS.minSupport`. */
   readonly minSupport?: number;
 }
 
@@ -396,11 +396,11 @@ export function selectTrail(
   } else if (opts.last !== undefined && entries.length > opts.last) {
     entries = entries.slice(entries.length - opts.last);
   }
-  const target = opts.target ?? 0.98;
-  const minEstimated = opts.minEstimated ?? 30;
+  const target = opts.target ?? REPORT_DEFAULTS.target;
+  const minEstimated = opts.minEstimated ?? REPORT_DEFAULTS.minEstimated;
   const trust = trustRegistry(opts.labelTrust);
   const profiles = opts.profiles;
-  const minSupport = opts.minSupport ?? 30;
+  const minSupport = opts.minSupport ?? REPORT_DEFAULTS.minSupport;
   const gates = groupGates(scoped).filter((g) => g.memberOf === undefined);
   // Each bar is graded on its own policy's rows, so a changed bar does not inherit the old
   // one's evidence: its planned sample, like its bar, starts with its policy.
@@ -411,8 +411,11 @@ export function selectTrail(
       gateId: b.gate,
       rows: rows.filter((r) => r.policyHash === b.policyHash),
     };
-    const lend = profiles !== undefined ? { profiles, minSupport } : {};
-    return { ...b, grade: gradeGroup(group, trust, { target, minEstimated, ...lend }) };
+    const lend = profiles !== undefined ? { profiles } : {};
+    return {
+      ...b,
+      grade: gradeGroup(group, trust, { target, minEstimated, minSupport, ...lend }),
+    };
   });
   return {
     ledger,
@@ -579,7 +582,7 @@ export function renderTrail(t: Trail): string {
       `Grades are read against a ${pct(t.target)} promise; estimated needs ${t.minEstimated} labelled unselected rows${read}.`,
       ...(t.profiles !== undefined
         ? [
-            `${offeredLine(t.profiles)} A fitted bar needs ${t.minSupport ?? 30} rows at or above it.`,
+            `${offeredLine(t.profiles)} A gate borrows until the rows under its bar grade estimated.`,
           ]
         : []),
       "",

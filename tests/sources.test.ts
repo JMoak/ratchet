@@ -35,15 +35,16 @@ const fixed = (pYes: number): Oracle => ({
     })),
 });
 
-// One label route per trust class, plus the two routes that must read as unknown. Moment and
-// consequence labels all say the model was wrong, so a fit that read either would lose its bar.
+// One label route per trust class. Only the unsourced route reads as unknown; a present source
+// no entry names is unregistered (e2e T4-09), and is counted on its own. Moment, consequence and
+// unregistered labels never fit, so a fit that read any of them would be visible in its count.
 const ROUTES = [
   { name: "blind", source: "review:blind:jordan", correct: true, fits: true, counted: true },
   { name: "census", source: "keywork:person", correct: true, fits: true, counted: true },
   { name: "moment", source: "desk:assisted", correct: false, fits: false, counted: true },
   { name: "consequence", source: "reverted:commit", correct: false, fits: false, counted: false },
   { name: "unsourced", source: undefined, correct: true, fits: true, counted: true },
-  { name: "unregistered", source: "sms:reply", correct: true, fits: true, counted: true },
+  { name: "unregistered", source: "sms:reply", correct: true, fits: false, counted: false },
 ] as const;
 const PER_ROUTE = 30;
 const GATE = "bash.safe";
@@ -103,9 +104,10 @@ describe("label sources", () => {
     for (const [source, cls] of Object.entries(table)) expect(trustOf(source), source).toBe(cls);
   });
 
-  it("reads no source, an unregistered prefix or a malformed one as unknown", () => {
-    for (const source of [undefined, "sms:reply", "review:quick", "person", "reverted"]) {
-      expect(trustOf(source), String(source)).toBe("unknown");
+  it("reads no source as unknown, and an unregistered prefix or a malformed one as unregistered", () => {
+    expect(trustOf(undefined)).toBe("unknown");
+    for (const source of ["sms:reply", "review:quick", "person", "reverted", "", "Reverted:git"]) {
+      expect(trustOf(source), String(source)).toBe("unregistered");
     }
   });
 
@@ -153,18 +155,18 @@ describe("trust in fitting", () => {
     const opts = { targetAccuracy: 0.95, minSupport: 20 };
     const all = await engine.report(opts);
     const g = all.byGate[GATE];
-    expect(all.labelled).toBe(5 * PER_ROUTE);
+    expect(all.labelled).toBe(4 * PER_ROUTE);
     expect(all.consequence).toBe(PER_ROUTE);
     expect(g).toMatchObject({
       n: 6 * PER_ROUTE,
-      labelled: 5 * PER_ROUTE,
-      unselected: 4 * PER_ROUTE,
+      labelled: 4 * PER_ROUTE,
+      unselected: 3 * PER_ROUTE,
       consequence: PER_ROUTE,
       fittedFrom: "unselected",
-      fitted: { threshold: 0.9, accuracy: 1, n: 4 * PER_ROUTE },
+      fitted: { threshold: 0.9, accuracy: 1, n: 3 * PER_ROUTE },
     });
-    // Moment labels still grade the oracle: 120 right of 150.
-    expect(g?.accuracy).toBeCloseTo(0.8, 12);
+    // Moment labels still grade the oracle: 90 right of 120.
+    expect(g?.accuracy).toBeCloseTo(0.75, 12);
 
     // Reclassify the moment route as census and its wrong labels reach the fit.
     const lever = new Engine({
@@ -173,17 +175,17 @@ describe("trust in fitting", () => {
       labelTrust: { "desk:assisted": "census" },
     });
     const moved = (await lever.report(opts)).byGate[GATE];
-    expect(moved?.unselected).toBe(5 * PER_ROUTE);
+    expect(moved?.unselected).toBe(4 * PER_ROUTE);
     expect(moved?.fitted).toBeUndefined();
   });
 
-  it("an unregistered prefix reads exactly as an unsourced label", () => {
+  it("an unregistered prefix is not read as an unsourced label (e2e T4-09)", () => {
     const opts = { target: 0.95, minSupport: 20 };
     const sms = buildReport("x", routeOf("unregistered"), opts).gates[0];
     const none = buildReport("x", routeOf("unsourced"), opts).gates[0];
-    expect(sms).toBeDefined();
-    expect(sms).toEqual(none);
-    expect(sms).toMatchObject({ labelled: PER_ROUTE, unselected: PER_ROUTE, consequence: 0 });
+    expect(none).toMatchObject({ labelled: PER_ROUTE, unselected: PER_ROUTE, consequence: 0 });
+    expect(sms).toMatchObject({ labelled: 0, unselected: 0, consequence: 0 });
+    expect(sms?.fitted).toBeUndefined();
   });
 });
 
@@ -325,10 +327,10 @@ describe("--trust", () => {
     };
     const plain = await json();
     expect(plain.labelTrust).toBeUndefined();
-    expect(plain.gates[0]).toMatchObject({ labelled: 150, unselected: 120, consequence: 30 });
+    expect(plain.gates[0]).toMatchObject({ labelled: 120, unselected: 90, consequence: 30 });
     const moved = await json("--trust", "desk:assisted=census", "--trust=reverted:*=unknown");
     expect(moved.labelTrust).toEqual({ "desk:assisted": "census", "reverted:*": "unknown" });
-    expect(moved.gates[0]).toMatchObject({ labelled: 180, unselected: 180, consequence: 0 });
+    expect(moved.gates[0]).toMatchObject({ labelled: 150, unselected: 150, consequence: 0 });
     expect(moved.gates[0]?.fitted).toBeUndefined();
 
     const md = await report([path, "--trust", "desk:assisted=census"]);
@@ -338,10 +340,10 @@ describe("--trust", () => {
     const args = [path, "--gate", GATE, "--promise", "0.9"];
     const pass = await check(args);
     expect(pass.exitCode).toBe(0);
-    expect(pass.output).toContain("on 120 shadow acted rows");
+    expect(pass.output).toContain("on 90 shadow acted rows");
     const fail = await check([...args, "--trust", "desk:assisted=census"]);
     expect(fail.exitCode).toBe(1);
-    expect(fail.output).toContain("on 150 shadow acted rows");
+    expect(fail.output).toContain("on 120 shadow acted rows");
     expect(fail.output).toContain("trust desk:assisted=census");
   });
 

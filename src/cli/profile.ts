@@ -39,7 +39,7 @@ donor gate.
 
 The bar for each --target is the cautious end: the lowest bin edge at which every donor
 gate with at least --min-support rows in its tail (every row at or above the edge) clears
-the target on that tail by a 95% Wilson lower bound. On one gate that is the bar "ratchet
+the target on that tail at the lower end of a 95% Wilson interval (a one-sided 97.5% bound). On one gate that is the bar "ratchet
 report" fits, read the same way; across gates it is the strictest donor's bar, since a
 profile is lent to gates it has not seen. A profile is borrowed evidence, shadow only.
 
@@ -62,8 +62,9 @@ profile is lent to gates it has not seen. A profile is borrowed evidence, shadow
                          --out (required). Their ledgers must differ, or rows would count
                          twice.
 
-"ratchet report|check|trail --profile <file>" then grades a gate with no fitted bar as
-borrowed from it, and policyFromProfile builds a gate's policy from it in code.
+"ratchet report|check|trail --profile <file>" then grades a gate as borrowed from it until
+the gate's own labels grade it estimated, and policyFromProfile builds a gate's policy from
+it in code.
 
 Exits 0 on success, 2 on a usage error, an unreadable ledger or profile, no rows to build
 from, or profiles that cannot be merged.
@@ -81,7 +82,7 @@ export const offered = (profiles: readonly CalibrationProfile[]): OfferedProfile
 /** The line a report or trail prints for the profiles it was offered. */
 export function offeredLine(profiles: readonly OfferedProfile[]): string {
   const named = profiles.map((p) => `${p.hash.slice(0, 8)} (${keyText(p.key)})`).join(", ");
-  return `Profiles offered with --profile: ${named}. A gate with no fitted bar borrows from the first that matches it, shadow only.`;
+  return `Profiles offered with --profile: ${named}. A gate borrows from the first that matches it until its own labels grade it estimated, shadow only.`;
 }
 
 const message = (e: unknown): string => (e instanceof Error ? e.message : String(e));
@@ -211,7 +212,7 @@ export function renderProfile(path: string, p: CalibrationProfile): string {
       }),
     ),
     "",
-    `Bars sit on the edges of ${p.resolution} equal bins. A bar is the lowest edge at which every donor gate with at least ${p.minSupport} rows in its tail (every row at or above the edge) keeps the promise on that tail by a 95% Wilson lower bound: the strictest donor's bar, since a profile is lent to gates it has not seen. "support" is the fewest tail rows among the gates that kept it; "none" means no edge held on every such gate. Each gate's own bar is below, for reading. "act above" is what policyFromProfile puts in a policy: the bar plus a 0.05 half-band.`,
+    `Bars sit on the edges of ${p.resolution} equal bins. A bar is the lowest edge at which every donor gate with at least ${p.minSupport} rows in its tail (every row at or above the edge) keeps the promise on that tail at the lower end of a 95% Wilson interval (a one-sided 97.5% bound): the strictest donor's bar, since a profile is lent to gates it has not seen. "support" is the fewest tail rows among the gates that kept it; "none" means no edge held on every such gate. Each gate's own bar is below, for reading. "act above" is what policyFromProfile puts in a policy: the bar plus a 0.05 half-band up to a bar of 0.9, and above that the same band in log-odds, so it stays below 1.`,
     "",
     "## Donor gates",
     "",

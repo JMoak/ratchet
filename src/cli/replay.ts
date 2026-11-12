@@ -41,8 +41,8 @@ have delivered next to the recorded one.
 "Recorded" is the ruling the ledger holds for each row (soft), not what the application
 did with it. Rows a floor or an allowlist decided without a call keep their recorded
 action, since no answer exists to re-rule. Failed-open rows take the policy's default,
-review. A floor that raised caution on an answered row is not stored on the row, so it
-cannot be reapplied.
+review. A floor that bounded an answered row is stored on the row (its floor) and is
+reapplied, so a new bar never acts on a row a floor held back.
 `;
 
 export interface ReplayOptions {

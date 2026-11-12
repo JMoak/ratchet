@@ -13,12 +13,14 @@ export {
 // Compounding
 export {
   agreement,
+  type CorrelationMatrix,
   type PoolMethod,
   type PoolOptions,
   pool,
   poolJudge,
   poolPick,
   poolRate,
+  poolWeights,
   reliabilityWeight,
 } from "./compound/aggregate.ts";
 export {
@@ -31,9 +33,13 @@ export {
   type Attempt,
   type ChainOptions,
   type ChainResult,
+  chainTags,
+  type GateVerification,
+  isGateVerification,
   runChain,
   type Step,
   type StepTrace,
+  type Verification,
 } from "./compound/chain.ts";
 export {
   askOne,
@@ -54,20 +60,25 @@ export {
   replicate,
   shuffleOptions,
   type Transform,
+  untransform,
 } from "./compound/ensemble.ts";
 export {
   batteryFeatures,
   fitLogistic,
+  type LogisticFit,
   type LogisticModel,
   type LogisticOptions,
   poolLearned,
   predictLogistic,
 } from "./compound/learned.ts";
 export {
+  independentLead,
   type SequentialDecision,
   type SequentialOptions,
   sequential,
   voteLead,
+  voterKey,
+  voterModel,
 } from "./compound/sequential.ts";
 // Engine and gates
 export {
@@ -87,6 +98,9 @@ export {
   allowIf,
   type BypassRule,
   bypassFor,
+  evaluateFloors,
+  FLOOR_FAILS_CLOSED_TO,
+  type FloorEvaluation,
   type FloorRule,
   floorFor,
   forQuestion,
@@ -104,14 +118,18 @@ export {
   type GateSpec,
   type GateVerdict,
   isBattery,
+  QUESTION_SCOPE,
+  questionScope,
 } from "./gate.ts";
 // Agent-harness hooks: shadow a coding agent's permission prompts (`ratchet hook`)
 export {
   EVENTS_FOR,
   HARNESSES,
   type Harness,
+  type HookContext,
   type HookEvent,
   hashInput,
+  hookContext,
   parseHookInput,
 } from "./hook/event.ts";
 export {
@@ -126,8 +144,40 @@ export {
 export { ingestPrompts } from "./hook/ingest.ts";
 export { hookPaths, readEvents } from "./hook/journal.ts";
 export { type PromptOutcome, type Resolution, resolvePrompts } from "./hook/resolve.ts";
-export { promptState } from "./hook/state.ts";
-export { type Subject, scrub, subjectOf } from "./hook/subject.ts";
+export { type PromptStateOptions, promptState } from "./hook/state.ts";
+export {
+  CHECK_BYPASS_COMMANDS,
+  type CommandRule,
+  CREDENTIAL_COMMANDS,
+  DESTRUCTIVE_COMMANDS,
+  HARNESS_CONFIG_COMMANDS,
+  matchingRules,
+  normaliseCommand,
+  OPAQUE_COMMANDS,
+  type Placement,
+  placePath,
+  SECRET_SHAPES,
+  type SecretShape,
+  type Shell,
+  type Subject,
+  scrub,
+  subjectOf,
+  UPLOAD_COMMANDS,
+} from "./hook/subject.ts";
+export {
+  type ActBar,
+  type BatteryReadout,
+  batteryReadout,
+  describeActBar,
+  describeBattery,
+  fitActBar,
+  type GateEvidence,
+  type GateEvidenceOptions,
+  gateEvidence,
+  resolveLevers,
+  SATURATION_CUT,
+  SATURATION_WARN,
+} from "./ledger/bars.ts";
 export {
   type Borrowing,
   type BorrowOptions,
@@ -139,7 +189,10 @@ export {
   type Calibrator,
   type CostFit,
   type CoveragePoint,
+  chainAttempt,
   coverageAt,
+  type Disagreement,
+  disagreement,
   ece,
   errorCorrelation,
   expectedAccuracy,
@@ -153,6 +206,7 @@ export {
   type MemberCorrelation,
   type MemberPairCorrelation,
   memberCorrelation,
+  modelFamily,
   pairwiseCorrelation,
   type ReliabilityBin,
   reliability,
@@ -160,6 +214,7 @@ export {
   type Scored,
   type ScoredTruth,
   type ScoreOptions,
+  scoredForAct,
   scoredForYes,
   scoredFromLedger,
   scoredWithTruth,
@@ -170,7 +225,11 @@ export {
 export {
   atLeast,
   type BorrowedVia,
+  type Configuration,
+  configurationOf,
+  currentConfiguration,
   describeGrade,
+  describeStray,
   type EvidenceGrade,
   type FittedFrom,
   GRADE_KINDS,
@@ -180,24 +239,34 @@ export {
   gradeWord,
   type MeasuredGrade,
   type ProfileProvenance,
+  REPORT_DEFAULTS,
+  type ReportLevers,
   type SourceCounts,
+  type StrayQuestion,
+  strayQuestions,
 } from "./ledger/evidence.ts";
 // Ledger and learning
 export {
+  type CostBasis,
+  type CostEstimate,
   type DecisionRecord,
   decisionRows,
   hashQuestion,
   hashState,
   inheritOutcome,
   isMemberOf,
+  isValidCost,
   JsonlLedger,
   type Ledger,
+  type LedgerHealth,
+  type LedgerScan,
   type MemberRecord,
   MemoryLedger,
   type Mode,
   newRequestId,
   type Outcome,
   parseJsonlLedger,
+  scanJsonlLedger,
 } from "./ledger/ledger.ts";
 export {
   borrowedBar,
@@ -225,6 +294,7 @@ export {
   COUNTED_SOURCES,
   DEFAULT_TRUST,
   type FitClass,
+  isFitClass,
   isTrustClass,
   type LabelSource,
   parseSource,
@@ -249,6 +319,7 @@ export {
 export {
   type CacheOptions,
   cached,
+  checkDecisions,
   failOpen,
   isFailedOpen,
   maxLatency,
@@ -273,15 +344,18 @@ export {
   type GatePolicy,
   goProbability,
   hashPolicy,
+  isAction,
   type ProfilePolicyOptions,
   policyFromCosts,
   policyFromProfile,
   policyWithBand,
   type Ruling,
+  readAction,
   rule,
 } from "./policy.ts";
 // Questions
 export {
+  isProbability,
   judge,
   judgeVerdictFrom,
   LIMITS,
@@ -297,6 +371,7 @@ export {
 export {
   type Band,
   band,
+  type CompareOptions,
   compare,
   count,
   daysBetween,
@@ -325,6 +400,7 @@ export {
   screenMany,
 } from "./recipes/screen.ts";
 export { type Speculated, type SpeculateOptions, speculate } from "./recipes/speculate.ts";
+export type { AcceptedSample } from "./rollout.ts";
 export {
   type AuditWindow,
   Rollout,

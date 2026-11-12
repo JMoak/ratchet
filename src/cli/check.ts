@@ -1,3 +1,4 @@
+import type { ActBar } from "../ledger/bars.ts";
 import {
   actWasRight,
   ece,
@@ -9,9 +10,13 @@ import {
 import {
   atLeast,
   type BorrowedVia,
+  currentConfiguration,
   describeGrade,
+  describeStray,
   type EvidenceGrade,
   type FittedFrom,
+  type StrayQuestion,
+  strayQuestions,
 } from "../ledger/evidence.ts";
 import type { DecisionRecord } from "../ledger/ledger.ts";
 import type { CalibrationProfile } from "../ledger/profile.ts";
@@ -33,7 +38,7 @@ import {
   dec,
   findGate,
   type GateGroup,
-  gradeGroup,
+  groupEvidence,
   groupGates,
   isFixed,
   loadLedger,
@@ -50,19 +55,32 @@ The CI gate. Fails when the gate's evidence grade is weaker than --require, or w
 the most recent --window rows of the gate:
 
   - accuracy on the rows the policy acted on, among unselected rows (shadow rows and
-    blind audits), is below --promise, with at least --min-rows such rows;
-  - ECE is above --max-ece, with at least --min-rows labelled rows (unselected rows
-    when there are enough, else all labelled rows);
+    blind audits) of the gate's current configuration, is below --promise, with at
+    least --min-rows such rows;
+  - ECE is above --max-ece, with at least --min-rows labelled rows of the current
+    configuration (unselected rows when there are enough, else all labelled rows);
   - a model other than --model answered any row in the window.
 
-The grade required is measured when any row of the gate in the window enforces, and
-estimated while the gate is in shadow: a gate acting on its own owes its promise an exact
-bound, one in shadow is being asked whether it is on course. The line says which applied.
-The grade reads the gate's whole history, not the window, as "ratchet report" does.
-measured: the first acts of the gate's current shadow phase, fixed before their labels
-were read, reached --promise by an exact 95% lower bound with no wrong act (only rows
---model answered, when it is given). estimated: a 95% Wilson interval on at least
---min-estimated labelled unselected rows. Anything weaker is borrowed or none.
+The current configuration is the policy and evidence version of the gate's newest row, with
+each question at the newest rubric recorded for it. Rows recorded under an older one
+describe a gate that no longer answers: they are counted on the line and never read, so a
+changed rubric or policy starts with no evidence.
+
+The line also carries the gate's fitted act bar, as "ratchet report" fits it: the lowest
+probability that acting is right at which the lower end of a 95% Wilson interval of acting
+right (a one-sided 97.5% bound) reaches
+--promise, with at least --min-support rows at or above it. It never fails the check; it
+says where the gate could act.
+
+The grade required is measured when the gate's newest row enforces, and estimated while
+the gate is in shadow, including after a demotion: a gate acting on its own owes its
+promise an exact bound, one in shadow is being asked whether it is on course. The line
+says which applied. The grade reads the gate's whole history, not the window, as "ratchet
+report" does. measured: the first acts of the gate's current shadow phase, fixed before
+their labels were read, reached --promise by an exact 95% lower bound with no wrong act
+(only rows --model answered, when it is given). estimated: a 95% Wilson interval on at
+least --min-estimated labelled unselected rows of the current configuration. Anything
+weaker is borrowed or none.
 
 Floor and allowlist rows decided without an oracle call do not count toward accuracy,
 calibration, or minimum evidence. They remain in the operational window row count.
@@ -72,7 +90,7 @@ read only blind, census and unsourced labels, and no figure reads a consequence 
   --gate <id>        The gate to check. Required.
   --promise <p>      Accuracy promised on acted rows, e.g. 0.98. Required.
   --require <grade>  The weakest grade that passes: measured or estimated. Default
-                     measured if the window holds an enforce row, else estimated;
+                     measured if the gate's newest row enforces, else estimated;
                      --require measured insists on the exact bound in shadow too.
   --min-rows <n>     Rows needed before accuracy or ECE is judged. Default 30.
   --min-estimated <n>  Labelled unselected rows an estimated grade needs. Default 30.
@@ -85,12 +103,12 @@ read only blind, census and unsourced labels, and no figure reads a consequence 
   --trust <p>=<c>    Read labels whose source starts <p> (channel:kind or channel:*) as
                      trust class <c>: blind, census, moment, consequence or unknown.
                      Repeatable; laid over the defaults.
-  --profile <file>   A calibration profile a gate with no fitted bar of its own may be
-                     graded borrowed from, matched against --model when given, else the
-                     model of its newest answered row. Borrowed never passes; the line
-                     says what the gate has. Repeatable.
-  --min-support <n>  With --profile: labelled rows a bar of the gate's own needs at or
-                     above it, as in "ratchet report". Default 30.
+  --profile <file>   A calibration profile a gate may be graded borrowed from until its
+                     own labels grade it estimated, matched against --model when given,
+                     else the model of its newest answered row. Borrowed never passes;
+                     the line says what the gate has. Repeatable.
+  --min-support <n>  Labelled rows the fitted act bar on the line needs at or above it,
+                     as in "ratchet report". Default 30.
 
 Prints one line, PASS or FAIL with the reason, and exits 0 on pass, 1 on fail,
 2 on a usage error or an unreadable ledger.
@@ -106,17 +124,17 @@ export interface CheckOptions {
   /** Trust classes laid over `DEFAULT_TRUST`, as `--trust` gives them. */
   readonly labelTrust?: Readonly<Record<string, TrustClass>>;
   /**
-   * The weakest grade that passes. Default measured when any row in the window enforces,
-   * estimated while the gate is in shadow.
+   * The weakest grade that passes. Default measured when the gate's newest row enforces,
+   * estimated while the gate is in shadow (after a demotion too).
    */
   readonly require?: RequiredGrade;
-  /** Labelled unselected rows an estimated grade needs. Default 30. */
+  /** Labelled unselected rows an estimated grade needs. Default `REPORT_DEFAULTS.minEstimated`. */
   readonly minEstimated?: number;
   /** Evidence that is not this gate's labels, graded when nothing stronger exists. */
   readonly borrowed?: BorrowedVia;
-  /** Profiles a gate with no fitted bar may be graded borrowed from, as `--profile` gives them. */
+  /** Profiles a gate may be graded borrowed from until it grades estimated, as `--profile` gives them. */
   readonly profiles?: readonly CalibrationProfile[];
-  /** With `profiles`: labelled rows a bar of the gate's own needs at or above it. Default 30. */
+  /** Labelled rows the fitted act bar needs at or above it. Default `REPORT_DEFAULTS.minSupport`. */
   readonly minSupport?: number;
 }
 
@@ -132,14 +150,29 @@ export interface CheckResult {
   readonly failures: readonly string[];
   readonly windowRows: number;
   readonly gateRows: number;
-  /** The gate's grade, read from its whole history (`gradeGroup`), and the grade required. */
+  /** The gate's grade, read from its whole history (`groupEvidence`), and the grade required. */
   readonly grade: EvidenceGrade;
   readonly require: RequiredGrade;
   /**
-   * Why that grade: `--require` asked for it, or it is the default for a gate with an enforce
-   * row in the window (measured) or for one in shadow (estimated).
+   * Why that grade: `--require` asked for it, or it is the default for a gate whose newest row
+   * enforces (measured) or for one in shadow (estimated).
    */
   readonly requiredBy: "flag" | "enforce" | "shadow";
+  /**
+   * Rows in the window recorded under an older policy, rubric or evidence version than the
+   * gate's newest row: never read by the accuracy or ECE figures.
+   */
+  readonly olderRows: number;
+  /**
+   * The gate's fitted act bar at the promise, as `report` fits it (`fitActBar`), with
+   * `minSupport` rows at or above it. Informational: it never fails the check.
+   */
+  readonly bar: ActBar;
+  /**
+   * Questions whose rows still read as current though the gate's newest request, which asked
+   * one question, did not ask them (`strayQuestions`): flagged on the line, never failed on.
+   */
+  readonly strays: readonly StrayQuestion[];
   readonly acted: {
     readonly n: number;
     readonly shadow: number;
@@ -167,6 +200,32 @@ function actedSlice(n: number, shadow: number, audit: number): string {
   return `${n} unselected acted rows (${shadow} shadow, ${audit} audit)`;
 }
 
+/**
+ * The gate's fitted act bar in a few words, for the check line: where it could act, or why it
+ * has no bar at the promise. Nothing when no labelled row of a trusted source exists.
+ */
+function actBarNote(bar: ActBar, promise: number, minSupport: number): string[] {
+  const f = bar.fitted;
+  const p = bar.pointFitted;
+  if (f !== undefined) {
+    return [
+      `act bar ${dec(f.threshold)}: acting right ${pct(f.accuracy)} on the ${f.n} rows at or above it, lower end of the 95% interval >= ${pct(promise)}`,
+    ];
+  }
+  if (bar.fitRows === undefined) return [];
+  if (p !== undefined) {
+    return [
+      `no act bar at ${pct(promise)}: the point estimate's ${dec(p.threshold)} rests on ${p.n} rows, too few for the lower end of a 95% interval to clear it`,
+    ];
+  }
+  if (bar.fitRows < minSupport) {
+    return [
+      `no act bar: ${bar.fitRows} labelled rows, and a bar needs ${minSupport} at or above it`,
+    ];
+  }
+  return [`no act bar at ${pct(promise)}`];
+}
+
 /** Judge one gate against its promise. Pure: the ledger rows in, the verdict out. */
 export function checkGate(groups: readonly GateGroup[], opts: CheckOptions): CheckResult {
   const group = findGate(groups, opts.gate, "check");
@@ -175,10 +234,18 @@ export function checkGate(groups: readonly GateGroup[], opts: CheckOptions): Che
   const failures: string[] = [];
   const notes: string[] = [];
   const trust = trustRegistry(opts.labelTrust);
+  // Accuracy and calibration read the newest configuration's rows alone, as the grade does: a
+  // looser policy or a new rubric earns nothing from labels the old one collected.
+  const current = new Set(currentConfiguration(group.rows).current.map((r) => r.id));
+  const scoped = recent.filter((r) => current.has(r.id));
+  const olderRows = recent.length - scoped.length;
 
-  // A gate acting on its own owes its promise a measured grade; one still in shadow is being
-  // asked whether it is on course, not whether it has proven itself, so it owes an estimate.
-  const enforcing = recent.some((r) => r.mode === "enforce");
+  // A gate acting on its own owes its promise a measured grade; one in shadow is being asked
+  // whether it is on course, not whether it has proven itself, so it owes an estimate. What the
+  // gate does now is its newest row's mode: enforce rows left in the window by a demotion do
+  // not make a shadow gate an enforcing one.
+  const enforcing = ordered.at(-1)?.mode === "enforce";
+  const enforcedEarlier = !enforcing && recent.some((r) => r.mode === "enforce");
   const requiredBy = opts.require !== undefined ? "flag" : enforcing ? "enforce" : "shadow";
   const required = opts.require ?? (enforcing ? "measured" : "estimated");
   const requireNote =
@@ -186,16 +253,18 @@ export function checkGate(groups: readonly GateGroup[], opts: CheckOptions): Che
       ? `requiring ${required}, as --require asks`
       : requiredBy === "enforce"
         ? "requiring measured: this gate enforces"
-        : "requiring estimated: this gate is in shadow; pass --require measured to insist";
+        : enforcedEarlier
+          ? "requiring estimated: this gate is in shadow now (enforce rows in the window predate its newest row); pass --require measured to insist"
+          : "requiring estimated: this gate is in shadow; pass --require measured to insist";
   // The grade reads the whole history: a planned sample is the first acts of its phase, and a
   // window sliding past them would turn it back into a moving one.
-  const grade = gradeGroup(group, trust, {
+  const { grade, bar, levers } = groupEvidence(group, trust, {
     target: opts.promise,
+    ...(opts.minSupport !== undefined ? { minSupport: opts.minSupport } : {}),
     ...(opts.model !== undefined ? { model: opts.model } : {}),
     ...(opts.minEstimated !== undefined ? { minEstimated: opts.minEstimated } : {}),
     ...(opts.borrowed !== undefined ? { borrowed: opts.borrowed } : {}),
     ...(opts.profiles !== undefined ? { profiles: opts.profiles } : {}),
-    ...(opts.minSupport !== undefined ? { minSupport: opts.minSupport } : {}),
   });
   // The grade travels on every line, pass or fail, so no figure in it is read without it.
   const meets = atLeast(grade, required);
@@ -206,7 +275,7 @@ export function checkGate(groups: readonly GateGroup[], opts: CheckOptions): Che
 
   // Accuracy on the rows the policy acted on, among rows its confidence did not select.
   const fallback = inferGoIsYes(group.rows).goIsYes;
-  const acted = recent.filter(
+  const acted = scoped.filter(
     (r) =>
       r.outcome && !r.failedOpen && !isFixed(r) && isUnselected(r, { trust }) && r.soft === "act",
   );
@@ -227,8 +296,8 @@ export function checkGate(groups: readonly GateGroup[], opts: CheckOptions): Che
   }
 
   // Calibration: unselected rows when there are enough of them, else every labelled row.
-  const unselected = scoredFromLedger(recent, { unselectedOnly: true, trust });
-  const labelled = scoredFromLedger(recent, { sources: COUNTED_SOURCES, trust });
+  const unselected = scoredFromLedger(scoped, { unselectedOnly: true, trust });
+  const labelled = scoredFromLedger(scoped, { sources: COUNTED_SOURCES, trust });
   const useUnselected = unselected.length >= opts.minRows;
   const eceRows = useUnselected ? unselected : labelled;
   const eceFrom: FittedFrom = useUnselected ? "unselected" : "all";
@@ -272,11 +341,19 @@ export function checkGate(groups: readonly GateGroup[], opts: CheckOptions): Che
   const overrides = Object.entries(opts.labelTrust ?? {});
   const trustNote =
     overrides.length > 0 ? [`trust ${overrides.map(([p, c]) => `${p}=${c}`).join(", ")}`] : [];
-  const windowNote = `window ${recent.length} of ${ordered.length} rows`;
+  const olderNote =
+    olderRows > 0
+      ? `, ${olderRows} of them under an older policy, rubric or evidence version and not read`
+      : "";
+  const windowNote = `window ${recent.length} of ${ordered.length} rows${olderNote}`;
+  const barNote = actBarNote(bar, opts.promise, levers.minSupport);
   const pass = failures.length === 0;
+  // A renamed question's old rows still grade the gate until the evidence version moves: say so.
+  const strays = strayQuestions(group.rows);
+  const tail = [...trustNote, ...strays.map(describeStray), ...barNote, windowNote];
   const line = pass
-    ? `PASS ${group.key}: ${[requireNote, ...gradeNote, ...notes, ...trustNote, windowNote].join("; ")}`
-    : `FAIL ${group.key}: ${[...failures, requireNote, ...gradeNote, ...trustNote, windowNote].join("; ")}`;
+    ? `PASS ${group.key}: ${[requireNote, ...gradeNote, ...notes, ...tail].join("; ")}`
+    : `FAIL ${group.key}: ${[...failures, requireNote, ...gradeNote, ...tail].join("; ")}`;
   return {
     gate: group.key,
     pass,
@@ -287,6 +364,9 @@ export function checkGate(groups: readonly GateGroup[], opts: CheckOptions): Che
     grade,
     require: required,
     requiredBy,
+    olderRows,
+    strays,
+    bar,
     acted: {
       n: acted.length,
       shadow,

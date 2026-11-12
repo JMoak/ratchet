@@ -167,9 +167,12 @@ export interface BorrowOptions {
  * row records a `barSource` borrows only that profile, when it is among `profiles`, and reads
  * it as stale once the gate no longer matches its key. Any other gate borrows from the first
  * profile that matches it, one keyed to its rubric before one keyed to its kind alone, and
- * never shops past that one for a profile with a bar. Undefined when nothing matches or the
- * profile has no bar for the target. Whether to borrow at all (only for a gate with no fitted
- * bar of its own) is the caller's question.
+ * never shops past that one for a profile with a bar. With a pin (`model`), a profile is
+ * matched against the pin, and the borrowing is stale once the newest answered row reports
+ * another model: the oracle has moved off the pin, so the bar describes a model that no longer
+ * answers and rows the pinned rollout will never read. Undefined when nothing matches or the
+ * profile has no bar for the target. Whether to borrow at all (until the gate's own labels
+ * grade it estimated) is the caller's question.
  */
 export function borrowFor(
   rows: readonly DecisionRecord[],
@@ -189,13 +192,15 @@ export function borrowFor(
             ? { questionHash: answered.questionHash }
             : {}),
         };
+  const offPin =
+    opts.model !== undefined && answered?.model !== undefined && answered.model !== opts.model;
   const declared = barSourceOf(decisions.at(-1));
   if (declared !== undefined) {
     const p = profiles.find((x) => x.hash === declared);
     const via = p === undefined ? undefined : profileVia(p, opts.target);
     if (p === undefined || via === undefined) return undefined;
-    const stale = answered !== undefined && (gate === undefined || !profileMatches(p, gate));
-    return { via, stale };
+    const moved = answered !== undefined && (gate === undefined || !profileMatches(p, gate));
+    return { via, stale: moved || offPin };
   }
   if (gate === undefined) return undefined;
   const keyed = (p: CalibrationProfile) => p.key.questionHash !== undefined;
@@ -203,7 +208,7 @@ export function borrowFor(
     profileMatches(p, gate),
   );
   const via = chosen === undefined ? undefined : profileVia(chosen, opts.target);
-  return via === undefined ? undefined : { via, stale: false };
+  return via === undefined ? undefined : { via, stale: offPin };
 }
 
 /** The profile hash a row's `detail.barSource` names, read loosely, since rows are data. */

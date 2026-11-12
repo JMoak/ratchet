@@ -275,8 +275,10 @@ describe("expiry and matching", () => {
     });
     const upgraded = rows(10, 0.8, 8, { gate: "new", model: "m-2" });
     expect(borrowFor(upgraded, [p], { target: 0.9 })).toBeUndefined();
-    // A declared pin stands in for the rows' model.
-    expect(borrowFor(upgraded, [p], { target: 0.9, model: "m-1" })?.stale).toBe(false);
+    // A declared pin stands in for the rows' model, and the borrowing is stale while the rows
+    // come from another (e2e wave 3, P3).
+    expect(borrowFor(upgraded, [p], { target: 0.9, model: "m-1" })?.stale).toBe(true);
+    expect(borrowFor(here, [p], { target: 0.9, model: "m-1" })?.stale).toBe(false);
     // A pooled answer is not the model's own; the newest answered row decides.
     expect(borrowFor(rows(10, 0.8, 8, { strategy: "ensemble" }), [p], { target: 0.9 })).toBe(
       undefined,
@@ -315,8 +317,9 @@ describe("policyFromProfile", () => {
   const p = build([...gateA, ...unsureA, ...gateB]);
   it("acts at the band's upper edge, the borrowed bar plus 0.05", () => {
     expect(policyFromProfile(p, 0.9)).toEqual({ actAbove: 0.95 });
+    // 0.9 + 0.1 would act above 1, on nothing; past the knee the band is in log-odds (T3-08).
     expect(policyFromProfile(p, 0.9, { halfWidth: 0.1, refuse: true, goIsYes: false })).toEqual({
-      actAbove: 1,
+      actAbove: 0.9529412,
       refuseBelow: 0.8,
       goIsYes: false,
     });

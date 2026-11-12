@@ -1,0 +1,2144 @@
+{
+  "set": "sibling",
+  "items": [
+    {
+      "id": "F-70569",
+      "template": "y7",
+      "product": "fernhill",
+      "body": "Good morning, Checkout fails with 'payment service unavailable' for everyone. Our neighbourhood chat says nobody can pay tonight. Tomás, Pinecrest Dental",
+      "state": "Fernhill Market help desk\nticket: F-70569\nchannel: email\naccount type: customer\n\n[untrusted message]\nGood morning, Checkout fails with 'payment service unavailable' for everyone. Our neighbourhood chat says nobody can pay tonight. Tomás, Pinecrest Dental\n[/untrusted]",
+      "route": {
+        "truth": "payments",
+        "why": "payments: checkout down for everyone"
+      },
+      "urgency": {
+        "truth": "critical",
+        "why": "critical: checkout down for everyone"
+      }
+    },
+    {
+      "id": "F-56313",
+      "template": "y3",
+      "product": "fernhill",
+      "body": "Hi team, Do you accept PayPal? Regards, Priya",
+      "state": "Fernhill Market help desk\nticket: F-56313\nchannel: email\naccount type: customer\n\n[untrusted message]\nHi team, Do you accept PayPal? Regards, Priya\n[/untrusted]",
+      "route": {
+        "truth": "payments",
+        "why": "payments: payment method question"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: payment method question"
+      }
+    },
+    {
+      "id": "F-90389",
+      "template": "e2",
+      "product": "fernhill",
+      "body": "Hi team, My listings show the wrong stock count after the inventory sync. Regards, Noor",
+      "state": "Fernhill Market help desk\nticket: F-90389\nchannel: email\naccount type: customer\n\n[untrusted message]\nHi team, My listings show the wrong stock count after the inventory sync. Regards, Noor\n[/untrusted]",
+      "route": {
+        "truth": "seller_support",
+        "why": "seller_support: inventory sync wrong"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: inventory sync wrong"
+      }
+    },
+    {
+      "id": "F-44731",
+      "template": "d7",
+      "product": "fernhill",
+      "body": "My order FM-897226 was delivered two hours late, the second time this week. Regards, Noor",
+      "state": "Fernhill Market help desk\nticket: F-44731\nchannel: email\naccount type: marketplace seller\n\n[untrusted message]\nMy order FM-897226 was delivered two hours late, the second time this week. Regards, Noor\n[/untrusted]",
+      "route": {
+        "truth": "delivery",
+        "why": "delivery: repeatedly late"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: repeatedly late"
+      }
+    },
+    {
+      "id": "F-30800",
+      "template": "x8",
+      "product": "fernhill",
+      "body": "Hello, I clicked a link in a fake Fernhill delivery text and entered my password before I realised. Regards, Leah",
+      "state": "Fernhill Market help desk\nticket: F-30800\nchannel: in-app chat\naccount type: customer\n\n[untrusted message]\nHello, I clicked a link in a fake Fernhill delivery text and entered my password before I realised. Regards, Leah\n[/untrusted]",
+      "route": {
+        "truth": "fraud",
+        "why": "fraud: password entered on fake text link"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: password entered on fake text link"
+      }
+    },
+    {
+      "id": "F-82035",
+      "template": "q8",
+      "product": "fernhill",
+      "body": "Hi team, Do you sell halal meat? Marco, Pinecrest Dental",
+      "state": "Fernhill Market help desk\nticket: F-82035\nchannel: web form\naccount type: marketplace seller\n\n[untrusted message]\nHi team, Do you sell halal meat? Marco, Pinecrest Dental\n[/untrusted]",
+      "route": {
+        "truth": "product_info",
+        "why": "product_info: halal question"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: halal question"
+      }
+    },
+    {
+      "id": "F-47678",
+      "template": "d5",
+      "product": "fernhill",
+      "body": "Your app shows every delivery in the Elm Park area as cancelled this evening. Our community group of 33 households has no groceries coming. Thanks!",
+      "state": "Fernhill Market help desk\nticket: F-47678\nchannel: web form\naccount type: customer\n\n[untrusted message]\nYour app shows every delivery in the Elm Park area as cancelled this evening. Our community group of 33 households has no groceries coming. Thanks!\n[/untrusted]",
+      "route": {
+        "truth": "delivery",
+        "why": "delivery: all deliveries in an area cancelled"
+      },
+      "urgency": {
+        "truth": "critical",
+        "why": "critical: all deliveries in an area cancelled"
+      }
+    },
+    {
+      "id": "F-59692",
+      "template": "q3",
+      "product": "fernhill",
+      "body": "Good morning, What's the shelf life of your frozen dumplings once thawed? Thanks!",
+      "state": "Fernhill Market help desk\nticket: F-59692\nchannel: email\naccount type: customer\n\n[untrusted message]\nGood morning, What's the shelf life of your frozen dumplings once thawed? Thanks!\n[/untrusted]",
+      "route": {
+        "truth": "product_info",
+        "why": "product_info: shelf life question"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: shelf life question"
+      }
+    },
+    {
+      "id": "F-98097",
+      "template": "x1",
+      "product": "fernhill",
+      "body": "Hey there, Someone placed three orders on my account tonight to an address I don't know, and my saved card was charged. Thanks, Leah",
+      "state": "Fernhill Market help desk\nticket: F-98097\nchannel: email\naccount type: customer\n\n[untrusted message]\nHey there, Someone placed three orders on my account tonight to an address I don't know, and my saved card was charged. Thanks, Leah\n[/untrusted]",
+      "route": {
+        "truth": "fraud",
+        "why": "fraud: unauthorised orders now"
+      },
+      "urgency": {
+        "truth": "critical",
+        "why": "critical: unauthorised orders now"
+      }
+    },
+    {
+      "id": "F-24541",
+      "template": "x2",
+      "product": "fernhill",
+      "body": "Hello, I got a text saying I won a Fernhill voucher and need to enter my card details at a link. Is it real? Thanks!",
+      "state": "Fernhill Market help desk\nticket: F-24541\nchannel: in-app chat\naccount type: customer\n\n[untrusted message]\nHello, I got a text saying I won a Fernhill voucher and need to enter my card details at a link. Is it real? Thanks!\n[/untrusted]",
+      "route": {
+        "truth": "fraud",
+        "why": "fraud: scam voucher text"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: scam voucher text",
+        "ambiguous": true
+      }
+    },
+    {
+      "id": "F-14834",
+      "template": "d3",
+      "product": "fernhill",
+      "body": "Hi, Can I change my regular delivery slot from Tuesday mornings to Thursday evenings?",
+      "state": "Fernhill Market help desk\nticket: F-14834\nchannel: email\naccount type: marketplace seller\n\n[untrusted message]\nHi, Can I change my regular delivery slot from Tuesday mornings to Thursday evenings?\n[/untrusted]",
+      "route": {
+        "truth": "delivery",
+        "why": "delivery: change regular slot"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: change regular slot"
+      }
+    },
+    {
+      "id": "F-82468",
+      "template": "q2",
+      "product": "fernhill",
+      "body": "Hello, Is the veggie burgers available in a larger size?",
+      "state": "Fernhill Market help desk\nticket: F-82468\nchannel: in-app chat\naccount type: marketplace seller\n\n[untrusted message]\nHello, Is the veggie burgers available in a larger size?\n[/untrusted]",
+      "route": {
+        "truth": "product_info",
+        "why": "product_info: size availability"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: size availability"
+      }
+    },
+    {
+      "id": "F-31288",
+      "template": "q2",
+      "product": "fernhill",
+      "body": "Hello, Is the sourdough loaf available in a larger size? Sam, Pinecrest Dental",
+      "state": "Fernhill Market help desk\nticket: F-31288\nchannel: web form\naccount type: customer\n\n[untrusted message]\nHello, Is the sourdough loaf available in a larger size? Sam, Pinecrest Dental\n[/untrusted]",
+      "route": {
+        "truth": "product_info",
+        "why": "product_info: size availability"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: size availability"
+      }
+    },
+    {
+      "id": "F-98852",
+      "template": "d6",
+      "product": "fernhill",
+      "body": "Hi team, What time do you usually deliver on Sundays? Thanks!",
+      "state": "Fernhill Market help desk\nticket: F-98852\nchannel: email\naccount type: customer\n\n[untrusted message]\nHi team, What time do you usually deliver on Sundays? Thanks!\n[/untrusted]",
+      "route": {
+        "truth": "delivery",
+        "why": "delivery: Sunday delivery times"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: Sunday delivery times"
+      }
+    },
+    {
+      "id": "F-43796",
+      "template": "d1",
+      "product": "fernhill",
+      "body": "Hi, My grocery order for the 5-6pm slot today still says 'preparing' and the delivery window closes in an hour. I need this for dinner tonight. Noor, Corvid Labs",
+      "state": "Fernhill Market help desk\nticket: F-43796\nchannel: email\naccount type: marketplace seller\n\n[untrusted message]\nHi, My grocery order for the 5-6pm slot today still says 'preparing' and the delivery window closes in an hour. I need this for dinner tonight. Noor, Corvid Labs\n[/untrusted]",
+      "route": {
+        "truth": "delivery",
+        "why": "delivery: order stuck, window closing"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: order stuck, window closing"
+      }
+    },
+    {
+      "id": "F-69464",
+      "template": "r3",
+      "product": "fernhill",
+      "body": "I'd like to return the blender I bought from a marketplace seller; it's the wrong model. Regards, Priya",
+      "state": "Fernhill Market help desk\nticket: F-69464\nchannel: email\naccount type: customer\n\n[untrusted message]\nI'd like to return the blender I bought from a marketplace seller; it's the wrong model. Regards, Priya\n[/untrusted]",
+      "route": {
+        "truth": "returns",
+        "why": "returns: marketplace return"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: marketplace return"
+      }
+    },
+    {
+      "id": "F-48982",
+      "template": "d3",
+      "product": "fernhill",
+      "body": "Hi, Can I change my regular delivery slot from Tuesday mornings to Thursday evenings? Priya, Corvid Labs",
+      "state": "Fernhill Market help desk\nticket: F-48982\nchannel: email\naccount type: customer\n\n[untrusted message]\nHi, Can I change my regular delivery slot from Tuesday mornings to Thursday evenings? Priya, Corvid Labs\n[/untrusted]",
+      "route": {
+        "truth": "delivery",
+        "why": "delivery: change regular slot"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: change regular slot"
+      }
+    },
+    {
+      "id": "F-18587",
+      "template": "x3",
+      "product": "fernhill",
+      "body": "Good morning, My account email was changed and I didn't do it. I can't get back in. Regards, Priya",
+      "state": "Fernhill Market help desk\nticket: F-18587\nchannel: email\naccount type: customer\n\n[untrusted message]\nGood morning, My account email was changed and I didn't do it. I can't get back in. Regards, Priya\n[/untrusted]",
+      "route": {
+        "truth": "fraud",
+        "why": "fraud: account takeover"
+      },
+      "urgency": {
+        "truth": "critical",
+        "why": "critical: account takeover"
+      }
+    },
+    {
+      "id": "F-26921",
+      "template": "y4",
+      "product": "fernhill",
+      "body": "The promo code WELCOME10 didn't apply at checkout even though it's my first order. Dana, Pinecrest Dental",
+      "state": "Fernhill Market help desk\nticket: F-26921\nchannel: in-app chat\naccount type: customer\n\n[untrusted message]\nThe promo code WELCOME10 didn't apply at checkout even though it's my first order. Dana, Pinecrest Dental\n[/untrusted]",
+      "route": {
+        "truth": "payments",
+        "why": "payments: promo code not applied"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: promo code not applied"
+      }
+    },
+    {
+      "id": "F-23084",
+      "template": "y8",
+      "product": "fernhill",
+      "body": "Good morning, Please remove my old card from my account; I've added a new one. Thanks!",
+      "state": "Fernhill Market help desk\nticket: F-23084\nchannel: email\naccount type: customer\n\n[untrusted message]\nGood morning, Please remove my old card from my account; I've added a new one. Thanks!\n[/untrusted]",
+      "route": {
+        "truth": "payments",
+        "why": "payments: remove old card"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: remove old card"
+      }
+    },
+    {
+      "id": "F-15124",
+      "template": "d7",
+      "product": "fernhill",
+      "body": "Hello, My order FM-887920 was delivered two hours late, the second time this week. Marco, Lumen Films",
+      "state": "Fernhill Market help desk\nticket: F-15124\nchannel: email\naccount type: customer\n\n[untrusted message]\nHello, My order FM-887920 was delivered two hours late, the second time this week. Marco, Lumen Films\n[/untrusted]",
+      "route": {
+        "truth": "delivery",
+        "why": "delivery: repeatedly late"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: repeatedly late"
+      }
+    },
+    {
+      "id": "F-39705",
+      "template": "q7",
+      "product": "fernhill",
+      "body": "The label on the veggie burgers says gluten-free, but the ingredients list wheat flour. Which is right? I'm coeliac. Thanks, Dana",
+      "state": "Fernhill Market help desk\nticket: F-39705\nchannel: in-app chat\naccount type: customer\n\n[untrusted message]\nThe label on the veggie burgers says gluten-free, but the ingredients list wheat flour. Which is right? I'm coeliac. Thanks, Dana\n[/untrusted]",
+      "route": {
+        "truth": "product_info",
+        "why": "product_info: gluten label contradicts ingredients"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: gluten label contradicts ingredients",
+        "ambiguous": true
+      }
+    },
+    {
+      "id": "F-94871",
+      "template": "y4",
+      "product": "fernhill",
+      "body": "The promo code WELCOME10 didn't apply at checkout even though it's my first order.",
+      "state": "Fernhill Market help desk\nticket: F-94871\nchannel: in-app chat\naccount type: customer\n\n[untrusted message]\nThe promo code WELCOME10 didn't apply at checkout even though it's my first order.\n[/untrusted]",
+      "route": {
+        "truth": "payments",
+        "why": "payments: promo code not applied"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: promo code not applied"
+      }
+    },
+    {
+      "id": "F-50648",
+      "template": "q5",
+      "product": "fernhill",
+      "body": "Hey there, When will the oat milk be back in stock? Dana, Oakline Builders",
+      "state": "Fernhill Market help desk\nticket: F-50648\nchannel: web form\naccount type: customer\n\n[untrusted message]\nHey there, When will the oat milk be back in stock? Dana, Oakline Builders\n[/untrusted]",
+      "route": {
+        "truth": "product_info",
+        "why": "product_info: restock question"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: restock question"
+      }
+    },
+    {
+      "id": "F-68920",
+      "template": "l5",
+      "product": "fernhill",
+      "body": "Hi, The app has logged everyone out and nobody in our house or our neighbours' can sign back in tonight.",
+      "state": "Fernhill Market help desk\nticket: F-68920\nchannel: web form\naccount type: customer\n\n[untrusted message]\nHi, The app has logged everyone out and nobody in our house or our neighbours' can sign back in tonight.\n[/untrusted]",
+      "route": {
+        "truth": "login",
+        "why": "login: nobody can sign in"
+      },
+      "urgency": {
+        "truth": "critical",
+        "why": "critical: nobody can sign in"
+      }
+    },
+    {
+      "id": "F-41782",
+      "template": "x7",
+      "product": "fernhill",
+      "body": "Hello, I'm a seller and someone is messaging my customers right now pretending to be me and asking them to pay outside the platform. Thanks!",
+      "state": "Fernhill Market help desk\nticket: F-41782\nchannel: web form\naccount type: customer\n\n[untrusted message]\nHello, I'm a seller and someone is messaging my customers right now pretending to be me and asking them to pay outside the platform. Thanks!\n[/untrusted]",
+      "route": {
+        "truth": "fraud",
+        "why": "fraud: seller impersonated to customers now"
+      },
+      "urgency": {
+        "truth": "critical",
+        "why": "critical: seller impersonated to customers now"
+      }
+    },
+    {
+      "id": "F-73943",
+      "template": "q7",
+      "product": "fernhill",
+      "body": "Good morning, The label on the sourdough loaf says gluten-free, but the ingredients list wheat flour. Which is right? I'm coeliac. Thanks, Marco",
+      "state": "Fernhill Market help desk\nticket: F-73943\nchannel: web form\naccount type: customer\n\n[untrusted message]\nGood morning, The label on the sourdough loaf says gluten-free, but the ingredients list wheat flour. Which is right? I'm coeliac. Thanks, Marco\n[/untrusted]",
+      "route": {
+        "truth": "product_info",
+        "why": "product_info: gluten label contradicts ingredients"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: gluten label contradicts ingredients",
+        "ambiguous": true
+      }
+    },
+    {
+      "id": "F-10802",
+      "template": "r7",
+      "product": "fernhill",
+      "body": "Hi, Two items in my order were substitutions even though I'd marked 'no substitutes'. I want them refunded. Cheers",
+      "state": "Fernhill Market help desk\nticket: F-10802\nchannel: email\naccount type: customer\n\n[untrusted message]\nHi, Two items in my order were substitutions even though I'd marked 'no substitutes'. I want them refunded. Cheers\n[/untrusted]",
+      "route": {
+        "truth": "returns",
+        "why": "returns: refused substitutions"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: refused substitutions"
+      }
+    },
+    {
+      "id": "F-55537",
+      "template": "d8",
+      "product": "fernhill",
+      "body": "Hi, I'm housebound and my order with the cooler packs for my insulin hasn't come. It was due at noon and it's now 4pm. Cheers",
+      "state": "Fernhill Market help desk\nticket: F-55537\nchannel: in-app chat\naccount type: customer\n\n[untrusted message]\nHi, I'm housebound and my order with the cooler packs for my insulin hasn't come. It was due at noon and it's now 4pm. Cheers\n[/untrusted]",
+      "route": {
+        "truth": "delivery",
+        "why": "delivery: medical cooler packs missing"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: medical cooler packs missing"
+      }
+    },
+    {
+      "id": "F-22165",
+      "template": "e1",
+      "product": "fernhill",
+      "body": "Hey there, I'm a seller and my payout of $185.01 hasn't arrived. I need it to pay my supplier tomorrow. Cheers",
+      "state": "Fernhill Market help desk\nticket: F-22165\nchannel: in-app chat\naccount type: marketplace seller\n\n[untrusted message]\nHey there, I'm a seller and my payout of $185.01 hasn't arrived. I need it to pay my supplier tomorrow. Cheers\n[/untrusted]",
+      "route": {
+        "truth": "seller_support",
+        "why": "seller_support: seller payout missing, supplier due"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: seller payout missing, supplier due"
+      }
+    },
+    {
+      "id": "F-59557",
+      "template": "x6",
+      "product": "fernhill",
+      "body": "Hey there, How can I tell if an email claiming to be from Fernhill is genuine? Cheers",
+      "state": "Fernhill Market help desk\nticket: F-59557\nchannel: in-app chat\naccount type: customer\n\n[untrusted message]\nHey there, How can I tell if an email claiming to be from Fernhill is genuine? Cheers\n[/untrusted]",
+      "route": {
+        "truth": "fraud",
+        "why": "fraud: how to spot fake emails"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: how to spot fake emails"
+      }
+    },
+    {
+      "id": "F-78799",
+      "template": "y1",
+      "product": "fernhill",
+      "body": "Hi team, My card keeps getting declined at checkout even though it works everywhere else, and my delivery slot expires in 30 minutes. Regards, Priya",
+      "state": "Fernhill Market help desk\nticket: F-78799\nchannel: email\naccount type: customer\n\n[untrusted message]\nHi team, My card keeps getting declined at checkout even though it works everywhere else, and my delivery slot expires in 30 minutes. Regards, Priya\n[/untrusted]",
+      "route": {
+        "truth": "payments",
+        "why": "payments: card declined, slot expiring"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: card declined, slot expiring"
+      }
+    },
+    {
+      "id": "F-33351",
+      "template": "q4",
+      "product": "fernhill",
+      "body": "Hello, The chicken I bought yesterday is on a recall list I saw on the news. My family already ate some. What should we do? Thanks, Noor",
+      "state": "Fernhill Market help desk\nticket: F-33351\nchannel: email\naccount type: customer\n\n[untrusted message]\nHello, The chicken I bought yesterday is on a recall list I saw on the news. My family already ate some. What should we do? Thanks, Noor\n[/untrusted]",
+      "route": {
+        "truth": "product_info",
+        "why": "product_info: recalled chicken already eaten"
+      },
+      "urgency": {
+        "truth": "critical",
+        "why": "critical: recalled chicken already eaten"
+      }
+    },
+    {
+      "id": "F-95513",
+      "template": "y4",
+      "product": "fernhill",
+      "body": "Hi, The promo code WELCOME10 didn't apply at checkout even though it's my first order. Dana, Lumen Films",
+      "state": "Fernhill Market help desk\nticket: F-95513\nchannel: email\naccount type: customer\n\n[untrusted message]\nHi, The promo code WELCOME10 didn't apply at checkout even though it's my first order. Dana, Lumen Films\n[/untrusted]",
+      "route": {
+        "truth": "payments",
+        "why": "payments: promo code not applied"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: promo code not applied"
+      }
+    },
+    {
+      "id": "F-17090",
+      "template": "x4",
+      "product": "fernhill",
+      "body": "Hi team, The gift card I bought last week shows a zero balance and I never used it. Someone else must have spent it. Regards, Leah",
+      "state": "Fernhill Market help desk\nticket: F-17090\nchannel: in-app chat\naccount type: customer\n\n[untrusted message]\nHi team, The gift card I bought last week shows a zero balance and I never used it. Someone else must have spent it. Regards, Leah\n[/untrusted]",
+      "route": {
+        "truth": "fraud",
+        "why": "fraud: gift card drained"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: gift card drained"
+      }
+    },
+    {
+      "id": "F-91950",
+      "template": "q6",
+      "product": "fernhill",
+      "body": "Hello, Are your bananas organic? The listing doesn't say.",
+      "state": "Fernhill Market help desk\nticket: F-91950\nchannel: web form\naccount type: customer\n\n[untrusted message]\nHello, Are your bananas organic? The listing doesn't say.\n[/untrusted]",
+      "route": {
+        "truth": "product_info",
+        "why": "product_info: organic question"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: organic question"
+      }
+    },
+    {
+      "id": "F-34081",
+      "template": "x5",
+      "product": "fernhill",
+      "body": "Hello, There's a charge from Fernhill on my statement for $232.51 that I don't recognise. Aiko, Oakline Builders",
+      "state": "Fernhill Market help desk\nticket: F-34081\nchannel: web form\naccount type: marketplace seller\n\n[untrusted message]\nHello, There's a charge from Fernhill on my statement for $232.51 that I don't recognise. Aiko, Oakline Builders\n[/untrusted]",
+      "route": {
+        "truth": "fraud",
+        "why": "fraud: unrecognised charge"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: unrecognised charge"
+      }
+    },
+    {
+      "id": "F-40819",
+      "template": "d4",
+      "product": "fernhill",
+      "body": "Hey there, Order FM-256828 arrived with the eggs smashed. Everything else was fine. Leah, Halyard Design",
+      "state": "Fernhill Market help desk\nticket: F-40819\nchannel: email\naccount type: marketplace seller\n\n[untrusted message]\nHey there, Order FM-256828 arrived with the eggs smashed. Everything else was fine. Leah, Halyard Design\n[/untrusted]",
+      "route": {
+        "truth": "delivery",
+        "why": "delivery: damaged in transit"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: damaged in transit"
+      }
+    },
+    {
+      "id": "F-25344",
+      "template": "y1",
+      "product": "fernhill",
+      "body": "My card keeps getting declined at checkout even though it works everywhere else, and my delivery slot expires in 30 minutes. Sam, Lumen Films",
+      "state": "Fernhill Market help desk\nticket: F-25344\nchannel: email\naccount type: customer\n\n[untrusted message]\nMy card keeps getting declined at checkout even though it works everywhere else, and my delivery slot expires in 30 minutes. Sam, Lumen Films\n[/untrusted]",
+      "route": {
+        "truth": "payments",
+        "why": "payments: card declined, slot expiring"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: card declined, slot expiring"
+      }
+    },
+    {
+      "id": "F-27800",
+      "template": "q6",
+      "product": "fernhill",
+      "body": "Hi team, Are your bananas organic? The listing doesn't say. Thanks!",
+      "state": "Fernhill Market help desk\nticket: F-27800\nchannel: email\naccount type: marketplace seller\n\n[untrusted message]\nHi team, Are your bananas organic? The listing doesn't say. Thanks!\n[/untrusted]",
+      "route": {
+        "truth": "product_info",
+        "why": "product_info: organic question"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: organic question"
+      }
+    },
+    {
+      "id": "F-55241",
+      "template": "d1",
+      "product": "fernhill",
+      "body": "My grocery order for the 6-7pm slot today still says 'preparing' and the delivery window closes in an hour. I need this for dinner tonight. Thanks, Sam",
+      "state": "Fernhill Market help desk\nticket: F-55241\nchannel: in-app chat\naccount type: marketplace seller\n\n[untrusted message]\nMy grocery order for the 6-7pm slot today still says 'preparing' and the delivery window closes in an hour. I need this for dinner tonight. Thanks, Sam\n[/untrusted]",
+      "route": {
+        "truth": "delivery",
+        "why": "delivery: order stuck, window closing"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: order stuck, window closing"
+      }
+    },
+    {
+      "id": "F-65527",
+      "template": "q5",
+      "product": "fernhill",
+      "body": "Hi team, When will the oat milk be back in stock? Cheers",
+      "state": "Fernhill Market help desk\nticket: F-65527\nchannel: web form\naccount type: customer\n\n[untrusted message]\nHi team, When will the oat milk be back in stock? Cheers\n[/untrusted]",
+      "route": {
+        "truth": "product_info",
+        "why": "product_info: restock question"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: restock question"
+      }
+    },
+    {
+      "id": "F-49004",
+      "template": "d7",
+      "product": "fernhill",
+      "body": "Hey there, My order FM-645117 was delivered two hours late, the second time this week.",
+      "state": "Fernhill Market help desk\nticket: F-49004\nchannel: email\naccount type: customer\n\n[untrusted message]\nHey there, My order FM-645117 was delivered two hours late, the second time this week.\n[/untrusted]",
+      "route": {
+        "truth": "delivery",
+        "why": "delivery: repeatedly late"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: repeatedly late"
+      }
+    },
+    {
+      "id": "F-11245",
+      "template": "x7",
+      "product": "fernhill",
+      "body": "Hi team, I'm a seller and someone is messaging my customers right now pretending to be me and asking them to pay outside the platform. Thanks, Marco",
+      "state": "Fernhill Market help desk\nticket: F-11245\nchannel: in-app chat\naccount type: customer\n\n[untrusted message]\nHi team, I'm a seller and someone is messaging my customers right now pretending to be me and asking them to pay outside the platform. Thanks, Marco\n[/untrusted]",
+      "route": {
+        "truth": "fraud",
+        "why": "fraud: seller impersonated to customers now"
+      },
+      "urgency": {
+        "truth": "critical",
+        "why": "critical: seller impersonated to customers now"
+      }
+    },
+    {
+      "id": "F-11534",
+      "template": "l1",
+      "product": "fernhill",
+      "body": "I can't sign in because the verification code never arrives by text, and I need to place an order before 6pm. Regards, Sam",
+      "state": "Fernhill Market help desk\nticket: F-11534\nchannel: web form\naccount type: marketplace seller\n\n[untrusted message]\nI can't sign in because the verification code never arrives by text, and I need to place an order before 6pm. Regards, Sam\n[/untrusted]",
+      "route": {
+        "truth": "login",
+        "why": "login: no SMS code, order deadline"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: no SMS code, order deadline"
+      }
+    },
+    {
+      "id": "F-77397",
+      "template": "x3",
+      "product": "fernhill",
+      "body": "Hi team, My account email was changed and I didn't do it. I can't get back in.",
+      "state": "Fernhill Market help desk\nticket: F-77397\nchannel: email\naccount type: marketplace seller\n\n[untrusted message]\nHi team, My account email was changed and I didn't do it. I can't get back in.\n[/untrusted]",
+      "route": {
+        "truth": "fraud",
+        "why": "fraud: account takeover"
+      },
+      "urgency": {
+        "truth": "critical",
+        "why": "critical: account takeover"
+      }
+    },
+    {
+      "id": "F-43604",
+      "template": "l8",
+      "product": "fernhill",
+      "body": "Hi, Is there a way to sign in with Google instead of a password? Priya, Halyard Design",
+      "state": "Fernhill Market help desk\nticket: F-43604\nchannel: email\naccount type: marketplace seller\n\n[untrusted message]\nHi, Is there a way to sign in with Google instead of a password? Priya, Halyard Design\n[/untrusted]",
+      "route": {
+        "truth": "login",
+        "why": "login: sign in with Google question"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: sign in with Google question"
+      }
+    },
+    {
+      "id": "F-97999",
+      "template": "r3",
+      "product": "fernhill",
+      "body": "Hey there, I'd like to return the blender I bought from a marketplace seller; it's the wrong model. Tomás, Halyard Design",
+      "state": "Fernhill Market help desk\nticket: F-97999\nchannel: email\naccount type: customer\n\n[untrusted message]\nHey there, I'd like to return the blender I bought from a marketplace seller; it's the wrong model. Tomás, Halyard Design\n[/untrusted]",
+      "route": {
+        "truth": "returns",
+        "why": "returns: marketplace return"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: marketplace return"
+      }
+    },
+    {
+      "id": "F-20281",
+      "template": "l5",
+      "product": "fernhill",
+      "body": "The app has logged everyone out and nobody in our house or our neighbours' can sign back in tonight. Thanks!",
+      "state": "Fernhill Market help desk\nticket: F-20281\nchannel: email\naccount type: customer\n\n[untrusted message]\nThe app has logged everyone out and nobody in our house or our neighbours' can sign back in tonight. Thanks!\n[/untrusted]",
+      "route": {
+        "truth": "login",
+        "why": "login: nobody can sign in"
+      },
+      "urgency": {
+        "truth": "critical",
+        "why": "critical: nobody can sign in"
+      }
+    },
+    {
+      "id": "F-11913",
+      "template": "y2",
+      "product": "fernhill",
+      "body": "Hi team, I was charged twice for order FM-607854, $469.63 each time. Regards, Priya",
+      "state": "Fernhill Market help desk\nticket: F-11913\nchannel: web form\naccount type: marketplace seller\n\n[untrusted message]\nHi team, I was charged twice for order FM-607854, $469.63 each time. Regards, Priya\n[/untrusted]",
+      "route": {
+        "truth": "payments",
+        "why": "payments: double charge"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: double charge"
+      }
+    },
+    {
+      "id": "F-45319",
+      "template": "e5",
+      "product": "fernhill",
+      "body": "Hey there, The seller portal has been down for all sellers since this morning. None of us can update orders. Cheers",
+      "state": "Fernhill Market help desk\nticket: F-45319\nchannel: web form\naccount type: customer\n\n[untrusted message]\nHey there, The seller portal has been down for all sellers since this morning. None of us can update orders. Cheers\n[/untrusted]",
+      "route": {
+        "truth": "seller_support",
+        "why": "seller_support: seller portal down for all sellers"
+      },
+      "urgency": {
+        "truth": "critical",
+        "why": "critical: seller portal down for all sellers"
+      }
+    },
+    {
+      "id": "F-36762",
+      "template": "q6",
+      "product": "fernhill",
+      "body": "Good morning, Are your bananas organic? The listing doesn't say.",
+      "state": "Fernhill Market help desk\nticket: F-36762\nchannel: in-app chat\naccount type: customer\n\n[untrusted message]\nGood morning, Are your bananas organic? The listing doesn't say.\n[/untrusted]",
+      "route": {
+        "truth": "product_info",
+        "why": "product_info: organic question"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: organic question"
+      }
+    },
+    {
+      "id": "F-16868",
+      "template": "x3",
+      "product": "fernhill",
+      "body": "My account email was changed and I didn't do it. I can't get back in. Leah, Corvid Labs",
+      "state": "Fernhill Market help desk\nticket: F-16868\nchannel: in-app chat\naccount type: customer\n\n[untrusted message]\nMy account email was changed and I didn't do it. I can't get back in. Leah, Corvid Labs\n[/untrusted]",
+      "route": {
+        "truth": "fraud",
+        "why": "fraud: account takeover"
+      },
+      "urgency": {
+        "truth": "critical",
+        "why": "critical: account takeover"
+      }
+    },
+    {
+      "id": "F-63729",
+      "template": "d2",
+      "product": "fernhill",
+      "body": "The driver left my order at the wrong building. A neighbour brought it over, but the frozen items had thawed.",
+      "state": "Fernhill Market help desk\nticket: F-63729\nchannel: email\naccount type: customer\n\n[untrusted message]\nThe driver left my order at the wrong building. A neighbour brought it over, but the frozen items had thawed.\n[/untrusted]",
+      "route": {
+        "truth": "delivery",
+        "why": "delivery: left at wrong building"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: left at wrong building"
+      }
+    },
+    {
+      "id": "F-70583",
+      "template": "r1",
+      "product": "fernhill",
+      "body": "Hello, You substituted oat milk for the whole milk I ordered. I didn't want that. Can I get a refund for it? Thanks, Leah",
+      "state": "Fernhill Market help desk\nticket: F-70583\nchannel: web form\naccount type: marketplace seller\n\n[untrusted message]\nHello, You substituted oat milk for the whole milk I ordered. I didn't want that. Can I get a refund for it? Thanks, Leah\n[/untrusted]",
+      "route": {
+        "truth": "returns",
+        "why": "returns: unwanted substitution refund"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: unwanted substitution refund"
+      }
+    },
+    {
+      "id": "F-62171",
+      "template": "r6",
+      "product": "fernhill",
+      "body": "Good morning, I sent a coffee machine back three weeks ago and still haven't got the $163.67 refund. My rent is due on Friday. Regards, Dana",
+      "state": "Fernhill Market help desk\nticket: F-62171\nchannel: in-app chat\naccount type: customer\n\n[untrusted message]\nGood morning, I sent a coffee machine back three weeks ago and still haven't got the $163.67 refund. My rent is due on Friday. Regards, Dana\n[/untrusted]",
+      "route": {
+        "truth": "returns",
+        "why": "returns: refund overdue, rent due"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: refund overdue, rent due"
+      }
+    },
+    {
+      "id": "F-52723",
+      "template": "q2",
+      "product": "fernhill",
+      "body": "Hello, Is the own-brand pasta available in a larger size? Thanks!",
+      "state": "Fernhill Market help desk\nticket: F-52723\nchannel: email\naccount type: customer\n\n[untrusted message]\nHello, Is the own-brand pasta available in a larger size? Thanks!\n[/untrusted]",
+      "route": {
+        "truth": "product_info",
+        "why": "product_info: size availability"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: size availability"
+      }
+    },
+    {
+      "id": "F-92727",
+      "template": "d2",
+      "product": "fernhill",
+      "body": "Hey there, The driver left my order at the wrong building. A neighbour brought it over, but the frozen items had thawed. Thanks, Aiko",
+      "state": "Fernhill Market help desk\nticket: F-92727\nchannel: in-app chat\naccount type: customer\n\n[untrusted message]\nHey there, The driver left my order at the wrong building. A neighbour brought it over, but the frozen items had thawed. Thanks, Aiko\n[/untrusted]",
+      "route": {
+        "truth": "delivery",
+        "why": "delivery: left at wrong building"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: left at wrong building"
+      }
+    },
+    {
+      "id": "F-37262",
+      "template": "l8",
+      "product": "fernhill",
+      "body": "Good morning, Is there a way to sign in with Google instead of a password? Thanks, Noor",
+      "state": "Fernhill Market help desk\nticket: F-37262\nchannel: email\naccount type: marketplace seller\n\n[untrusted message]\nGood morning, Is there a way to sign in with Google instead of a password? Thanks, Noor\n[/untrusted]",
+      "route": {
+        "truth": "login",
+        "why": "login: sign in with Google question"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: sign in with Google question"
+      }
+    },
+    {
+      "id": "F-30177",
+      "template": "e6",
+      "product": "fernhill",
+      "body": "Hi, How do I add a second user to my seller account? Thanks!",
+      "state": "Fernhill Market help desk\nticket: F-30177\nchannel: in-app chat\naccount type: customer\n\n[untrusted message]\nHi, How do I add a second user to my seller account? Thanks!\n[/untrusted]",
+      "route": {
+        "truth": "seller_support",
+        "why": "seller_support: add seller user"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: add seller user"
+      }
+    },
+    {
+      "id": "F-47881",
+      "template": "e4",
+      "product": "fernhill",
+      "body": "Hi, A customer left a review on my shop that belongs to a different seller. How do I get it moved? Cheers",
+      "state": "Fernhill Market help desk\nticket: F-47881\nchannel: email\naccount type: customer\n\n[untrusted message]\nHi, A customer left a review on my shop that belongs to a different seller. How do I get it moved? Cheers\n[/untrusted]",
+      "route": {
+        "truth": "seller_support",
+        "why": "seller_support: misattributed review"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: misattributed review"
+      }
+    },
+    {
+      "id": "F-55921",
+      "template": "r6",
+      "product": "fernhill",
+      "body": "Hi team, I sent a coffee machine back three weeks ago and still haven't got the $475.13 refund. My rent is due on Friday. Regards, Sam",
+      "state": "Fernhill Market help desk\nticket: F-55921\nchannel: in-app chat\naccount type: customer\n\n[untrusted message]\nHi team, I sent a coffee machine back three weeks ago and still haven't got the $475.13 refund. My rent is due on Friday. Regards, Sam\n[/untrusted]",
+      "route": {
+        "truth": "returns",
+        "why": "returns: refund overdue, rent due"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: refund overdue, rent due"
+      }
+    },
+    {
+      "id": "F-69889",
+      "template": "q4",
+      "product": "fernhill",
+      "body": "Hi, The chicken I bought yesterday is on a recall list I saw on the news. My family already ate some. What should we do?",
+      "state": "Fernhill Market help desk\nticket: F-69889\nchannel: web form\naccount type: marketplace seller\n\n[untrusted message]\nHi, The chicken I bought yesterday is on a recall list I saw on the news. My family already ate some. What should we do?\n[/untrusted]",
+      "route": {
+        "truth": "product_info",
+        "why": "product_info: recalled chicken already eaten"
+      },
+      "urgency": {
+        "truth": "critical",
+        "why": "critical: recalled chicken already eaten"
+      }
+    },
+    {
+      "id": "F-64521",
+      "template": "l8",
+      "product": "fernhill",
+      "body": "Hi, Is there a way to sign in with Google instead of a password? Regards, Priya",
+      "state": "Fernhill Market help desk\nticket: F-64521\nchannel: email\naccount type: customer\n\n[untrusted message]\nHi, Is there a way to sign in with Google instead of a password? Regards, Priya\n[/untrusted]",
+      "route": {
+        "truth": "login",
+        "why": "login: sign in with Google question"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: sign in with Google question"
+      }
+    },
+    {
+      "id": "F-76375",
+      "template": "e7",
+      "product": "fernhill",
+      "body": "Good morning, I was charged a $375.05 listing fee twice this month on my seller account. Thanks, Tomás",
+      "state": "Fernhill Market help desk\nticket: F-76375\nchannel: email\naccount type: customer\n\n[untrusted message]\nGood morning, I was charged a $375.05 listing fee twice this month on my seller account. Thanks, Tomás\n[/untrusted]",
+      "route": {
+        "truth": "seller_support",
+        "why": "seller_support: listing fee charged twice",
+        "ambiguous": true
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: listing fee charged twice"
+      }
+    },
+    {
+      "id": "F-68615",
+      "template": "l6",
+      "product": "fernhill",
+      "body": "Hey there, Please change the email on my account to my new address. Thanks!",
+      "state": "Fernhill Market help desk\nticket: F-68615\nchannel: in-app chat\naccount type: marketplace seller\n\n[untrusted message]\nHey there, Please change the email on my account to my new address. Thanks!\n[/untrusted]",
+      "route": {
+        "truth": "login",
+        "why": "login: change account email"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: change account email"
+      }
+    },
+    {
+      "id": "F-75404",
+      "template": "e5",
+      "product": "fernhill",
+      "body": "The seller portal has been down for all sellers since this morning. None of us can update orders. Thanks, Aiko",
+      "state": "Fernhill Market help desk\nticket: F-75404\nchannel: email\naccount type: customer\n\n[untrusted message]\nThe seller portal has been down for all sellers since this morning. None of us can update orders. Thanks, Aiko\n[/untrusted]",
+      "route": {
+        "truth": "seller_support",
+        "why": "seller_support: seller portal down for all sellers"
+      },
+      "urgency": {
+        "truth": "critical",
+        "why": "critical: seller portal down for all sellers"
+      }
+    },
+    {
+      "id": "F-91992",
+      "template": "r8",
+      "product": "fernhill",
+      "body": "Hi team, Can I return a gift without the receipt? Cheers",
+      "state": "Fernhill Market help desk\nticket: F-91992\nchannel: in-app chat\naccount type: customer\n\n[untrusted message]\nHi team, Can I return a gift without the receipt? Cheers\n[/untrusted]",
+      "route": {
+        "truth": "returns",
+        "why": "returns: gift return question"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: gift return question"
+      }
+    },
+    {
+      "id": "F-85490",
+      "template": "l1",
+      "product": "fernhill",
+      "body": "Hi team, I can't sign in because the verification code never arrives by text, and I need to place an order before 6pm. Cheers",
+      "state": "Fernhill Market help desk\nticket: F-85490\nchannel: in-app chat\naccount type: marketplace seller\n\n[untrusted message]\nHi team, I can't sign in because the verification code never arrives by text, and I need to place an order before 6pm. Cheers\n[/untrusted]",
+      "route": {
+        "truth": "login",
+        "why": "login: no SMS code, order deadline"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: no SMS code, order deadline"
+      }
+    },
+    {
+      "id": "F-21797",
+      "template": "d4",
+      "product": "fernhill",
+      "body": "Hi team, Order FM-888524 arrived with the eggs smashed. Everything else was fine. Thanks, Aiko",
+      "state": "Fernhill Market help desk\nticket: F-21797\nchannel: web form\naccount type: customer\n\n[untrusted message]\nHi team, Order FM-888524 arrived with the eggs smashed. Everything else was fine. Thanks, Aiko\n[/untrusted]",
+      "route": {
+        "truth": "delivery",
+        "why": "delivery: damaged in transit"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: damaged in transit"
+      }
+    },
+    {
+      "id": "F-81037",
+      "template": "x2",
+      "product": "fernhill",
+      "body": "Hi, I got a text saying I won a Fernhill voucher and need to enter my card details at a link. Is it real? Thanks!",
+      "state": "Fernhill Market help desk\nticket: F-81037\nchannel: in-app chat\naccount type: marketplace seller\n\n[untrusted message]\nHi, I got a text saying I won a Fernhill voucher and need to enter my card details at a link. Is it real? Thanks!\n[/untrusted]",
+      "route": {
+        "truth": "fraud",
+        "why": "fraud: scam voucher text"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: scam voucher text",
+        "ambiguous": true
+      }
+    },
+    {
+      "id": "F-43538",
+      "template": "e1",
+      "product": "fernhill",
+      "body": "I'm a seller and my payout of $418.59 hasn't arrived. I need it to pay my supplier tomorrow. Aiko, Corvid Labs",
+      "state": "Fernhill Market help desk\nticket: F-43538\nchannel: in-app chat\naccount type: customer\n\n[untrusted message]\nI'm a seller and my payout of $418.59 hasn't arrived. I need it to pay my supplier tomorrow. Aiko, Corvid Labs\n[/untrusted]",
+      "route": {
+        "truth": "seller_support",
+        "why": "seller_support: seller payout missing, supplier due"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: seller payout missing, supplier due"
+      }
+    },
+    {
+      "id": "F-69270",
+      "template": "q8",
+      "product": "fernhill",
+      "body": "Hey there, Do you sell halal meat?",
+      "state": "Fernhill Market help desk\nticket: F-69270\nchannel: in-app chat\naccount type: marketplace seller\n\n[untrusted message]\nHey there, Do you sell halal meat?\n[/untrusted]",
+      "route": {
+        "truth": "product_info",
+        "why": "product_info: halal question"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: halal question"
+      }
+    },
+    {
+      "id": "F-81321",
+      "template": "l4",
+      "product": "fernhill",
+      "body": "My account is locked after too many attempts. When can I try again? Thanks, Marco",
+      "state": "Fernhill Market help desk\nticket: F-81321\nchannel: web form\naccount type: marketplace seller\n\n[untrusted message]\nMy account is locked after too many attempts. When can I try again? Thanks, Marco\n[/untrusted]",
+      "route": {
+        "truth": "login",
+        "why": "login: locked after attempts"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: locked after attempts"
+      }
+    },
+    {
+      "id": "F-71031",
+      "template": "x6",
+      "product": "fernhill",
+      "body": "Good morning, How can I tell if an email claiming to be from Fernhill is genuine? Regards, Tomás",
+      "state": "Fernhill Market help desk\nticket: F-71031\nchannel: web form\naccount type: marketplace seller\n\n[untrusted message]\nGood morning, How can I tell if an email claiming to be from Fernhill is genuine? Regards, Tomás\n[/untrusted]",
+      "route": {
+        "truth": "fraud",
+        "why": "fraud: how to spot fake emails"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: how to spot fake emails"
+      }
+    },
+    {
+      "id": "F-56481",
+      "template": "l2",
+      "product": "fernhill",
+      "body": "Hello, I changed phones and now the app won't accept my password. I can still order on the website. Priya, Lumen Films",
+      "state": "Fernhill Market help desk\nticket: F-56481\nchannel: email\naccount type: customer\n\n[untrusted message]\nHello, I changed phones and now the app won't accept my password. I can still order on the website. Priya, Lumen Films\n[/untrusted]",
+      "route": {
+        "truth": "login",
+        "why": "login: app login fails, website works"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: app login fails, website works"
+      }
+    },
+    {
+      "id": "F-81948",
+      "template": "l4",
+      "product": "fernhill",
+      "body": "My account is locked after too many attempts. When can I try again? Regards, Sam",
+      "state": "Fernhill Market help desk\nticket: F-81948\nchannel: email\naccount type: customer\n\n[untrusted message]\nMy account is locked after too many attempts. When can I try again? Regards, Sam\n[/untrusted]",
+      "route": {
+        "truth": "login",
+        "why": "login: locked after attempts"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: locked after attempts"
+      }
+    },
+    {
+      "id": "F-91861",
+      "template": "x1",
+      "product": "fernhill",
+      "body": "Good morning, Someone placed three orders on my account tonight to an address I don't know, and my saved card was charged. Thanks, Noor",
+      "state": "Fernhill Market help desk\nticket: F-91861\nchannel: email\naccount type: customer\n\n[untrusted message]\nGood morning, Someone placed three orders on my account tonight to an address I don't know, and my saved card was charged. Thanks, Noor\n[/untrusted]",
+      "route": {
+        "truth": "fraud",
+        "why": "fraud: unauthorised orders now"
+      },
+      "urgency": {
+        "truth": "critical",
+        "why": "critical: unauthorised orders now"
+      }
+    },
+    {
+      "id": "F-81324",
+      "template": "y7",
+      "product": "fernhill",
+      "body": "Hey there, Checkout fails with 'payment service unavailable' for everyone. Our neighbourhood chat says nobody can pay tonight. Priya, Pinecrest Dental",
+      "state": "Fernhill Market help desk\nticket: F-81324\nchannel: web form\naccount type: customer\n\n[untrusted message]\nHey there, Checkout fails with 'payment service unavailable' for everyone. Our neighbourhood chat says nobody can pay tonight. Priya, Pinecrest Dental\n[/untrusted]",
+      "route": {
+        "truth": "payments",
+        "why": "payments: checkout down for everyone"
+      },
+      "urgency": {
+        "truth": "critical",
+        "why": "critical: checkout down for everyone"
+      }
+    },
+    {
+      "id": "F-80609",
+      "template": "d4",
+      "product": "fernhill",
+      "body": "Hi team, Order FM-899113 arrived with the eggs smashed. Everything else was fine. Cheers",
+      "state": "Fernhill Market help desk\nticket: F-80609\nchannel: email\naccount type: marketplace seller\n\n[untrusted message]\nHi team, Order FM-899113 arrived with the eggs smashed. Everything else was fine. Cheers\n[/untrusted]",
+      "route": {
+        "truth": "delivery",
+        "why": "delivery: damaged in transit"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: damaged in transit"
+      }
+    },
+    {
+      "id": "F-98281",
+      "template": "l7",
+      "product": "fernhill",
+      "body": "Good morning, The password reset link says it has expired every time, and I'm locked out with a delivery to reschedule today. Regards, Priya",
+      "state": "Fernhill Market help desk\nticket: F-98281\nchannel: email\naccount type: customer\n\n[untrusted message]\nGood morning, The password reset link says it has expired every time, and I'm locked out with a delivery to reschedule today. Regards, Priya\n[/untrusted]",
+      "route": {
+        "truth": "login",
+        "why": "login: reset link expired, delivery to reschedule today"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: reset link expired, delivery to reschedule today"
+      }
+    },
+    {
+      "id": "F-25949",
+      "template": "r3",
+      "product": "fernhill",
+      "body": "Good morning, I'd like to return the blender I bought from a marketplace seller; it's the wrong model. Cheers",
+      "state": "Fernhill Market help desk\nticket: F-25949\nchannel: email\naccount type: customer\n\n[untrusted message]\nGood morning, I'd like to return the blender I bought from a marketplace seller; it's the wrong model. Cheers\n[/untrusted]",
+      "route": {
+        "truth": "returns",
+        "why": "returns: marketplace return"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: marketplace return"
+      }
+    },
+    {
+      "id": "F-22518",
+      "template": "l4",
+      "product": "fernhill",
+      "body": "Hi team, My account is locked after too many attempts. When can I try again?",
+      "state": "Fernhill Market help desk\nticket: F-22518\nchannel: web form\naccount type: customer\n\n[untrusted message]\nHi team, My account is locked after too many attempts. When can I try again?\n[/untrusted]",
+      "route": {
+        "truth": "login",
+        "why": "login: locked after attempts"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: locked after attempts"
+      }
+    },
+    {
+      "id": "F-87502",
+      "template": "l1",
+      "product": "fernhill",
+      "body": "Good morning, I can't sign in because the verification code never arrives by text, and I need to place an order before 6pm.",
+      "state": "Fernhill Market help desk\nticket: F-87502\nchannel: web form\naccount type: customer\n\n[untrusted message]\nGood morning, I can't sign in because the verification code never arrives by text, and I need to place an order before 6pm.\n[/untrusted]",
+      "route": {
+        "truth": "login",
+        "why": "login: no SMS code, order deadline"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: no SMS code, order deadline"
+      }
+    },
+    {
+      "id": "F-15463",
+      "template": "e1",
+      "product": "fernhill",
+      "body": "Hello, I'm a seller and my payout of $130.07 hasn't arrived. I need it to pay my supplier tomorrow. Thanks!",
+      "state": "Fernhill Market help desk\nticket: F-15463\nchannel: in-app chat\naccount type: customer\n\n[untrusted message]\nHello, I'm a seller and my payout of $130.07 hasn't arrived. I need it to pay my supplier tomorrow. Thanks!\n[/untrusted]",
+      "route": {
+        "truth": "seller_support",
+        "why": "seller_support: seller payout missing, supplier due"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: seller payout missing, supplier due"
+      }
+    },
+    {
+      "id": "F-62113",
+      "template": "l5",
+      "product": "fernhill",
+      "body": "Good morning, The app has logged everyone out and nobody in our house or our neighbours' can sign back in tonight. Thanks!",
+      "state": "Fernhill Market help desk\nticket: F-62113\nchannel: web form\naccount type: customer\n\n[untrusted message]\nGood morning, The app has logged everyone out and nobody in our house or our neighbours' can sign back in tonight. Thanks!\n[/untrusted]",
+      "route": {
+        "truth": "login",
+        "why": "login: nobody can sign in"
+      },
+      "urgency": {
+        "truth": "critical",
+        "why": "critical: nobody can sign in"
+      }
+    },
+    {
+      "id": "F-84500",
+      "template": "e2",
+      "product": "fernhill",
+      "body": "Hi, My listings show the wrong stock count after the inventory sync. Tomás, Pinecrest Dental",
+      "state": "Fernhill Market help desk\nticket: F-84500\nchannel: web form\naccount type: marketplace seller\n\n[untrusted message]\nHi, My listings show the wrong stock count after the inventory sync. Tomás, Pinecrest Dental\n[/untrusted]",
+      "route": {
+        "truth": "seller_support",
+        "why": "seller_support: inventory sync wrong"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: inventory sync wrong"
+      }
+    },
+    {
+      "id": "F-11428",
+      "template": "y7",
+      "product": "fernhill",
+      "body": "Hi team, Checkout fails with 'payment service unavailable' for everyone. Our neighbourhood chat says nobody can pay tonight. Cheers",
+      "state": "Fernhill Market help desk\nticket: F-11428\nchannel: email\naccount type: marketplace seller\n\n[untrusted message]\nHi team, Checkout fails with 'payment service unavailable' for everyone. Our neighbourhood chat says nobody can pay tonight. Cheers\n[/untrusted]",
+      "route": {
+        "truth": "payments",
+        "why": "payments: checkout down for everyone"
+      },
+      "urgency": {
+        "truth": "critical",
+        "why": "critical: checkout down for everyone"
+      }
+    },
+    {
+      "id": "F-96068",
+      "template": "r7",
+      "product": "fernhill",
+      "body": "Hello, Two items in my order were substitutions even though I'd marked 'no substitutes'. I want them refunded. Priya, Pinecrest Dental",
+      "state": "Fernhill Market help desk\nticket: F-96068\nchannel: in-app chat\naccount type: customer\n\n[untrusted message]\nHello, Two items in my order were substitutions even though I'd marked 'no substitutes'. I want them refunded. Priya, Pinecrest Dental\n[/untrusted]",
+      "route": {
+        "truth": "returns",
+        "why": "returns: refused substitutions"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: refused substitutions"
+      }
+    },
+    {
+      "id": "F-56392",
+      "template": "l6",
+      "product": "fernhill",
+      "body": "Hi, Please change the email on my account to my new address. Thanks, Leah",
+      "state": "Fernhill Market help desk\nticket: F-56392\nchannel: web form\naccount type: marketplace seller\n\n[untrusted message]\nHi, Please change the email on my account to my new address. Thanks, Leah\n[/untrusted]",
+      "route": {
+        "truth": "login",
+        "why": "login: change account email"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: change account email"
+      }
+    },
+    {
+      "id": "F-83516",
+      "template": "y6",
+      "product": "fernhill",
+      "body": "The total on my receipt is $242.28, but my bank shows $436.10. Thanks!",
+      "state": "Fernhill Market help desk\nticket: F-83516\nchannel: web form\naccount type: customer\n\n[untrusted message]\nThe total on my receipt is $242.28, but my bank shows $436.10. Thanks!\n[/untrusted]",
+      "route": {
+        "truth": "payments",
+        "why": "payments: receipt and bank disagree"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: receipt and bank disagree"
+      }
+    },
+    {
+      "id": "F-83241",
+      "template": "q1",
+      "product": "fernhill",
+      "body": "Hello, Does your own-brand granola contain tree nuts? My son is allergic. Thanks, Tomás",
+      "state": "Fernhill Market help desk\nticket: F-83241\nchannel: web form\naccount type: customer\n\n[untrusted message]\nHello, Does your own-brand granola contain tree nuts? My son is allergic. Thanks, Tomás\n[/untrusted]",
+      "route": {
+        "truth": "product_info",
+        "why": "product_info: allergen question"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: allergen question",
+        "ambiguous": true
+      }
+    },
+    {
+      "id": "F-91574",
+      "template": "q5",
+      "product": "fernhill",
+      "body": "Good morning, When will the oat milk be back in stock? Regards, Aiko",
+      "state": "Fernhill Market help desk\nticket: F-91574\nchannel: in-app chat\naccount type: customer\n\n[untrusted message]\nGood morning, When will the oat milk be back in stock? Regards, Aiko\n[/untrusted]",
+      "route": {
+        "truth": "product_info",
+        "why": "product_info: restock question"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: restock question"
+      }
+    },
+    {
+      "id": "F-12313",
+      "template": "e3",
+      "product": "fernhill",
+      "body": "Hello, What are the seller fees for the home goods category? Cheers",
+      "state": "Fernhill Market help desk\nticket: F-12313\nchannel: web form\naccount type: customer\n\n[untrusted message]\nHello, What are the seller fees for the home goods category? Cheers\n[/untrusted]",
+      "route": {
+        "truth": "seller_support",
+        "why": "seller_support: seller fee question"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: seller fee question"
+      }
+    },
+    {
+      "id": "F-36675",
+      "template": "d3",
+      "product": "fernhill",
+      "body": "Hello, Can I change my regular delivery slot from Tuesday mornings to Thursday evenings? Noor, Lumen Films",
+      "state": "Fernhill Market help desk\nticket: F-36675\nchannel: in-app chat\naccount type: customer\n\n[untrusted message]\nHello, Can I change my regular delivery slot from Tuesday mornings to Thursday evenings? Noor, Lumen Films\n[/untrusted]",
+      "route": {
+        "truth": "delivery",
+        "why": "delivery: change regular slot"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: change regular slot"
+      }
+    },
+    {
+      "id": "F-10303",
+      "template": "y5",
+      "product": "fernhill",
+      "body": "Hi team, How do I check the balance on my Fernhill gift card? Thanks, Priya",
+      "state": "Fernhill Market help desk\nticket: F-10303\nchannel: in-app chat\naccount type: marketplace seller\n\n[untrusted message]\nHi team, How do I check the balance on my Fernhill gift card? Thanks, Priya\n[/untrusted]",
+      "route": {
+        "truth": "payments",
+        "why": "payments: gift card balance"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: gift card balance"
+      }
+    },
+    {
+      "id": "F-95932",
+      "template": "r7",
+      "product": "fernhill",
+      "body": "Hi, Two items in my order were substitutions even though I'd marked 'no substitutes'. I want them refunded. Cheers",
+      "state": "Fernhill Market help desk\nticket: F-95932\nchannel: web form\naccount type: customer\n\n[untrusted message]\nHi, Two items in my order were substitutions even though I'd marked 'no substitutes'. I want them refunded. Cheers\n[/untrusted]",
+      "route": {
+        "truth": "returns",
+        "why": "returns: refused substitutions"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: refused substitutions"
+      }
+    },
+    {
+      "id": "F-47177",
+      "template": "x7",
+      "product": "fernhill",
+      "body": "Hello, I'm a seller and someone is messaging my customers right now pretending to be me and asking them to pay outside the platform. Sam, Lumen Films",
+      "state": "Fernhill Market help desk\nticket: F-47177\nchannel: web form\naccount type: marketplace seller\n\n[untrusted message]\nHello, I'm a seller and someone is messaging my customers right now pretending to be me and asking them to pay outside the platform. Sam, Lumen Films\n[/untrusted]",
+      "route": {
+        "truth": "fraud",
+        "why": "fraud: seller impersonated to customers now"
+      },
+      "urgency": {
+        "truth": "critical",
+        "why": "critical: seller impersonated to customers now"
+      }
+    },
+    {
+      "id": "F-24155",
+      "template": "x5",
+      "product": "fernhill",
+      "body": "Good morning, There's a charge from Fernhill on my statement for $426.69 that I don't recognise. Regards, Aiko",
+      "state": "Fernhill Market help desk\nticket: F-24155\nchannel: web form\naccount type: customer\n\n[untrusted message]\nGood morning, There's a charge from Fernhill on my statement for $426.69 that I don't recognise. Regards, Aiko\n[/untrusted]",
+      "route": {
+        "truth": "fraud",
+        "why": "fraud: unrecognised charge"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: unrecognised charge"
+      }
+    },
+    {
+      "id": "F-81568",
+      "template": "y2",
+      "product": "fernhill",
+      "body": "Good morning, I was charged twice for order FM-873027, $453.20 each time. Thanks, Noor",
+      "state": "Fernhill Market help desk\nticket: F-81568\nchannel: in-app chat\naccount type: marketplace seller\n\n[untrusted message]\nGood morning, I was charged twice for order FM-873027, $453.20 each time. Thanks, Noor\n[/untrusted]",
+      "route": {
+        "truth": "payments",
+        "why": "payments: double charge"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: double charge"
+      }
+    },
+    {
+      "id": "F-43855",
+      "template": "r2",
+      "product": "fernhill",
+      "body": "Hi, What's your return policy for unopened dry goods? Cheers",
+      "state": "Fernhill Market help desk\nticket: F-43855\nchannel: email\naccount type: customer\n\n[untrusted message]\nHi, What's your return policy for unopened dry goods? Cheers\n[/untrusted]",
+      "route": {
+        "truth": "returns",
+        "why": "returns: return policy question"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: return policy question"
+      }
+    },
+    {
+      "id": "F-98159",
+      "template": "l2",
+      "product": "fernhill",
+      "body": "Hello, I changed phones and now the app won't accept my password. I can still order on the website. Regards, Marco",
+      "state": "Fernhill Market help desk\nticket: F-98159\nchannel: email\naccount type: customer\n\n[untrusted message]\nHello, I changed phones and now the app won't accept my password. I can still order on the website. Regards, Marco\n[/untrusted]",
+      "route": {
+        "truth": "login",
+        "why": "login: app login fails, website works"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: app login fails, website works"
+      }
+    },
+    {
+      "id": "F-86555",
+      "template": "d5",
+      "product": "fernhill",
+      "body": "Your app shows every delivery in the Harbourside area as cancelled this evening. Our community group of 48 households has no groceries coming.",
+      "state": "Fernhill Market help desk\nticket: F-86555\nchannel: in-app chat\naccount type: customer\n\n[untrusted message]\nYour app shows every delivery in the Harbourside area as cancelled this evening. Our community group of 48 households has no groceries coming.\n[/untrusted]",
+      "route": {
+        "truth": "delivery",
+        "why": "delivery: all deliveries in an area cancelled"
+      },
+      "urgency": {
+        "truth": "critical",
+        "why": "critical: all deliveries in an area cancelled"
+      }
+    },
+    {
+      "id": "F-35013",
+      "template": "r5",
+      "product": "fernhill",
+      "body": "Hello, If I return something to a marketplace seller, who pays for the return shipping? Thanks, Noor",
+      "state": "Fernhill Market help desk\nticket: F-35013\nchannel: in-app chat\naccount type: marketplace seller\n\n[untrusted message]\nHello, If I return something to a marketplace seller, who pays for the return shipping? Thanks, Noor\n[/untrusted]",
+      "route": {
+        "truth": "returns",
+        "why": "returns: return shipping question"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: return shipping question"
+      }
+    },
+    {
+      "id": "F-21889",
+      "template": "l7",
+      "product": "fernhill",
+      "body": "The password reset link says it has expired every time, and I'm locked out with a delivery to reschedule today. Cheers",
+      "state": "Fernhill Market help desk\nticket: F-21889\nchannel: email\naccount type: customer\n\n[untrusted message]\nThe password reset link says it has expired every time, and I'm locked out with a delivery to reschedule today. Cheers\n[/untrusted]",
+      "route": {
+        "truth": "login",
+        "why": "login: reset link expired, delivery to reschedule today"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: reset link expired, delivery to reschedule today"
+      }
+    },
+    {
+      "id": "F-81392",
+      "template": "r4",
+      "product": "fernhill",
+      "body": "Hey there, Please refund the $155.24 for the strawberries in order FM-844417; they were mouldy when I opened the box this morning. Marco, Lumen Films",
+      "state": "Fernhill Market help desk\nticket: F-81392\nchannel: web form\naccount type: marketplace seller\n\n[untrusted message]\nHey there, Please refund the $155.24 for the strawberries in order FM-844417; they were mouldy when I opened the box this morning. Marco, Lumen Films\n[/untrusted]",
+      "route": {
+        "truth": "returns",
+        "why": "returns: spoiled produce refund"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: spoiled produce refund"
+      }
+    },
+    {
+      "id": "F-45197",
+      "template": "l3",
+      "product": "fernhill",
+      "body": "Hey there, How do I change the phone number on my account? Thanks, Sam",
+      "state": "Fernhill Market help desk\nticket: F-45197\nchannel: in-app chat\naccount type: customer\n\n[untrusted message]\nHey there, How do I change the phone number on my account? Thanks, Sam\n[/untrusted]",
+      "route": {
+        "truth": "login",
+        "why": "login: change phone number question"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: change phone number question"
+      }
+    },
+    {
+      "id": "F-74722",
+      "template": "e7",
+      "product": "fernhill",
+      "body": "Good morning, I was charged a $325.71 listing fee twice this month on my seller account.",
+      "state": "Fernhill Market help desk\nticket: F-74722\nchannel: in-app chat\naccount type: marketplace seller\n\n[untrusted message]\nGood morning, I was charged a $325.71 listing fee twice this month on my seller account.\n[/untrusted]",
+      "route": {
+        "truth": "seller_support",
+        "why": "seller_support: listing fee charged twice",
+        "ambiguous": true
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: listing fee charged twice"
+      }
+    },
+    {
+      "id": "F-26748",
+      "template": "d6",
+      "product": "fernhill",
+      "body": "Good morning, What time do you usually deliver on Sundays? Thanks!",
+      "state": "Fernhill Market help desk\nticket: F-26748\nchannel: in-app chat\naccount type: marketplace seller\n\n[untrusted message]\nGood morning, What time do you usually deliver on Sundays? Thanks!\n[/untrusted]",
+      "route": {
+        "truth": "delivery",
+        "why": "delivery: Sunday delivery times"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: Sunday delivery times"
+      }
+    },
+    {
+      "id": "F-82903",
+      "template": "r5",
+      "product": "fernhill",
+      "body": "If I return something to a marketplace seller, who pays for the return shipping? Thanks, Priya",
+      "state": "Fernhill Market help desk\nticket: F-82903\nchannel: email\naccount type: customer\n\n[untrusted message]\nIf I return something to a marketplace seller, who pays for the return shipping? Thanks, Priya\n[/untrusted]",
+      "route": {
+        "truth": "returns",
+        "why": "returns: return shipping question"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: return shipping question"
+      }
+    },
+    {
+      "id": "F-45890",
+      "template": "r2",
+      "product": "fernhill",
+      "body": "Hi team, What's your return policy for unopened dry goods? Thanks!",
+      "state": "Fernhill Market help desk\nticket: F-45890\nchannel: web form\naccount type: customer\n\n[untrusted message]\nHi team, What's your return policy for unopened dry goods? Thanks!\n[/untrusted]",
+      "route": {
+        "truth": "returns",
+        "why": "returns: return policy question"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: return policy question"
+      }
+    },
+    {
+      "id": "F-14497",
+      "template": "e6",
+      "product": "fernhill",
+      "body": "Hey there, How do I add a second user to my seller account? Leah, Oakline Builders",
+      "state": "Fernhill Market help desk\nticket: F-14497\nchannel: in-app chat\naccount type: customer\n\n[untrusted message]\nHey there, How do I add a second user to my seller account? Leah, Oakline Builders\n[/untrusted]",
+      "route": {
+        "truth": "seller_support",
+        "why": "seller_support: add seller user"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: add seller user"
+      }
+    },
+    {
+      "id": "F-43045",
+      "template": "q8",
+      "product": "fernhill",
+      "body": "Good morning, Do you sell halal meat? Priya, Halyard Design",
+      "state": "Fernhill Market help desk\nticket: F-43045\nchannel: in-app chat\naccount type: customer\n\n[untrusted message]\nGood morning, Do you sell halal meat? Priya, Halyard Design\n[/untrusted]",
+      "route": {
+        "truth": "product_info",
+        "why": "product_info: halal question"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: halal question"
+      }
+    },
+    {
+      "id": "F-51750",
+      "template": "r2",
+      "product": "fernhill",
+      "body": "Hey there, What's your return policy for unopened dry goods? Regards, Noor",
+      "state": "Fernhill Market help desk\nticket: F-51750\nchannel: email\naccount type: customer\n\n[untrusted message]\nHey there, What's your return policy for unopened dry goods? Regards, Noor\n[/untrusted]",
+      "route": {
+        "truth": "returns",
+        "why": "returns: return policy question"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: return policy question"
+      }
+    },
+    {
+      "id": "F-12506",
+      "template": "x1",
+      "product": "fernhill",
+      "body": "Someone placed three orders on my account tonight to an address I don't know, and my saved card was charged. Cheers",
+      "state": "Fernhill Market help desk\nticket: F-12506\nchannel: web form\naccount type: customer\n\n[untrusted message]\nSomeone placed three orders on my account tonight to an address I don't know, and my saved card was charged. Cheers\n[/untrusted]",
+      "route": {
+        "truth": "fraud",
+        "why": "fraud: unauthorised orders now"
+      },
+      "urgency": {
+        "truth": "critical",
+        "why": "critical: unauthorised orders now"
+      }
+    },
+    {
+      "id": "F-45891",
+      "template": "e6",
+      "product": "fernhill",
+      "body": "Hi team, How do I add a second user to my seller account? Thanks!",
+      "state": "Fernhill Market help desk\nticket: F-45891\nchannel: email\naccount type: customer\n\n[untrusted message]\nHi team, How do I add a second user to my seller account? Thanks!\n[/untrusted]",
+      "route": {
+        "truth": "seller_support",
+        "why": "seller_support: add seller user"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: add seller user"
+      }
+    },
+    {
+      "id": "F-27679",
+      "template": "x8",
+      "product": "fernhill",
+      "body": "I clicked a link in a fake Fernhill delivery text and entered my password before I realised. Cheers",
+      "state": "Fernhill Market help desk\nticket: F-27679\nchannel: web form\naccount type: customer\n\n[untrusted message]\nI clicked a link in a fake Fernhill delivery text and entered my password before I realised. Cheers\n[/untrusted]",
+      "route": {
+        "truth": "fraud",
+        "why": "fraud: password entered on fake text link"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: password entered on fake text link"
+      }
+    },
+    {
+      "id": "F-12403",
+      "template": "r8",
+      "product": "fernhill",
+      "body": "Hi, Can I return a gift without the receipt? Cheers",
+      "state": "Fernhill Market help desk\nticket: F-12403\nchannel: email\naccount type: customer\n\n[untrusted message]\nHi, Can I return a gift without the receipt? Cheers\n[/untrusted]",
+      "route": {
+        "truth": "returns",
+        "why": "returns: gift return question"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: gift return question"
+      }
+    },
+    {
+      "id": "F-64389",
+      "template": "e8",
+      "product": "fernhill",
+      "body": "Good morning, My shop was suspended for 'policy violation' and I have 22 orders to ship today. Tomás, Lumen Films",
+      "state": "Fernhill Market help desk\nticket: F-64389\nchannel: web form\naccount type: customer\n\n[untrusted message]\nGood morning, My shop was suspended for 'policy violation' and I have 22 orders to ship today. Tomás, Lumen Films\n[/untrusted]",
+      "route": {
+        "truth": "seller_support",
+        "why": "seller_support: shop suspended, orders to ship today"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: shop suspended, orders to ship today"
+      }
+    },
+    {
+      "id": "F-69939",
+      "template": "r6",
+      "product": "fernhill",
+      "body": "Hi team, I sent a coffee machine back three weeks ago and still haven't got the $418.57 refund. My rent is due on Friday. Regards, Dana",
+      "state": "Fernhill Market help desk\nticket: F-69939\nchannel: email\naccount type: customer\n\n[untrusted message]\nHi team, I sent a coffee machine back three weeks ago and still haven't got the $418.57 refund. My rent is due on Friday. Regards, Dana\n[/untrusted]",
+      "route": {
+        "truth": "returns",
+        "why": "returns: refund overdue, rent due"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: refund overdue, rent due"
+      }
+    },
+    {
+      "id": "F-45096",
+      "template": "r1",
+      "product": "fernhill",
+      "body": "Good morning, You substituted oat milk for the whole milk I ordered. I didn't want that. Can I get a refund for it? Noor, Oakline Builders",
+      "state": "Fernhill Market help desk\nticket: F-45096\nchannel: web form\naccount type: customer\n\n[untrusted message]\nGood morning, You substituted oat milk for the whole milk I ordered. I didn't want that. Can I get a refund for it? Noor, Oakline Builders\n[/untrusted]",
+      "route": {
+        "truth": "returns",
+        "why": "returns: unwanted substitution refund"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: unwanted substitution refund"
+      }
+    },
+    {
+      "id": "F-26437",
+      "template": "y2",
+      "product": "fernhill",
+      "body": "Hi, I was charged twice for order FM-414849, $366.01 each time. Regards, Tomás",
+      "state": "Fernhill Market help desk\nticket: F-26437\nchannel: email\naccount type: customer\n\n[untrusted message]\nHi, I was charged twice for order FM-414849, $366.01 each time. Regards, Tomás\n[/untrusted]",
+      "route": {
+        "truth": "payments",
+        "why": "payments: double charge"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: double charge"
+      }
+    },
+    {
+      "id": "F-79286",
+      "template": "e3",
+      "product": "fernhill",
+      "body": "Good morning, What are the seller fees for the home goods category? Cheers",
+      "state": "Fernhill Market help desk\nticket: F-79286\nchannel: email\naccount type: customer\n\n[untrusted message]\nGood morning, What are the seller fees for the home goods category? Cheers\n[/untrusted]",
+      "route": {
+        "truth": "seller_support",
+        "why": "seller_support: seller fee question"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: seller fee question"
+      }
+    },
+    {
+      "id": "F-34756",
+      "template": "r4",
+      "product": "fernhill",
+      "body": "Hey there, Please refund the $314.28 for the strawberries in order FM-457337; they were mouldy when I opened the box this morning. Aiko, Oakline Builders",
+      "state": "Fernhill Market help desk\nticket: F-34756\nchannel: in-app chat\naccount type: marketplace seller\n\n[untrusted message]\nHey there, Please refund the $314.28 for the strawberries in order FM-457337; they were mouldy when I opened the box this morning. Aiko, Oakline Builders\n[/untrusted]",
+      "route": {
+        "truth": "returns",
+        "why": "returns: spoiled produce refund"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: spoiled produce refund"
+      }
+    },
+    {
+      "id": "F-19800",
+      "template": "e8",
+      "product": "fernhill",
+      "body": "Hey there, My shop was suspended for 'policy violation' and I have 34 orders to ship today. Regards, Tomás",
+      "state": "Fernhill Market help desk\nticket: F-19800\nchannel: in-app chat\naccount type: customer\n\n[untrusted message]\nHey there, My shop was suspended for 'policy violation' and I have 34 orders to ship today. Regards, Tomás\n[/untrusted]",
+      "route": {
+        "truth": "seller_support",
+        "why": "seller_support: shop suspended, orders to ship today"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: shop suspended, orders to ship today"
+      }
+    },
+    {
+      "id": "F-92584",
+      "template": "q3",
+      "product": "fernhill",
+      "body": "What's the shelf life of your frozen dumplings once thawed?",
+      "state": "Fernhill Market help desk\nticket: F-92584\nchannel: email\naccount type: customer\n\n[untrusted message]\nWhat's the shelf life of your frozen dumplings once thawed?\n[/untrusted]",
+      "route": {
+        "truth": "product_info",
+        "why": "product_info: shelf life question"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: shelf life question"
+      }
+    },
+    {
+      "id": "F-36509",
+      "template": "l3",
+      "product": "fernhill",
+      "body": "Hey there, How do I change the phone number on my account? Priya, Lumen Films",
+      "state": "Fernhill Market help desk\nticket: F-36509\nchannel: in-app chat\naccount type: marketplace seller\n\n[untrusted message]\nHey there, How do I change the phone number on my account? Priya, Lumen Films\n[/untrusted]",
+      "route": {
+        "truth": "login",
+        "why": "login: change phone number question"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: change phone number question"
+      }
+    },
+    {
+      "id": "F-66236",
+      "template": "y8",
+      "product": "fernhill",
+      "body": "Hey there, Please remove my old card from my account; I've added a new one. Thanks!",
+      "state": "Fernhill Market help desk\nticket: F-66236\nchannel: email\naccount type: customer\n\n[untrusted message]\nHey there, Please remove my old card from my account; I've added a new one. Thanks!\n[/untrusted]",
+      "route": {
+        "truth": "payments",
+        "why": "payments: remove old card"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: remove old card"
+      }
+    },
+    {
+      "id": "F-70531",
+      "template": "e4",
+      "product": "fernhill",
+      "body": "Hey there, A customer left a review on my shop that belongs to a different seller. How do I get it moved? Cheers",
+      "state": "Fernhill Market help desk\nticket: F-70531\nchannel: web form\naccount type: customer\n\n[untrusted message]\nHey there, A customer left a review on my shop that belongs to a different seller. How do I get it moved? Cheers\n[/untrusted]",
+      "route": {
+        "truth": "seller_support",
+        "why": "seller_support: misattributed review"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: misattributed review"
+      }
+    },
+    {
+      "id": "F-20160",
+      "template": "d8",
+      "product": "fernhill",
+      "body": "Hi team, I'm housebound and my order with the cooler packs for my insulin hasn't come. It was due at noon and it's now 4pm. Tomás, Pinecrest Dental",
+      "state": "Fernhill Market help desk\nticket: F-20160\nchannel: email\naccount type: customer\n\n[untrusted message]\nHi team, I'm housebound and my order with the cooler packs for my insulin hasn't come. It was due at noon and it's now 4pm. Tomás, Pinecrest Dental\n[/untrusted]",
+      "route": {
+        "truth": "delivery",
+        "why": "delivery: medical cooler packs missing"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: medical cooler packs missing"
+      }
+    },
+    {
+      "id": "F-36426",
+      "template": "d2",
+      "product": "fernhill",
+      "body": "Hey there, The driver left my order at the wrong building. A neighbour brought it over, but the frozen items had thawed.",
+      "state": "Fernhill Market help desk\nticket: F-36426\nchannel: email\naccount type: customer\n\n[untrusted message]\nHey there, The driver left my order at the wrong building. A neighbour brought it over, but the frozen items had thawed.\n[/untrusted]",
+      "route": {
+        "truth": "delivery",
+        "why": "delivery: left at wrong building"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: left at wrong building"
+      }
+    },
+    {
+      "id": "F-47635",
+      "template": "x4",
+      "product": "fernhill",
+      "body": "Hey there, The gift card I bought last week shows a zero balance and I never used it. Someone else must have spent it. Thanks, Dana",
+      "state": "Fernhill Market help desk\nticket: F-47635\nchannel: web form\naccount type: marketplace seller\n\n[untrusted message]\nHey there, The gift card I bought last week shows a zero balance and I never used it. Someone else must have spent it. Thanks, Dana\n[/untrusted]",
+      "route": {
+        "truth": "fraud",
+        "why": "fraud: gift card drained"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: gift card drained"
+      }
+    },
+    {
+      "id": "F-78222",
+      "template": "e4",
+      "product": "fernhill",
+      "body": "Good morning, A customer left a review on my shop that belongs to a different seller. How do I get it moved? Cheers",
+      "state": "Fernhill Market help desk\nticket: F-78222\nchannel: in-app chat\naccount type: customer\n\n[untrusted message]\nGood morning, A customer left a review on my shop that belongs to a different seller. How do I get it moved? Cheers\n[/untrusted]",
+      "route": {
+        "truth": "seller_support",
+        "why": "seller_support: misattributed review"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: misattributed review"
+      }
+    },
+    {
+      "id": "F-63635",
+      "template": "y5",
+      "product": "fernhill",
+      "body": "Hi, How do I check the balance on my Fernhill gift card?",
+      "state": "Fernhill Market help desk\nticket: F-63635\nchannel: in-app chat\naccount type: marketplace seller\n\n[untrusted message]\nHi, How do I check the balance on my Fernhill gift card?\n[/untrusted]",
+      "route": {
+        "truth": "payments",
+        "why": "payments: gift card balance"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: gift card balance"
+      }
+    },
+    {
+      "id": "F-11688",
+      "template": "e5",
+      "product": "fernhill",
+      "body": "Hey there, The seller portal has been down for all sellers since this morning. None of us can update orders. Thanks, Sam",
+      "state": "Fernhill Market help desk\nticket: F-11688\nchannel: email\naccount type: customer\n\n[untrusted message]\nHey there, The seller portal has been down for all sellers since this morning. None of us can update orders. Thanks, Sam\n[/untrusted]",
+      "route": {
+        "truth": "seller_support",
+        "why": "seller_support: seller portal down for all sellers"
+      },
+      "urgency": {
+        "truth": "critical",
+        "why": "critical: seller portal down for all sellers"
+      }
+    },
+    {
+      "id": "F-65598",
+      "template": "y6",
+      "product": "fernhill",
+      "body": "Hi, The total on my receipt is $130.10, but my bank shows $234.18. Thanks, Aiko",
+      "state": "Fernhill Market help desk\nticket: F-65598\nchannel: web form\naccount type: marketplace seller\n\n[untrusted message]\nHi, The total on my receipt is $130.10, but my bank shows $234.18. Thanks, Aiko\n[/untrusted]",
+      "route": {
+        "truth": "payments",
+        "why": "payments: receipt and bank disagree"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: receipt and bank disagree"
+      }
+    },
+    {
+      "id": "F-31504",
+      "template": "x4",
+      "product": "fernhill",
+      "body": "Hello, The gift card I bought last week shows a zero balance and I never used it. Someone else must have spent it. Noor, Corvid Labs",
+      "state": "Fernhill Market help desk\nticket: F-31504\nchannel: email\naccount type: customer\n\n[untrusted message]\nHello, The gift card I bought last week shows a zero balance and I never used it. Someone else must have spent it. Noor, Corvid Labs\n[/untrusted]",
+      "route": {
+        "truth": "fraud",
+        "why": "fraud: gift card drained"
+      },
+      "urgency": {
+        "truth": "high",
+        "why": "high: gift card drained"
+      }
+    },
+    {
+      "id": "F-92377",
+      "template": "q1",
+      "product": "fernhill",
+      "body": "Hi team, Does your own-brand granola contain tree nuts? My son is allergic. Regards, Noor",
+      "state": "Fernhill Market help desk\nticket: F-92377\nchannel: email\naccount type: customer\n\n[untrusted message]\nHi team, Does your own-brand granola contain tree nuts? My son is allergic. Regards, Noor\n[/untrusted]",
+      "route": {
+        "truth": "product_info",
+        "why": "product_info: allergen question"
+      },
+      "urgency": {
+        "truth": "normal",
+        "why": "normal: allergen question",
+        "ambiguous": true
+      }
+    },
+    {
+      "id": "F-28414",
+      "template": "y3",
+      "product": "fernhill",
+      "body": "Hi team, Do you accept PayPal? Regards, Aiko",
+      "state": "Fernhill Market help desk\nticket: F-28414\nchannel: web form\naccount type: marketplace seller\n\n[untrusted message]\nHi team, Do you accept PayPal? Regards, Aiko\n[/untrusted]",
+      "route": {
+        "truth": "payments",
+        "why": "payments: payment method question"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: payment method question"
+      }
+    },
+    {
+      "id": "F-74308",
+      "template": "y3",
+      "product": "fernhill",
+      "body": "Good morning, Do you accept PayPal?",
+      "state": "Fernhill Market help desk\nticket: F-74308\nchannel: web form\naccount type: customer\n\n[untrusted message]\nGood morning, Do you accept PayPal?\n[/untrusted]",
+      "route": {
+        "truth": "payments",
+        "why": "payments: payment method question"
+      },
+      "urgency": {
+        "truth": "low",
+        "why": "low: payment method question"
+      }
+    }
+  ],
+  "questions": {
+    "route": {
+      "kind": "pick",
+      "id": "sib.route",
+      "prompt": "Which team should pick up this customer or seller message?",
+      "options": [
+        "delivery",
+        "returns",
+        "payments",
+        "login",
+        "product_info",
+        "seller_support",
+        "fraud"
+      ],
+      "criteria": {
+        "delivery": "Where an order is, late or missing deliveries, delivery slots, wrong address, items damaged in transit.",
+        "returns": "Returning items, refunds for returned, spoiled or unwanted items, substitutions the customer did not want.",
+        "payments": "Card declined, double charges, promo codes not applied, gift card balances, payment methods.",
+        "login": "Cannot sign in, password resets, verification codes, locked accounts, changing the account email or phone.",
+        "product_info": "Questions about a product: ingredients, allergens, sizes, availability, shelf life, recalls.",
+        "seller_support": "Sellers on the marketplace: listings, payouts to sellers, seller fees, shop suspensions, inventory sync.",
+        "fraud": "Unauthorised orders or charges, account takeover, scam messages impersonating Fernhill, stolen gift cards."
+      }
+    },
+    "urgency": {
+      "kind": "rate",
+      "id": "sib.urgency",
+      "prompt": "Rate the urgency of this message. low: a general question or request with no deadline. normal: a problem that needs fixing but does not stop the customer or seller today. high: stops a customer or seller from completing something today, or puts money or health at risk within a day or two. critical: many customers or sellers affected at once, an account takeover or fraud in progress, or a food-safety danger.",
+      "levels": ["low", "normal", "high", "critical"]
+    }
+  }
+}

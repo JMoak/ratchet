@@ -1,0 +1,924 @@
+{
+  "seed": 20261112,
+  "question": {
+    "prompt": "Under the written policy in this request, can it be approved automatically?",
+    "criteria": {
+      "yes": "Every condition the policy states is met.",
+      "no": "At least one condition the policy states is not met."
+    }
+  },
+  "items": [
+    {
+      "id": "refund-near-1",
+      "template": "refund",
+      "margin": "near",
+      "facts": {
+        "refund_amount": "$4,200.00",
+        "auto_approval_limit": "$4,200.00",
+        "purchase_date": "2026-09-28",
+        "today": "2026-10-28",
+        "refund_window_days": 30
+      },
+      "amountOk": true,
+      "daysOk": true,
+      "truth": true,
+      "why": "both conditions hold (amount <= 4200, 30 days <= 30)",
+      "raw": "Refund request\npolicy: Refunds are approved automatically when the refund amount is at most the auto-approval limit and the purchase date is no more than the refund window (in days) before today.\nrefund_amount: $4,200.00\nauto_approval_limit: $4,200.00\npurchase_date: 2026-09-28\ntoday: 2026-10-28\nrefund_window_days: 30",
+      "digested": "Refund request\npolicy: Refunds are approved automatically when the refund amount is at most the auto-approval limit and the purchase date is no more than the refund window (in days) before today.\namount_check: refund amount equals auto-approval limit (4200 USD)\ndate_check: days since purchase equals refund window (30 days)",
+      "digestedRounded": "Refund request\npolicy: Refunds are approved automatically when the refund amount is at most the auto-approval limit and the purchase date is no more than the refund window (in days) before today.\namount_check: refund amount equals auto-approval limit (4200 USD)\ndate_check: days since purchase equals refund window (30 days)"
+    },
+    {
+      "id": "refund-near-2",
+      "template": "refund",
+      "margin": "near",
+      "facts": {
+        "refund_amount": "$2,486.17",
+        "auto_approval_limit": "$2,500.00",
+        "purchase_date": "2026-10-10",
+        "today": "2026-10-26",
+        "refund_window_days": 14
+      },
+      "amountOk": true,
+      "daysOk": false,
+      "truth": false,
+      "why": "fails: outside the day window (amount 2486.17 vs 2500, 16 days vs 14)",
+      "raw": "Refund request\npolicy: Refunds are approved automatically when the refund amount is at most the auto-approval limit and the purchase date is no more than the refund window (in days) before today.\nrefund_amount: $2,486.17\nauto_approval_limit: $2,500.00\npurchase_date: 2026-10-10\ntoday: 2026-10-26\nrefund_window_days: 14",
+      "digested": "Refund request\npolicy: Refunds are approved automatically when the refund amount is at most the auto-approval limit and the purchase date is no more than the refund window (in days) before today.\namount_check: refund amount (2486.17 USD) is below auto-approval limit (2500 USD) by 13.829999999999927 USD\ndate_check: days since purchase (16 days) exceeds refund window (14 days) by 2 days",
+      "digestedRounded": "Refund request\npolicy: Refunds are approved automatically when the refund amount is at most the auto-approval limit and the purchase date is no more than the refund window (in days) before today.\namount_check: refund amount (2486.17 USD) is below auto-approval limit (2500 USD) by 13.83 USD\ndate_check: days since purchase (16 days) exceeds refund window (14 days) by 2 days"
+    },
+    {
+      "id": "refund-near-3",
+      "template": "refund",
+      "margin": "near",
+      "facts": {
+        "refund_amount": "$1,220.40",
+        "auto_approval_limit": "$1,250.00",
+        "purchase_date": "2026-10-06",
+        "today": "2026-11-03",
+        "refund_window_days": 30
+      },
+      "amountOk": true,
+      "daysOk": true,
+      "truth": true,
+      "why": "both conditions hold (amount <= 1250, 28 days <= 30)",
+      "raw": "Refund request\npolicy: Refunds are approved automatically when the refund amount is at most the auto-approval limit and the purchase date is no more than the refund window (in days) before today.\nrefund_amount: $1,220.40\nauto_approval_limit: $1,250.00\npurchase_date: 2026-10-06\ntoday: 2026-11-03\nrefund_window_days: 30",
+      "digested": "Refund request\npolicy: Refunds are approved automatically when the refund amount is at most the auto-approval limit and the purchase date is no more than the refund window (in days) before today.\namount_check: refund amount (1220.4 USD) is below auto-approval limit (1250 USD) by 29.59999999999991 USD\ndate_check: days since purchase (28 days) is below refund window (30 days) by 2 days",
+      "digestedRounded": "Refund request\npolicy: Refunds are approved automatically when the refund amount is at most the auto-approval limit and the purchase date is no more than the refund window (in days) before today.\namount_check: refund amount (1220.4 USD) is below auto-approval limit (1250 USD) by 29.60 USD\ndate_check: days since purchase (28 days) is below refund window (30 days) by 2 days"
+    },
+    {
+      "id": "refund-near-4",
+      "template": "refund",
+      "margin": "near",
+      "facts": {
+        "refund_amount": "$4,225.85",
+        "auto_approval_limit": "$4,200.00",
+        "purchase_date": "2026-10-13",
+        "today": "2026-11-12",
+        "refund_window_days": 30
+      },
+      "amountOk": false,
+      "daysOk": true,
+      "truth": false,
+      "why": "fails: amount over the limit (amount 4225.85 vs 4200, 30 days vs 30)",
+      "raw": "Refund request\npolicy: Refunds are approved automatically when the refund amount is at most the auto-approval limit and the purchase date is no more than the refund window (in days) before today.\nrefund_amount: $4,225.85\nauto_approval_limit: $4,200.00\npurchase_date: 2026-10-13\ntoday: 2026-11-12\nrefund_window_days: 30",
+      "digested": "Refund request\npolicy: Refunds are approved automatically when the refund amount is at most the auto-approval limit and the purchase date is no more than the refund window (in days) before today.\namount_check: refund amount (4225.85 USD) exceeds auto-approval limit (4200 USD) by 25.850000000000364 USD\ndate_check: days since purchase equals refund window (30 days)",
+      "digestedRounded": "Refund request\npolicy: Refunds are approved automatically when the refund amount is at most the auto-approval limit and the purchase date is no more than the refund window (in days) before today.\namount_check: refund amount (4225.85 USD) exceeds auto-approval limit (4200 USD) by 25.85 USD\ndate_check: days since purchase equals refund window (30 days)"
+    },
+    {
+      "id": "refund-near-5",
+      "template": "refund",
+      "margin": "near",
+      "facts": {
+        "refund_amount": "$1,000.00",
+        "auto_approval_limit": "$1,000.00",
+        "purchase_date": "2026-09-28",
+        "today": "2026-10-26",
+        "refund_window_days": 30
+      },
+      "amountOk": true,
+      "daysOk": true,
+      "truth": true,
+      "why": "both conditions hold (amount <= 1000, 28 days <= 30)",
+      "raw": "Refund request\npolicy: Refunds are approved automatically when the refund amount is at most the auto-approval limit and the purchase date is no more than the refund window (in days) before today.\nrefund_amount: $1,000.00\nauto_approval_limit: $1,000.00\npurchase_date: 2026-09-28\ntoday: 2026-10-26\nrefund_window_days: 30",
+      "digested": "Refund request\npolicy: Refunds are approved automatically when the refund amount is at most the auto-approval limit and the purchase date is no more than the refund window (in days) before today.\namount_check: refund amount equals auto-approval limit (1000 USD)\ndate_check: days since purchase (28 days) is below refund window (30 days) by 2 days",
+      "digestedRounded": "Refund request\npolicy: Refunds are approved automatically when the refund amount is at most the auto-approval limit and the purchase date is no more than the refund window (in days) before today.\namount_check: refund amount equals auto-approval limit (1000 USD)\ndate_check: days since purchase (28 days) is below refund window (30 days) by 2 days"
+    },
+    {
+      "id": "refund-near-6",
+      "template": "refund",
+      "margin": "near",
+      "facts": {
+        "refund_amount": "$255.20",
+        "auto_approval_limit": "$250.00",
+        "purchase_date": "2026-10-08",
+        "today": "2026-11-09",
+        "refund_window_days": 30
+      },
+      "amountOk": false,
+      "daysOk": false,
+      "truth": false,
+      "why": "fails: amount over the limit and outside the day window (amount 255.2 vs 250, 32 days vs 30)",
+      "raw": "Refund request\npolicy: Refunds are approved automatically when the refund amount is at most the auto-approval limit and the purchase date is no more than the refund window (in days) before today.\nrefund_amount: $255.20\nauto_approval_limit: $250.00\npurchase_date: 2026-10-08\ntoday: 2026-11-09\nrefund_window_days: 30",
+      "digested": "Refund request\npolicy: Refunds are approved automatically when the refund amount is at most the auto-approval limit and the purchase date is no more than the refund window (in days) before today.\namount_check: refund amount (255.2 USD) exceeds auto-approval limit (250 USD) by 5.199999999999989 USD\ndate_check: days since purchase (32 days) exceeds refund window (30 days) by 2 days",
+      "digestedRounded": "Refund request\npolicy: Refunds are approved automatically when the refund amount is at most the auto-approval limit and the purchase date is no more than the refund window (in days) before today.\namount_check: refund amount (255.2 USD) exceeds auto-approval limit (250 USD) by 5.20 USD\ndate_check: days since purchase (32 days) exceeds refund window (30 days) by 2 days"
+    },
+    {
+      "id": "refund-near-7",
+      "template": "refund",
+      "margin": "near",
+      "facts": {
+        "refund_amount": "$249.28",
+        "auto_approval_limit": "$250.00",
+        "purchase_date": "2026-10-14",
+        "today": "2026-10-28",
+        "refund_window_days": 14
+      },
+      "amountOk": true,
+      "daysOk": true,
+      "truth": true,
+      "why": "both conditions hold (amount <= 250, 14 days <= 14)",
+      "raw": "Refund request\npolicy: Refunds are approved automatically when the refund amount is at most the auto-approval limit and the purchase date is no more than the refund window (in days) before today.\nrefund_amount: $249.28\nauto_approval_limit: $250.00\npurchase_date: 2026-10-14\ntoday: 2026-10-28\nrefund_window_days: 14",
+      "digested": "Refund request\npolicy: Refunds are approved automatically when the refund amount is at most the auto-approval limit and the purchase date is no more than the refund window (in days) before today.\namount_check: refund amount (249.28 USD) is below auto-approval limit (250 USD) by 0.7199999999999989 USD\ndate_check: days since purchase equals refund window (14 days)",
+      "digestedRounded": "Refund request\npolicy: Refunds are approved automatically when the refund amount is at most the auto-approval limit and the purchase date is no more than the refund window (in days) before today.\namount_check: refund amount (249.28 USD) is below auto-approval limit (250 USD) by 0.72 USD\ndate_check: days since purchase equals refund window (14 days)"
+    },
+    {
+      "id": "refund-near-8",
+      "template": "refund",
+      "margin": "near",
+      "facts": {
+        "refund_amount": "$997.49",
+        "auto_approval_limit": "$1,000.00",
+        "purchase_date": "2026-10-21",
+        "today": "2026-11-06",
+        "refund_window_days": 14
+      },
+      "amountOk": true,
+      "daysOk": false,
+      "truth": false,
+      "why": "fails: outside the day window (amount 997.49 vs 1000, 16 days vs 14)",
+      "raw": "Refund request\npolicy: Refunds are approved automatically when the refund amount is at most the auto-approval limit and the purchase date is no more than the refund window (in days) before today.\nrefund_amount: $997.49\nauto_approval_limit: $1,000.00\npurchase_date: 2026-10-21\ntoday: 2026-11-06\nrefund_window_days: 14",
+      "digested": "Refund request\npolicy: Refunds are approved automatically when the refund amount is at most the auto-approval limit and the purchase date is no more than the refund window (in days) before today.\namount_check: refund amount (997.49 USD) is below auto-approval limit (1000 USD) by 2.509999999999991 USD\ndate_check: days since purchase (16 days) exceeds refund window (14 days) by 2 days",
+      "digestedRounded": "Refund request\npolicy: Refunds are approved automatically when the refund amount is at most the auto-approval limit and the purchase date is no more than the refund window (in days) before today.\namount_check: refund amount (997.49 USD) is below auto-approval limit (1000 USD) by 2.51 USD\ndate_check: days since purchase (16 days) exceeds refund window (14 days) by 2 days"
+    },
+    {
+      "id": "refund-far-1",
+      "template": "refund",
+      "margin": "far",
+      "facts": {
+        "refund_amount": "$116.44",
+        "auto_approval_limit": "$250.00",
+        "purchase_date": "2026-10-09",
+        "today": "2026-10-29",
+        "refund_window_days": 30
+      },
+      "amountOk": true,
+      "daysOk": true,
+      "truth": true,
+      "why": "both conditions hold (amount <= 250, 20 days <= 30)",
+      "raw": "Refund request\npolicy: Refunds are approved automatically when the refund amount is at most the auto-approval limit and the purchase date is no more than the refund window (in days) before today.\nrefund_amount: $116.44\nauto_approval_limit: $250.00\npurchase_date: 2026-10-09\ntoday: 2026-10-29\nrefund_window_days: 30",
+      "digested": "Refund request\npolicy: Refunds are approved automatically when the refund amount is at most the auto-approval limit and the purchase date is no more than the refund window (in days) before today.\namount_check: refund amount (116.44 USD) is below auto-approval limit (250 USD) by 133.56 USD\ndate_check: days since purchase (20 days) is below refund window (30 days) by 10 days",
+      "digestedRounded": "Refund request\npolicy: Refunds are approved automatically when the refund amount is at most the auto-approval limit and the purchase date is no more than the refund window (in days) before today.\namount_check: refund amount (116.44 USD) is below auto-approval limit (250 USD) by 133.56 USD\ndate_check: days since purchase (20 days) is below refund window (30 days) by 10 days"
+    },
+    {
+      "id": "refund-far-2",
+      "template": "refund",
+      "margin": "far",
+      "facts": {
+        "refund_amount": "$992.39",
+        "auto_approval_limit": "$1,250.00",
+        "purchase_date": "2026-10-15",
+        "today": "2026-11-11",
+        "refund_window_days": 14
+      },
+      "amountOk": true,
+      "daysOk": false,
+      "truth": false,
+      "why": "fails: outside the day window (amount 992.39 vs 1250, 27 days vs 14)",
+      "raw": "Refund request\npolicy: Refunds are approved automatically when the refund amount is at most the auto-approval limit and the purchase date is no more than the refund window (in days) before today.\nrefund_amount: $992.39\nauto_approval_limit: $1,250.00\npurchase_date: 2026-10-15\ntoday: 2026-11-11\nrefund_window_days: 14",
+      "digested": "Refund request\npolicy: Refunds are approved automatically when the refund amount is at most the auto-approval limit and the purchase date is no more than the refund window (in days) before today.\namount_check: refund amount (992.39 USD) is below auto-approval limit (1250 USD) by 257.61 USD\ndate_check: days since purchase (27 days) exceeds refund window (14 days) by 13 days",
+      "digestedRounded": "Refund request\npolicy: Refunds are approved automatically when the refund amount is at most the auto-approval limit and the purchase date is no more than the refund window (in days) before today.\namount_check: refund amount (992.39 USD) is below auto-approval limit (1250 USD) by 257.61 USD\ndate_check: days since purchase (27 days) exceeds refund window (14 days) by 13 days"
+    },
+    {
+      "id": "refund-far-3",
+      "template": "refund",
+      "margin": "far",
+      "facts": {
+        "refund_amount": "$553.83",
+        "auto_approval_limit": "$1,250.00",
+        "purchase_date": "2026-11-02",
+        "today": "2026-11-08",
+        "refund_window_days": 45
+      },
+      "amountOk": true,
+      "daysOk": true,
+      "truth": true,
+      "why": "both conditions hold (amount <= 1250, 6 days <= 45)",
+      "raw": "Refund request\npolicy: Refunds are approved automatically when the refund amount is at most the auto-approval limit and the purchase date is no more than the refund window (in days) before today.\nrefund_amount: $553.83\nauto_approval_limit: $1,250.00\npurchase_date: 2026-11-02\ntoday: 2026-11-08\nrefund_window_days: 45",
+      "digested": "Refund request\npolicy: Refunds are approved automatically when the refund amount is at most the auto-approval limit and the purchase date is no more than the refund window (in days) before today.\namount_check: refund amount (553.83 USD) is below auto-approval limit (1250 USD) by 696.17 USD\ndate_check: days since purchase (6 days) is below refund window (45 days) by 39 days",
+      "digestedRounded": "Refund request\npolicy: Refunds are approved automatically when the refund amount is at most the auto-approval limit and the purchase date is no more than the refund window (in days) before today.\namount_check: refund amount (553.83 USD) is below auto-approval limit (1250 USD) by 696.17 USD\ndate_check: days since purchase (6 days) is below refund window (45 days) by 39 days"
+    },
+    {
+      "id": "refund-far-4",
+      "template": "refund",
+      "margin": "far",
+      "facts": {
+        "refund_amount": "$385.64",
+        "auto_approval_limit": "$250.00",
+        "purchase_date": "2026-10-16",
+        "today": "2026-11-10",
+        "refund_window_days": 60
+      },
+      "amountOk": false,
+      "daysOk": true,
+      "truth": false,
+      "why": "fails: amount over the limit (amount 385.64 vs 250, 25 days vs 60)",
+      "raw": "Refund request\npolicy: Refunds are approved automatically when the refund amount is at most the auto-approval limit and the purchase date is no more than the refund window (in days) before today.\nrefund_amount: $385.64\nauto_approval_limit: $250.00\npurchase_date: 2026-10-16\ntoday: 2026-11-10\nrefund_window_days: 60",
+      "digested": "Refund request\npolicy: Refunds are approved automatically when the refund amount is at most the auto-approval limit and the purchase date is no more than the refund window (in days) before today.\namount_check: refund amount (385.64 USD) exceeds auto-approval limit (250 USD) by 135.64 USD\ndate_check: days since purchase (25 days) is below refund window (60 days) by 35 days",
+      "digestedRounded": "Refund request\npolicy: Refunds are approved automatically when the refund amount is at most the auto-approval limit and the purchase date is no more than the refund window (in days) before today.\namount_check: refund amount (385.64 USD) exceeds auto-approval limit (250 USD) by 135.64 USD\ndate_check: days since purchase (25 days) is below refund window (60 days) by 35 days"
+    },
+    {
+      "id": "refund-far-5",
+      "template": "refund",
+      "margin": "far",
+      "facts": {
+        "refund_amount": "$3,006.59",
+        "auto_approval_limit": "$4,200.00",
+        "purchase_date": "2026-11-02",
+        "today": "2026-11-03",
+        "refund_window_days": 14
+      },
+      "amountOk": true,
+      "daysOk": true,
+      "truth": true,
+      "why": "both conditions hold (amount <= 4200, 1 days <= 14)",
+      "raw": "Refund request\npolicy: Refunds are approved automatically when the refund amount is at most the auto-approval limit and the purchase date is no more than the refund window (in days) before today.\nrefund_amount: $3,006.59\nauto_approval_limit: $4,200.00\npurchase_date: 2026-11-02\ntoday: 2026-11-03\nrefund_window_days: 14",
+      "digested": "Refund request\npolicy: Refunds are approved automatically when the refund amount is at most the auto-approval limit and the purchase date is no more than the refund window (in days) before today.\namount_check: refund amount (3006.59 USD) is below auto-approval limit (4200 USD) by 1193.4099999999999 USD\ndate_check: days since purchase (1 days) is below refund window (14 days) by 13 days",
+      "digestedRounded": "Refund request\npolicy: Refunds are approved automatically when the refund amount is at most the auto-approval limit and the purchase date is no more than the refund window (in days) before today.\namount_check: refund amount (3006.59 USD) is below auto-approval limit (4200 USD) by 1193.41 USD\ndate_check: days since purchase (1 days) is below refund window (14 days) by 13 days"
+    },
+    {
+      "id": "refund-far-6",
+      "template": "refund",
+      "margin": "far",
+      "facts": {
+        "refund_amount": "$301.56",
+        "auto_approval_limit": "$250.00",
+        "purchase_date": "2026-08-31",
+        "today": "2026-11-06",
+        "refund_window_days": 30
+      },
+      "amountOk": false,
+      "daysOk": false,
+      "truth": false,
+      "why": "fails: amount over the limit and outside the day window (amount 301.56 vs 250, 67 days vs 30)",
+      "raw": "Refund request\npolicy: Refunds are approved automatically when the refund amount is at most the auto-approval limit and the purchase date is no more than the refund window (in days) before today.\nrefund_amount: $301.56\nauto_approval_limit: $250.00\npurchase_date: 2026-08-31\ntoday: 2026-11-06\nrefund_window_days: 30",
+      "digested": "Refund request\npolicy: Refunds are approved automatically when the refund amount is at most the auto-approval limit and the purchase date is no more than the refund window (in days) before today.\namount_check: refund amount (301.56 USD) exceeds auto-approval limit (250 USD) by 51.56 USD\ndate_check: days since purchase (67 days) exceeds refund window (30 days) by 37 days",
+      "digestedRounded": "Refund request\npolicy: Refunds are approved automatically when the refund amount is at most the auto-approval limit and the purchase date is no more than the refund window (in days) before today.\namount_check: refund amount (301.56 USD) exceeds auto-approval limit (250 USD) by 51.56 USD\ndate_check: days since purchase (67 days) exceeds refund window (30 days) by 37 days"
+    },
+    {
+      "id": "refund-far-7",
+      "template": "refund",
+      "margin": "far",
+      "facts": {
+        "refund_amount": "$516.67",
+        "auto_approval_limit": "$1,000.00",
+        "purchase_date": "2026-09-28",
+        "today": "2026-10-31",
+        "refund_window_days": 45
+      },
+      "amountOk": true,
+      "daysOk": true,
+      "truth": true,
+      "why": "both conditions hold (amount <= 1000, 33 days <= 45)",
+      "raw": "Refund request\npolicy: Refunds are approved automatically when the refund amount is at most the auto-approval limit and the purchase date is no more than the refund window (in days) before today.\nrefund_amount: $516.67\nauto_approval_limit: $1,000.00\npurchase_date: 2026-09-28\ntoday: 2026-10-31\nrefund_window_days: 45",
+      "digested": "Refund request\npolicy: Refunds are approved automatically when the refund amount is at most the auto-approval limit and the purchase date is no more than the refund window (in days) before today.\namount_check: refund amount (516.67 USD) is below auto-approval limit (1000 USD) by 483.33000000000004 USD\ndate_check: days since purchase (33 days) is below refund window (45 days) by 12 days",
+      "digestedRounded": "Refund request\npolicy: Refunds are approved automatically when the refund amount is at most the auto-approval limit and the purchase date is no more than the refund window (in days) before today.\namount_check: refund amount (516.67 USD) is below auto-approval limit (1000 USD) by 483.33 USD\ndate_check: days since purchase (33 days) is below refund window (45 days) by 12 days"
+    },
+    {
+      "id": "refund-far-8",
+      "template": "refund",
+      "margin": "far",
+      "facts": {
+        "refund_amount": "$491.22",
+        "auto_approval_limit": "$1,000.00",
+        "purchase_date": "2026-09-03",
+        "today": "2026-11-11",
+        "refund_window_days": 30
+      },
+      "amountOk": true,
+      "daysOk": false,
+      "truth": false,
+      "why": "fails: outside the day window (amount 491.22 vs 1000, 69 days vs 30)",
+      "raw": "Refund request\npolicy: Refunds are approved automatically when the refund amount is at most the auto-approval limit and the purchase date is no more than the refund window (in days) before today.\nrefund_amount: $491.22\nauto_approval_limit: $1,000.00\npurchase_date: 2026-09-03\ntoday: 2026-11-11\nrefund_window_days: 30",
+      "digested": "Refund request\npolicy: Refunds are approved automatically when the refund amount is at most the auto-approval limit and the purchase date is no more than the refund window (in days) before today.\namount_check: refund amount (491.22 USD) is below auto-approval limit (1000 USD) by 508.78 USD\ndate_check: days since purchase (69 days) exceeds refund window (30 days) by 39 days",
+      "digestedRounded": "Refund request\npolicy: Refunds are approved automatically when the refund amount is at most the auto-approval limit and the purchase date is no more than the refund window (in days) before today.\namount_check: refund amount (491.22 USD) is below auto-approval limit (1000 USD) by 508.78 USD\ndate_check: days since purchase (69 days) exceeds refund window (30 days) by 39 days"
+    },
+    {
+      "id": "expense-near-1",
+      "template": "expense",
+      "margin": "near",
+      "facts": {
+        "claimed_amount": "$1,000.00",
+        "per_trip_cap": "$1,000.00",
+        "trip_end_date": "2026-07-26",
+        "submitted_date": "2026-10-24",
+        "submission_deadline_days": 90
+      },
+      "amountOk": true,
+      "daysOk": true,
+      "truth": true,
+      "why": "both conditions hold (amount <= 1000, 90 days <= 90)",
+      "raw": "Expense claim\npolicy: Expense claims are approved automatically when the claimed amount is at most the per-trip cap and the claim is submitted no more than the submission deadline (in days) after the trip ended.\nclaimed_amount: $1,000.00\nper_trip_cap: $1,000.00\ntrip_end_date: 2026-07-26\nsubmitted_date: 2026-10-24\nsubmission_deadline_days: 90",
+      "digested": "Expense claim\npolicy: Expense claims are approved automatically when the claimed amount is at most the per-trip cap and the claim is submitted no more than the submission deadline (in days) after the trip ended.\namount_check: claimed amount equals per-trip cap (1000 USD)\ndate_check: days from trip end to submission equals submission deadline (90 days)",
+      "digestedRounded": "Expense claim\npolicy: Expense claims are approved automatically when the claimed amount is at most the per-trip cap and the claim is submitted no more than the submission deadline (in days) after the trip ended.\namount_check: claimed amount equals per-trip cap (1000 USD)\ndate_check: days from trip end to submission equals submission deadline (90 days)"
+    },
+    {
+      "id": "expense-near-2",
+      "template": "expense",
+      "margin": "near",
+      "facts": {
+        "claimed_amount": "$974.41",
+        "per_trip_cap": "$1,000.00",
+        "trip_end_date": "2026-09-02",
+        "submitted_date": "2026-11-03",
+        "submission_deadline_days": 60
+      },
+      "amountOk": true,
+      "daysOk": false,
+      "truth": false,
+      "why": "fails: outside the day window (amount 974.41 vs 1000, 62 days vs 60)",
+      "raw": "Expense claim\npolicy: Expense claims are approved automatically when the claimed amount is at most the per-trip cap and the claim is submitted no more than the submission deadline (in days) after the trip ended.\nclaimed_amount: $974.41\nper_trip_cap: $1,000.00\ntrip_end_date: 2026-09-02\nsubmitted_date: 2026-11-03\nsubmission_deadline_days: 60",
+      "digested": "Expense claim\npolicy: Expense claims are approved automatically when the claimed amount is at most the per-trip cap and the claim is submitted no more than the submission deadline (in days) after the trip ended.\namount_check: claimed amount (974.41 USD) is below per-trip cap (1000 USD) by 25.590000000000032 USD\ndate_check: days from trip end to submission (62 days) exceeds submission deadline (60 days) by 2 days",
+      "digestedRounded": "Expense claim\npolicy: Expense claims are approved automatically when the claimed amount is at most the per-trip cap and the claim is submitted no more than the submission deadline (in days) after the trip ended.\namount_check: claimed amount (974.41 USD) is below per-trip cap (1000 USD) by 25.59 USD\ndate_check: days from trip end to submission (62 days) exceeds submission deadline (60 days) by 2 days"
+    },
+    {
+      "id": "expense-near-3",
+      "template": "expense",
+      "margin": "near",
+      "facts": {
+        "claimed_amount": "$4,117.63",
+        "per_trip_cap": "$4,200.00",
+        "trip_end_date": "2026-10-16",
+        "submitted_date": "2026-10-29",
+        "submission_deadline_days": 14
+      },
+      "amountOk": true,
+      "daysOk": true,
+      "truth": true,
+      "why": "both conditions hold (amount <= 4200, 13 days <= 14)",
+      "raw": "Expense claim\npolicy: Expense claims are approved automatically when the claimed amount is at most the per-trip cap and the claim is submitted no more than the submission deadline (in days) after the trip ended.\nclaimed_amount: $4,117.63\nper_trip_cap: $4,200.00\ntrip_end_date: 2026-10-16\nsubmitted_date: 2026-10-29\nsubmission_deadline_days: 14",
+      "digested": "Expense claim\npolicy: Expense claims are approved automatically when the claimed amount is at most the per-trip cap and the claim is submitted no more than the submission deadline (in days) after the trip ended.\namount_check: claimed amount (4117.63 USD) is below per-trip cap (4200 USD) by 82.36999999999989 USD\ndate_check: days from trip end to submission (13 days) is below submission deadline (14 days) by 1 days",
+      "digestedRounded": "Expense claim\npolicy: Expense claims are approved automatically when the claimed amount is at most the per-trip cap and the claim is submitted no more than the submission deadline (in days) after the trip ended.\namount_check: claimed amount (4117.63 USD) is below per-trip cap (4200 USD) by 82.37 USD\ndate_check: days from trip end to submission (13 days) is below submission deadline (14 days) by 1 days"
+    },
+    {
+      "id": "expense-near-4",
+      "template": "expense",
+      "margin": "near",
+      "facts": {
+        "claimed_amount": "$4,271.35",
+        "per_trip_cap": "$4,200.00",
+        "trip_end_date": "2026-10-16",
+        "submitted_date": "2026-10-30",
+        "submission_deadline_days": 14
+      },
+      "amountOk": false,
+      "daysOk": true,
+      "truth": false,
+      "why": "fails: amount over the limit (amount 4271.35 vs 4200, 14 days vs 14)",
+      "raw": "Expense claim\npolicy: Expense claims are approved automatically when the claimed amount is at most the per-trip cap and the claim is submitted no more than the submission deadline (in days) after the trip ended.\nclaimed_amount: $4,271.35\nper_trip_cap: $4,200.00\ntrip_end_date: 2026-10-16\nsubmitted_date: 2026-10-30\nsubmission_deadline_days: 14",
+      "digested": "Expense claim\npolicy: Expense claims are approved automatically when the claimed amount is at most the per-trip cap and the claim is submitted no more than the submission deadline (in days) after the trip ended.\namount_check: claimed amount (4271.35 USD) exceeds per-trip cap (4200 USD) by 71.35000000000036 USD\ndate_check: days from trip end to submission equals submission deadline (14 days)",
+      "digestedRounded": "Expense claim\npolicy: Expense claims are approved automatically when the claimed amount is at most the per-trip cap and the claim is submitted no more than the submission deadline (in days) after the trip ended.\namount_check: claimed amount (4271.35 USD) exceeds per-trip cap (4200 USD) by 71.35 USD\ndate_check: days from trip end to submission equals submission deadline (14 days)"
+    },
+    {
+      "id": "expense-near-5",
+      "template": "expense",
+      "margin": "near",
+      "facts": {
+        "claimed_amount": "$1,250.00",
+        "per_trip_cap": "$1,250.00",
+        "trip_end_date": "2026-08-05",
+        "submitted_date": "2026-11-02",
+        "submission_deadline_days": 90
+      },
+      "amountOk": true,
+      "daysOk": true,
+      "truth": true,
+      "why": "both conditions hold (amount <= 1250, 89 days <= 90)",
+      "raw": "Expense claim\npolicy: Expense claims are approved automatically when the claimed amount is at most the per-trip cap and the claim is submitted no more than the submission deadline (in days) after the trip ended.\nclaimed_amount: $1,250.00\nper_trip_cap: $1,250.00\ntrip_end_date: 2026-08-05\nsubmitted_date: 2026-11-02\nsubmission_deadline_days: 90",
+      "digested": "Expense claim\npolicy: Expense claims are approved automatically when the claimed amount is at most the per-trip cap and the claim is submitted no more than the submission deadline (in days) after the trip ended.\namount_check: claimed amount equals per-trip cap (1250 USD)\ndate_check: days from trip end to submission (89 days) is below submission deadline (90 days) by 1 days",
+      "digestedRounded": "Expense claim\npolicy: Expense claims are approved automatically when the claimed amount is at most the per-trip cap and the claim is submitted no more than the submission deadline (in days) after the trip ended.\namount_check: claimed amount equals per-trip cap (1250 USD)\ndate_check: days from trip end to submission (89 days) is below submission deadline (90 days) by 1 days"
+    },
+    {
+      "id": "expense-near-6",
+      "template": "expense",
+      "margin": "near",
+      "facts": {
+        "claimed_amount": "$490.74",
+        "per_trip_cap": "$480.00",
+        "trip_end_date": "2026-08-04",
+        "submitted_date": "2026-11-04",
+        "submission_deadline_days": 90
+      },
+      "amountOk": false,
+      "daysOk": false,
+      "truth": false,
+      "why": "fails: amount over the limit and outside the day window (amount 490.74 vs 480, 92 days vs 90)",
+      "raw": "Expense claim\npolicy: Expense claims are approved automatically when the claimed amount is at most the per-trip cap and the claim is submitted no more than the submission deadline (in days) after the trip ended.\nclaimed_amount: $490.74\nper_trip_cap: $480.00\ntrip_end_date: 2026-08-04\nsubmitted_date: 2026-11-04\nsubmission_deadline_days: 90",
+      "digested": "Expense claim\npolicy: Expense claims are approved automatically when the claimed amount is at most the per-trip cap and the claim is submitted no more than the submission deadline (in days) after the trip ended.\namount_check: claimed amount (490.74 USD) exceeds per-trip cap (480 USD) by 10.740000000000009 USD\ndate_check: days from trip end to submission (92 days) exceeds submission deadline (90 days) by 2 days",
+      "digestedRounded": "Expense claim\npolicy: Expense claims are approved automatically when the claimed amount is at most the per-trip cap and the claim is submitted no more than the submission deadline (in days) after the trip ended.\namount_check: claimed amount (490.74 USD) exceeds per-trip cap (480 USD) by 10.74 USD\ndate_check: days from trip end to submission (92 days) exceeds submission deadline (90 days) by 2 days"
+    },
+    {
+      "id": "expense-near-7",
+      "template": "expense",
+      "margin": "near",
+      "facts": {
+        "claimed_amount": "$973.10",
+        "per_trip_cap": "$1,000.00",
+        "trip_end_date": "2026-09-24",
+        "submitted_date": "2026-11-08",
+        "submission_deadline_days": 45
+      },
+      "amountOk": true,
+      "daysOk": true,
+      "truth": true,
+      "why": "both conditions hold (amount <= 1000, 45 days <= 45)",
+      "raw": "Expense claim\npolicy: Expense claims are approved automatically when the claimed amount is at most the per-trip cap and the claim is submitted no more than the submission deadline (in days) after the trip ended.\nclaimed_amount: $973.10\nper_trip_cap: $1,000.00\ntrip_end_date: 2026-09-24\nsubmitted_date: 2026-11-08\nsubmission_deadline_days: 45",
+      "digested": "Expense claim\npolicy: Expense claims are approved automatically when the claimed amount is at most the per-trip cap and the claim is submitted no more than the submission deadline (in days) after the trip ended.\namount_check: claimed amount (973.1 USD) is below per-trip cap (1000 USD) by 26.899999999999977 USD\ndate_check: days from trip end to submission equals submission deadline (45 days)",
+      "digestedRounded": "Expense claim\npolicy: Expense claims are approved automatically when the claimed amount is at most the per-trip cap and the claim is submitted no more than the submission deadline (in days) after the trip ended.\namount_check: claimed amount (973.1 USD) is below per-trip cap (1000 USD) by 26.90 USD\ndate_check: days from trip end to submission equals submission deadline (45 days)"
+    },
+    {
+      "id": "expense-near-8",
+      "template": "expense",
+      "margin": "near",
+      "facts": {
+        "claimed_amount": "$4,166.59",
+        "per_trip_cap": "$4,200.00",
+        "trip_end_date": "2026-09-07",
+        "submitted_date": "2026-11-08",
+        "submission_deadline_days": 60
+      },
+      "amountOk": true,
+      "daysOk": false,
+      "truth": false,
+      "why": "fails: outside the day window (amount 4166.59 vs 4200, 62 days vs 60)",
+      "raw": "Expense claim\npolicy: Expense claims are approved automatically when the claimed amount is at most the per-trip cap and the claim is submitted no more than the submission deadline (in days) after the trip ended.\nclaimed_amount: $4,166.59\nper_trip_cap: $4,200.00\ntrip_end_date: 2026-09-07\nsubmitted_date: 2026-11-08\nsubmission_deadline_days: 60",
+      "digested": "Expense claim\npolicy: Expense claims are approved automatically when the claimed amount is at most the per-trip cap and the claim is submitted no more than the submission deadline (in days) after the trip ended.\namount_check: claimed amount (4166.59 USD) is below per-trip cap (4200 USD) by 33.409999999999854 USD\ndate_check: days from trip end to submission (62 days) exceeds submission deadline (60 days) by 2 days",
+      "digestedRounded": "Expense claim\npolicy: Expense claims are approved automatically when the claimed amount is at most the per-trip cap and the claim is submitted no more than the submission deadline (in days) after the trip ended.\namount_check: claimed amount (4166.59 USD) is below per-trip cap (4200 USD) by 33.41 USD\ndate_check: days from trip end to submission (62 days) exceeds submission deadline (60 days) by 2 days"
+    },
+    {
+      "id": "expense-far-1",
+      "template": "expense",
+      "margin": "far",
+      "facts": {
+        "claimed_amount": "$283.57",
+        "per_trip_cap": "$480.00",
+        "trip_end_date": "2026-10-26",
+        "submitted_date": "2026-11-10",
+        "submission_deadline_days": 45
+      },
+      "amountOk": true,
+      "daysOk": true,
+      "truth": true,
+      "why": "both conditions hold (amount <= 480, 15 days <= 45)",
+      "raw": "Expense claim\npolicy: Expense claims are approved automatically when the claimed amount is at most the per-trip cap and the claim is submitted no more than the submission deadline (in days) after the trip ended.\nclaimed_amount: $283.57\nper_trip_cap: $480.00\ntrip_end_date: 2026-10-26\nsubmitted_date: 2026-11-10\nsubmission_deadline_days: 45",
+      "digested": "Expense claim\npolicy: Expense claims are approved automatically when the claimed amount is at most the per-trip cap and the claim is submitted no more than the submission deadline (in days) after the trip ended.\namount_check: claimed amount (283.57 USD) is below per-trip cap (480 USD) by 196.43 USD\ndate_check: days from trip end to submission (15 days) is below submission deadline (45 days) by 30 days",
+      "digestedRounded": "Expense claim\npolicy: Expense claims are approved automatically when the claimed amount is at most the per-trip cap and the claim is submitted no more than the submission deadline (in days) after the trip ended.\namount_check: claimed amount (283.57 USD) is below per-trip cap (480 USD) by 196.43 USD\ndate_check: days from trip end to submission (15 days) is below submission deadline (45 days) by 30 days"
+    },
+    {
+      "id": "expense-far-2",
+      "template": "expense",
+      "margin": "far",
+      "facts": {
+        "claimed_amount": "$1,959.19",
+        "per_trip_cap": "$2,500.00",
+        "trip_end_date": "2026-08-10",
+        "submitted_date": "2026-10-25",
+        "submission_deadline_days": 45
+      },
+      "amountOk": true,
+      "daysOk": false,
+      "truth": false,
+      "why": "fails: outside the day window (amount 1959.19 vs 2500, 76 days vs 45)",
+      "raw": "Expense claim\npolicy: Expense claims are approved automatically when the claimed amount is at most the per-trip cap and the claim is submitted no more than the submission deadline (in days) after the trip ended.\nclaimed_amount: $1,959.19\nper_trip_cap: $2,500.00\ntrip_end_date: 2026-08-10\nsubmitted_date: 2026-10-25\nsubmission_deadline_days: 45",
+      "digested": "Expense claim\npolicy: Expense claims are approved automatically when the claimed amount is at most the per-trip cap and the claim is submitted no more than the submission deadline (in days) after the trip ended.\namount_check: claimed amount (1959.19 USD) is below per-trip cap (2500 USD) by 540.81 USD\ndate_check: days from trip end to submission (76 days) exceeds submission deadline (45 days) by 31 days",
+      "digestedRounded": "Expense claim\npolicy: Expense claims are approved automatically when the claimed amount is at most the per-trip cap and the claim is submitted no more than the submission deadline (in days) after the trip ended.\namount_check: claimed amount (1959.19 USD) is below per-trip cap (2500 USD) by 540.81 USD\ndate_check: days from trip end to submission (76 days) exceeds submission deadline (45 days) by 31 days"
+    },
+    {
+      "id": "expense-far-3",
+      "template": "expense",
+      "margin": "far",
+      "facts": {
+        "claimed_amount": "$1,046.38",
+        "per_trip_cap": "$2,500.00",
+        "trip_end_date": "2026-10-11",
+        "submitted_date": "2026-10-25",
+        "submission_deadline_days": 30
+      },
+      "amountOk": true,
+      "daysOk": true,
+      "truth": true,
+      "why": "both conditions hold (amount <= 2500, 14 days <= 30)",
+      "raw": "Expense claim\npolicy: Expense claims are approved automatically when the claimed amount is at most the per-trip cap and the claim is submitted no more than the submission deadline (in days) after the trip ended.\nclaimed_amount: $1,046.38\nper_trip_cap: $2,500.00\ntrip_end_date: 2026-10-11\nsubmitted_date: 2026-10-25\nsubmission_deadline_days: 30",
+      "digested": "Expense claim\npolicy: Expense claims are approved automatically when the claimed amount is at most the per-trip cap and the claim is submitted no more than the submission deadline (in days) after the trip ended.\namount_check: claimed amount (1046.38 USD) is below per-trip cap (2500 USD) by 1453.62 USD\ndate_check: days from trip end to submission (14 days) is below submission deadline (30 days) by 16 days",
+      "digestedRounded": "Expense claim\npolicy: Expense claims are approved automatically when the claimed amount is at most the per-trip cap and the claim is submitted no more than the submission deadline (in days) after the trip ended.\namount_check: claimed amount (1046.38 USD) is below per-trip cap (2500 USD) by 1453.62 USD\ndate_check: days from trip end to submission (14 days) is below submission deadline (30 days) by 16 days"
+    },
+    {
+      "id": "expense-far-4",
+      "template": "expense",
+      "margin": "far",
+      "facts": {
+        "claimed_amount": "$1,576.15",
+        "per_trip_cap": "$1,000.00",
+        "trip_end_date": "2026-10-14",
+        "submitted_date": "2026-11-05",
+        "submission_deadline_days": 60
+      },
+      "amountOk": false,
+      "daysOk": true,
+      "truth": false,
+      "why": "fails: amount over the limit (amount 1576.15 vs 1000, 22 days vs 60)",
+      "raw": "Expense claim\npolicy: Expense claims are approved automatically when the claimed amount is at most the per-trip cap and the claim is submitted no more than the submission deadline (in days) after the trip ended.\nclaimed_amount: $1,576.15\nper_trip_cap: $1,000.00\ntrip_end_date: 2026-10-14\nsubmitted_date: 2026-11-05\nsubmission_deadline_days: 60",
+      "digested": "Expense claim\npolicy: Expense claims are approved automatically when the claimed amount is at most the per-trip cap and the claim is submitted no more than the submission deadline (in days) after the trip ended.\namount_check: claimed amount (1576.15 USD) exceeds per-trip cap (1000 USD) by 576.1500000000001 USD\ndate_check: days from trip end to submission (22 days) is below submission deadline (60 days) by 38 days",
+      "digestedRounded": "Expense claim\npolicy: Expense claims are approved automatically when the claimed amount is at most the per-trip cap and the claim is submitted no more than the submission deadline (in days) after the trip ended.\namount_check: claimed amount (1576.15 USD) exceeds per-trip cap (1000 USD) by 576.15 USD\ndate_check: days from trip end to submission (22 days) is below submission deadline (60 days) by 38 days"
+    },
+    {
+      "id": "expense-far-5",
+      "template": "expense",
+      "margin": "far",
+      "facts": {
+        "claimed_amount": "$333.57",
+        "per_trip_cap": "$480.00",
+        "trip_end_date": "2026-08-23",
+        "submitted_date": "2026-11-07",
+        "submission_deadline_days": 90
+      },
+      "amountOk": true,
+      "daysOk": true,
+      "truth": true,
+      "why": "both conditions hold (amount <= 480, 76 days <= 90)",
+      "raw": "Expense claim\npolicy: Expense claims are approved automatically when the claimed amount is at most the per-trip cap and the claim is submitted no more than the submission deadline (in days) after the trip ended.\nclaimed_amount: $333.57\nper_trip_cap: $480.00\ntrip_end_date: 2026-08-23\nsubmitted_date: 2026-11-07\nsubmission_deadline_days: 90",
+      "digested": "Expense claim\npolicy: Expense claims are approved automatically when the claimed amount is at most the per-trip cap and the claim is submitted no more than the submission deadline (in days) after the trip ended.\namount_check: claimed amount (333.57 USD) is below per-trip cap (480 USD) by 146.43 USD\ndate_check: days from trip end to submission (76 days) is below submission deadline (90 days) by 14 days",
+      "digestedRounded": "Expense claim\npolicy: Expense claims are approved automatically when the claimed amount is at most the per-trip cap and the claim is submitted no more than the submission deadline (in days) after the trip ended.\namount_check: claimed amount (333.57 USD) is below per-trip cap (480 USD) by 146.43 USD\ndate_check: days from trip end to submission (76 days) is below submission deadline (90 days) by 14 days"
+    },
+    {
+      "id": "expense-far-6",
+      "template": "expense",
+      "margin": "far",
+      "facts": {
+        "claimed_amount": "$3,157.94",
+        "per_trip_cap": "$2,500.00",
+        "trip_end_date": "2026-07-06",
+        "submitted_date": "2026-10-25",
+        "submission_deadline_days": 90
+      },
+      "amountOk": false,
+      "daysOk": false,
+      "truth": false,
+      "why": "fails: amount over the limit and outside the day window (amount 3157.94 vs 2500, 111 days vs 90)",
+      "raw": "Expense claim\npolicy: Expense claims are approved automatically when the claimed amount is at most the per-trip cap and the claim is submitted no more than the submission deadline (in days) after the trip ended.\nclaimed_amount: $3,157.94\nper_trip_cap: $2,500.00\ntrip_end_date: 2026-07-06\nsubmitted_date: 2026-10-25\nsubmission_deadline_days: 90",
+      "digested": "Expense claim\npolicy: Expense claims are approved automatically when the claimed amount is at most the per-trip cap and the claim is submitted no more than the submission deadline (in days) after the trip ended.\namount_check: claimed amount (3157.94 USD) exceeds per-trip cap (2500 USD) by 657.94 USD\ndate_check: days from trip end to submission (111 days) exceeds submission deadline (90 days) by 21 days",
+      "digestedRounded": "Expense claim\npolicy: Expense claims are approved automatically when the claimed amount is at most the per-trip cap and the claim is submitted no more than the submission deadline (in days) after the trip ended.\namount_check: claimed amount (3157.94 USD) exceeds per-trip cap (2500 USD) by 657.94 USD\ndate_check: days from trip end to submission (111 days) exceeds submission deadline (90 days) by 21 days"
+    },
+    {
+      "id": "expense-far-7",
+      "template": "expense",
+      "margin": "far",
+      "facts": {
+        "claimed_amount": "$2,753.64",
+        "per_trip_cap": "$4,200.00",
+        "trip_end_date": "2026-10-06",
+        "submitted_date": "2026-10-27",
+        "submission_deadline_days": 60
+      },
+      "amountOk": true,
+      "daysOk": true,
+      "truth": true,
+      "why": "both conditions hold (amount <= 4200, 21 days <= 60)",
+      "raw": "Expense claim\npolicy: Expense claims are approved automatically when the claimed amount is at most the per-trip cap and the claim is submitted no more than the submission deadline (in days) after the trip ended.\nclaimed_amount: $2,753.64\nper_trip_cap: $4,200.00\ntrip_end_date: 2026-10-06\nsubmitted_date: 2026-10-27\nsubmission_deadline_days: 60",
+      "digested": "Expense claim\npolicy: Expense claims are approved automatically when the claimed amount is at most the per-trip cap and the claim is submitted no more than the submission deadline (in days) after the trip ended.\namount_check: claimed amount (2753.64 USD) is below per-trip cap (4200 USD) by 1446.3600000000001 USD\ndate_check: days from trip end to submission (21 days) is below submission deadline (60 days) by 39 days",
+      "digestedRounded": "Expense claim\npolicy: Expense claims are approved automatically when the claimed amount is at most the per-trip cap and the claim is submitted no more than the submission deadline (in days) after the trip ended.\namount_check: claimed amount (2753.64 USD) is below per-trip cap (4200 USD) by 1446.36 USD\ndate_check: days from trip end to submission (21 days) is below submission deadline (60 days) by 39 days"
+    },
+    {
+      "id": "expense-far-8",
+      "template": "expense",
+      "margin": "far",
+      "facts": {
+        "claimed_amount": "$532.15",
+        "per_trip_cap": "$1,250.00",
+        "trip_end_date": "2026-08-14",
+        "submitted_date": "2026-11-05",
+        "submission_deadline_days": 60
+      },
+      "amountOk": true,
+      "daysOk": false,
+      "truth": false,
+      "why": "fails: outside the day window (amount 532.15 vs 1250, 83 days vs 60)",
+      "raw": "Expense claim\npolicy: Expense claims are approved automatically when the claimed amount is at most the per-trip cap and the claim is submitted no more than the submission deadline (in days) after the trip ended.\nclaimed_amount: $532.15\nper_trip_cap: $1,250.00\ntrip_end_date: 2026-08-14\nsubmitted_date: 2026-11-05\nsubmission_deadline_days: 60",
+      "digested": "Expense claim\npolicy: Expense claims are approved automatically when the claimed amount is at most the per-trip cap and the claim is submitted no more than the submission deadline (in days) after the trip ended.\namount_check: claimed amount (532.15 USD) is below per-trip cap (1250 USD) by 717.85 USD\ndate_check: days from trip end to submission (83 days) exceeds submission deadline (60 days) by 23 days",
+      "digestedRounded": "Expense claim\npolicy: Expense claims are approved automatically when the claimed amount is at most the per-trip cap and the claim is submitted no more than the submission deadline (in days) after the trip ended.\namount_check: claimed amount (532.15 USD) is below per-trip cap (1250 USD) by 717.85 USD\ndate_check: days from trip end to submission (83 days) exceeds submission deadline (60 days) by 23 days"
+    },
+    {
+      "id": "discount-near-1",
+      "template": "discount",
+      "margin": "near",
+      "facts": {
+        "invoice_total": "$4,200.00",
+        "discount_minimum": "$4,200.00",
+        "invoice_date": "2026-09-25",
+        "payment_date": "2026-11-09",
+        "discount_window_days": 45
+      },
+      "amountOk": true,
+      "daysOk": true,
+      "truth": true,
+      "why": "both conditions hold (amount >= 4200, 45 days <= 45)",
+      "raw": "Early-payment discount request\npolicy: The early-payment discount is approved automatically when the invoice total is at least the discount minimum and payment arrived no more than the discount window (in days) after the invoice date.\ninvoice_total: $4,200.00\ndiscount_minimum: $4,200.00\ninvoice_date: 2026-09-25\npayment_date: 2026-11-09\ndiscount_window_days: 45",
+      "digested": "Early-payment discount request\npolicy: The early-payment discount is approved automatically when the invoice total is at least the discount minimum and payment arrived no more than the discount window (in days) after the invoice date.\namount_check: invoice total equals discount minimum (4200 USD)\ndate_check: days from invoice to payment equals discount window (45 days)",
+      "digestedRounded": "Early-payment discount request\npolicy: The early-payment discount is approved automatically when the invoice total is at least the discount minimum and payment arrived no more than the discount window (in days) after the invoice date.\namount_check: invoice total equals discount minimum (4200 USD)\ndate_check: days from invoice to payment equals discount window (45 days)"
+    },
+    {
+      "id": "discount-near-2",
+      "template": "discount",
+      "margin": "near",
+      "facts": {
+        "invoice_total": "$1,016.04",
+        "discount_minimum": "$1,000.00",
+        "invoice_date": "2026-10-08",
+        "payment_date": "2026-10-24",
+        "discount_window_days": 14
+      },
+      "amountOk": true,
+      "daysOk": false,
+      "truth": false,
+      "why": "fails: outside the day window (amount 1016.04 vs 1000, 16 days vs 14)",
+      "raw": "Early-payment discount request\npolicy: The early-payment discount is approved automatically when the invoice total is at least the discount minimum and payment arrived no more than the discount window (in days) after the invoice date.\ninvoice_total: $1,016.04\ndiscount_minimum: $1,000.00\ninvoice_date: 2026-10-08\npayment_date: 2026-10-24\ndiscount_window_days: 14",
+      "digested": "Early-payment discount request\npolicy: The early-payment discount is approved automatically when the invoice total is at least the discount minimum and payment arrived no more than the discount window (in days) after the invoice date.\namount_check: invoice total (1016.04 USD) exceeds discount minimum (1000 USD) by 16.039999999999964 USD\ndate_check: days from invoice to payment (16 days) exceeds discount window (14 days) by 2 days",
+      "digestedRounded": "Early-payment discount request\npolicy: The early-payment discount is approved automatically when the invoice total is at least the discount minimum and payment arrived no more than the discount window (in days) after the invoice date.\namount_check: invoice total (1016.04 USD) exceeds discount minimum (1000 USD) by 16.04 USD\ndate_check: days from invoice to payment (16 days) exceeds discount window (14 days) by 2 days"
+    },
+    {
+      "id": "discount-near-3",
+      "template": "discount",
+      "margin": "near",
+      "facts": {
+        "invoice_total": "$252.48",
+        "discount_minimum": "$250.00",
+        "invoice_date": "2026-09-21",
+        "payment_date": "2026-11-04",
+        "discount_window_days": 45
+      },
+      "amountOk": true,
+      "daysOk": true,
+      "truth": true,
+      "why": "both conditions hold (amount >= 250, 44 days <= 45)",
+      "raw": "Early-payment discount request\npolicy: The early-payment discount is approved automatically when the invoice total is at least the discount minimum and payment arrived no more than the discount window (in days) after the invoice date.\ninvoice_total: $252.48\ndiscount_minimum: $250.00\ninvoice_date: 2026-09-21\npayment_date: 2026-11-04\ndiscount_window_days: 45",
+      "digested": "Early-payment discount request\npolicy: The early-payment discount is approved automatically when the invoice total is at least the discount minimum and payment arrived no more than the discount window (in days) after the invoice date.\namount_check: invoice total (252.48 USD) exceeds discount minimum (250 USD) by 2.4799999999999898 USD\ndate_check: days from invoice to payment (44 days) is below discount window (45 days) by 1 days",
+      "digestedRounded": "Early-payment discount request\npolicy: The early-payment discount is approved automatically when the invoice total is at least the discount minimum and payment arrived no more than the discount window (in days) after the invoice date.\namount_check: invoice total (252.48 USD) exceeds discount minimum (250 USD) by 2.48 USD\ndate_check: days from invoice to payment (44 days) is below discount window (45 days) by 1 days"
+    },
+    {
+      "id": "discount-near-4",
+      "template": "discount",
+      "margin": "near",
+      "facts": {
+        "invoice_total": "$2,434.20",
+        "discount_minimum": "$2,500.00",
+        "invoice_date": "2026-09-01",
+        "payment_date": "2026-10-31",
+        "discount_window_days": 60
+      },
+      "amountOk": false,
+      "daysOk": true,
+      "truth": false,
+      "why": "fails: total under the minimum (amount 2434.2 vs 2500, 60 days vs 60)",
+      "raw": "Early-payment discount request\npolicy: The early-payment discount is approved automatically when the invoice total is at least the discount minimum and payment arrived no more than the discount window (in days) after the invoice date.\ninvoice_total: $2,434.20\ndiscount_minimum: $2,500.00\ninvoice_date: 2026-09-01\npayment_date: 2026-10-31\ndiscount_window_days: 60",
+      "digested": "Early-payment discount request\npolicy: The early-payment discount is approved automatically when the invoice total is at least the discount minimum and payment arrived no more than the discount window (in days) after the invoice date.\namount_check: invoice total (2434.2 USD) is below discount minimum (2500 USD) by 65.80000000000018 USD\ndate_check: days from invoice to payment equals discount window (60 days)",
+      "digestedRounded": "Early-payment discount request\npolicy: The early-payment discount is approved automatically when the invoice total is at least the discount minimum and payment arrived no more than the discount window (in days) after the invoice date.\namount_check: invoice total (2434.2 USD) is below discount minimum (2500 USD) by 65.80 USD\ndate_check: days from invoice to payment equals discount window (60 days)"
+    },
+    {
+      "id": "discount-near-5",
+      "template": "discount",
+      "margin": "near",
+      "facts": {
+        "invoice_total": "$1,250.00",
+        "discount_minimum": "$1,250.00",
+        "invoice_date": "2026-08-08",
+        "payment_date": "2026-11-04",
+        "discount_window_days": 90
+      },
+      "amountOk": true,
+      "daysOk": true,
+      "truth": true,
+      "why": "both conditions hold (amount >= 1250, 88 days <= 90)",
+      "raw": "Early-payment discount request\npolicy: The early-payment discount is approved automatically when the invoice total is at least the discount minimum and payment arrived no more than the discount window (in days) after the invoice date.\ninvoice_total: $1,250.00\ndiscount_minimum: $1,250.00\ninvoice_date: 2026-08-08\npayment_date: 2026-11-04\ndiscount_window_days: 90",
+      "digested": "Early-payment discount request\npolicy: The early-payment discount is approved automatically when the invoice total is at least the discount minimum and payment arrived no more than the discount window (in days) after the invoice date.\namount_check: invoice total equals discount minimum (1250 USD)\ndate_check: days from invoice to payment (88 days) is below discount window (90 days) by 2 days",
+      "digestedRounded": "Early-payment discount request\npolicy: The early-payment discount is approved automatically when the invoice total is at least the discount minimum and payment arrived no more than the discount window (in days) after the invoice date.\namount_check: invoice total equals discount minimum (1250 USD)\ndate_check: days from invoice to payment (88 days) is below discount window (90 days) by 2 days"
+    },
+    {
+      "id": "discount-near-6",
+      "template": "discount",
+      "margin": "near",
+      "facts": {
+        "invoice_total": "$476.80",
+        "discount_minimum": "$480.00",
+        "invoice_date": "2026-10-10",
+        "payment_date": "2026-10-26",
+        "discount_window_days": 14
+      },
+      "amountOk": false,
+      "daysOk": false,
+      "truth": false,
+      "why": "fails: total under the minimum and outside the day window (amount 476.8 vs 480, 16 days vs 14)",
+      "raw": "Early-payment discount request\npolicy: The early-payment discount is approved automatically when the invoice total is at least the discount minimum and payment arrived no more than the discount window (in days) after the invoice date.\ninvoice_total: $476.80\ndiscount_minimum: $480.00\ninvoice_date: 2026-10-10\npayment_date: 2026-10-26\ndiscount_window_days: 14",
+      "digested": "Early-payment discount request\npolicy: The early-payment discount is approved automatically when the invoice total is at least the discount minimum and payment arrived no more than the discount window (in days) after the invoice date.\namount_check: invoice total (476.8 USD) is below discount minimum (480 USD) by 3.1999999999999886 USD\ndate_check: days from invoice to payment (16 days) exceeds discount window (14 days) by 2 days",
+      "digestedRounded": "Early-payment discount request\npolicy: The early-payment discount is approved automatically when the invoice total is at least the discount minimum and payment arrived no more than the discount window (in days) after the invoice date.\namount_check: invoice total (476.8 USD) is below discount minimum (480 USD) by 3.20 USD\ndate_check: days from invoice to payment (16 days) exceeds discount window (14 days) by 2 days"
+    },
+    {
+      "id": "discount-near-7",
+      "template": "discount",
+      "margin": "near",
+      "facts": {
+        "invoice_total": "$482.16",
+        "discount_minimum": "$480.00",
+        "invoice_date": "2026-08-12",
+        "payment_date": "2026-11-10",
+        "discount_window_days": 90
+      },
+      "amountOk": true,
+      "daysOk": true,
+      "truth": true,
+      "why": "both conditions hold (amount >= 480, 90 days <= 90)",
+      "raw": "Early-payment discount request\npolicy: The early-payment discount is approved automatically when the invoice total is at least the discount minimum and payment arrived no more than the discount window (in days) after the invoice date.\ninvoice_total: $482.16\ndiscount_minimum: $480.00\ninvoice_date: 2026-08-12\npayment_date: 2026-11-10\ndiscount_window_days: 90",
+      "digested": "Early-payment discount request\npolicy: The early-payment discount is approved automatically when the invoice total is at least the discount minimum and payment arrived no more than the discount window (in days) after the invoice date.\namount_check: invoice total (482.16 USD) exceeds discount minimum (480 USD) by 2.160000000000025 USD\ndate_check: days from invoice to payment equals discount window (90 days)",
+      "digestedRounded": "Early-payment discount request\npolicy: The early-payment discount is approved automatically when the invoice total is at least the discount minimum and payment arrived no more than the discount window (in days) after the invoice date.\namount_check: invoice total (482.16 USD) exceeds discount minimum (480 USD) by 2.16 USD\ndate_check: days from invoice to payment equals discount window (90 days)"
+    },
+    {
+      "id": "discount-near-8",
+      "template": "discount",
+      "margin": "near",
+      "facts": {
+        "invoice_total": "$1,018.59",
+        "discount_minimum": "$1,000.00",
+        "invoice_date": "2026-07-24",
+        "payment_date": "2026-10-24",
+        "discount_window_days": 90
+      },
+      "amountOk": true,
+      "daysOk": false,
+      "truth": false,
+      "why": "fails: outside the day window (amount 1018.59 vs 1000, 92 days vs 90)",
+      "raw": "Early-payment discount request\npolicy: The early-payment discount is approved automatically when the invoice total is at least the discount minimum and payment arrived no more than the discount window (in days) after the invoice date.\ninvoice_total: $1,018.59\ndiscount_minimum: $1,000.00\ninvoice_date: 2026-07-24\npayment_date: 2026-10-24\ndiscount_window_days: 90",
+      "digested": "Early-payment discount request\npolicy: The early-payment discount is approved automatically when the invoice total is at least the discount minimum and payment arrived no more than the discount window (in days) after the invoice date.\namount_check: invoice total (1018.59 USD) exceeds discount minimum (1000 USD) by 18.590000000000032 USD\ndate_check: days from invoice to payment (92 days) exceeds discount window (90 days) by 2 days",
+      "digestedRounded": "Early-payment discount request\npolicy: The early-payment discount is approved automatically when the invoice total is at least the discount minimum and payment arrived no more than the discount window (in days) after the invoice date.\namount_check: invoice total (1018.59 USD) exceeds discount minimum (1000 USD) by 18.59 USD\ndate_check: days from invoice to payment (92 days) exceeds discount window (90 days) by 2 days"
+    },
+    {
+      "id": "discount-far-1",
+      "template": "discount",
+      "margin": "far",
+      "facts": {
+        "invoice_total": "$3,081.89",
+        "discount_minimum": "$2,500.00",
+        "invoice_date": "2026-10-17",
+        "payment_date": "2026-10-30",
+        "discount_window_days": 30
+      },
+      "amountOk": true,
+      "daysOk": true,
+      "truth": true,
+      "why": "both conditions hold (amount >= 2500, 13 days <= 30)",
+      "raw": "Early-payment discount request\npolicy: The early-payment discount is approved automatically when the invoice total is at least the discount minimum and payment arrived no more than the discount window (in days) after the invoice date.\ninvoice_total: $3,081.89\ndiscount_minimum: $2,500.00\ninvoice_date: 2026-10-17\npayment_date: 2026-10-30\ndiscount_window_days: 30",
+      "digested": "Early-payment discount request\npolicy: The early-payment discount is approved automatically when the invoice total is at least the discount minimum and payment arrived no more than the discount window (in days) after the invoice date.\namount_check: invoice total (3081.89 USD) exceeds discount minimum (2500 USD) by 581.8899999999999 USD\ndate_check: days from invoice to payment (13 days) is below discount window (30 days) by 17 days",
+      "digestedRounded": "Early-payment discount request\npolicy: The early-payment discount is approved automatically when the invoice total is at least the discount minimum and payment arrived no more than the discount window (in days) after the invoice date.\namount_check: invoice total (3081.89 USD) exceeds discount minimum (2500 USD) by 581.89 USD\ndate_check: days from invoice to payment (13 days) is below discount window (30 days) by 17 days"
+    },
+    {
+      "id": "discount-far-2",
+      "template": "discount",
+      "margin": "far",
+      "facts": {
+        "invoice_total": "$1,701.00",
+        "discount_minimum": "$1,250.00",
+        "invoice_date": "2026-07-12",
+        "payment_date": "2026-11-11",
+        "discount_window_days": 90
+      },
+      "amountOk": true,
+      "daysOk": false,
+      "truth": false,
+      "why": "fails: outside the day window (amount 1701 vs 1250, 122 days vs 90)",
+      "raw": "Early-payment discount request\npolicy: The early-payment discount is approved automatically when the invoice total is at least the discount minimum and payment arrived no more than the discount window (in days) after the invoice date.\ninvoice_total: $1,701.00\ndiscount_minimum: $1,250.00\ninvoice_date: 2026-07-12\npayment_date: 2026-11-11\ndiscount_window_days: 90",
+      "digested": "Early-payment discount request\npolicy: The early-payment discount is approved automatically when the invoice total is at least the discount minimum and payment arrived no more than the discount window (in days) after the invoice date.\namount_check: invoice total (1701 USD) exceeds discount minimum (1250 USD) by 451 USD\ndate_check: days from invoice to payment (122 days) exceeds discount window (90 days) by 32 days",
+      "digestedRounded": "Early-payment discount request\npolicy: The early-payment discount is approved automatically when the invoice total is at least the discount minimum and payment arrived no more than the discount window (in days) after the invoice date.\namount_check: invoice total (1701 USD) exceeds discount minimum (1250 USD) by 451 USD\ndate_check: days from invoice to payment (122 days) exceeds discount window (90 days) by 32 days"
+    },
+    {
+      "id": "discount-far-3",
+      "template": "discount",
+      "margin": "far",
+      "facts": {
+        "invoice_total": "$1,931.22",
+        "discount_minimum": "$1,250.00",
+        "invoice_date": "2026-09-06",
+        "payment_date": "2026-10-27",
+        "discount_window_days": 90
+      },
+      "amountOk": true,
+      "daysOk": true,
+      "truth": true,
+      "why": "both conditions hold (amount >= 1250, 51 days <= 90)",
+      "raw": "Early-payment discount request\npolicy: The early-payment discount is approved automatically when the invoice total is at least the discount minimum and payment arrived no more than the discount window (in days) after the invoice date.\ninvoice_total: $1,931.22\ndiscount_minimum: $1,250.00\ninvoice_date: 2026-09-06\npayment_date: 2026-10-27\ndiscount_window_days: 90",
+      "digested": "Early-payment discount request\npolicy: The early-payment discount is approved automatically when the invoice total is at least the discount minimum and payment arrived no more than the discount window (in days) after the invoice date.\namount_check: invoice total (1931.22 USD) exceeds discount minimum (1250 USD) by 681.22 USD\ndate_check: days from invoice to payment (51 days) is below discount window (90 days) by 39 days",
+      "digestedRounded": "Early-payment discount request\npolicy: The early-payment discount is approved automatically when the invoice total is at least the discount minimum and payment arrived no more than the discount window (in days) after the invoice date.\namount_check: invoice total (1931.22 USD) exceeds discount minimum (1250 USD) by 681.22 USD\ndate_check: days from invoice to payment (51 days) is below discount window (90 days) by 39 days"
+    },
+    {
+      "id": "discount-far-4",
+      "template": "discount",
+      "margin": "far",
+      "facts": {
+        "invoice_total": "$707.94",
+        "discount_minimum": "$1,000.00",
+        "invoice_date": "2026-10-22",
+        "payment_date": "2026-10-23",
+        "discount_window_days": 14
+      },
+      "amountOk": false,
+      "daysOk": true,
+      "truth": false,
+      "why": "fails: total under the minimum (amount 707.94 vs 1000, 1 days vs 14)",
+      "raw": "Early-payment discount request\npolicy: The early-payment discount is approved automatically when the invoice total is at least the discount minimum and payment arrived no more than the discount window (in days) after the invoice date.\ninvoice_total: $707.94\ndiscount_minimum: $1,000.00\ninvoice_date: 2026-10-22\npayment_date: 2026-10-23\ndiscount_window_days: 14",
+      "digested": "Early-payment discount request\npolicy: The early-payment discount is approved automatically when the invoice total is at least the discount minimum and payment arrived no more than the discount window (in days) after the invoice date.\namount_check: invoice total (707.94 USD) is below discount minimum (1000 USD) by 292.05999999999995 USD\ndate_check: days from invoice to payment (1 days) is below discount window (14 days) by 13 days",
+      "digestedRounded": "Early-payment discount request\npolicy: The early-payment discount is approved automatically when the invoice total is at least the discount minimum and payment arrived no more than the discount window (in days) after the invoice date.\namount_check: invoice total (707.94 USD) is below discount minimum (1000 USD) by 292.06 USD\ndate_check: days from invoice to payment (1 days) is below discount window (14 days) by 13 days"
+    },
+    {
+      "id": "discount-far-5",
+      "template": "discount",
+      "margin": "far",
+      "facts": {
+        "invoice_total": "$1,568.16",
+        "discount_minimum": "$1,000.00",
+        "invoice_date": "2026-08-18",
+        "payment_date": "2026-10-24",
+        "discount_window_days": 90
+      },
+      "amountOk": true,
+      "daysOk": true,
+      "truth": true,
+      "why": "both conditions hold (amount >= 1000, 67 days <= 90)",
+      "raw": "Early-payment discount request\npolicy: The early-payment discount is approved automatically when the invoice total is at least the discount minimum and payment arrived no more than the discount window (in days) after the invoice date.\ninvoice_total: $1,568.16\ndiscount_minimum: $1,000.00\ninvoice_date: 2026-08-18\npayment_date: 2026-10-24\ndiscount_window_days: 90",
+      "digested": "Early-payment discount request\npolicy: The early-payment discount is approved automatically when the invoice total is at least the discount minimum and payment arrived no more than the discount window (in days) after the invoice date.\namount_check: invoice total (1568.16 USD) exceeds discount minimum (1000 USD) by 568.1600000000001 USD\ndate_check: days from invoice to payment (67 days) is below discount window (90 days) by 23 days",
+      "digestedRounded": "Early-payment discount request\npolicy: The early-payment discount is approved automatically when the invoice total is at least the discount minimum and payment arrived no more than the discount window (in days) after the invoice date.\namount_check: invoice total (1568.16 USD) exceeds discount minimum (1000 USD) by 568.16 USD\ndate_check: days from invoice to payment (67 days) is below discount window (90 days) by 23 days"
+    },
+    {
+      "id": "discount-far-6",
+      "template": "discount",
+      "margin": "far",
+      "facts": {
+        "invoice_total": "$1,118.91",
+        "discount_minimum": "$2,500.00",
+        "invoice_date": "2026-08-03",
+        "payment_date": "2026-11-08",
+        "discount_window_days": 60
+      },
+      "amountOk": false,
+      "daysOk": false,
+      "truth": false,
+      "why": "fails: total under the minimum and outside the day window (amount 1118.91 vs 2500, 97 days vs 60)",
+      "raw": "Early-payment discount request\npolicy: The early-payment discount is approved automatically when the invoice total is at least the discount minimum and payment arrived no more than the discount window (in days) after the invoice date.\ninvoice_total: $1,118.91\ndiscount_minimum: $2,500.00\ninvoice_date: 2026-08-03\npayment_date: 2026-11-08\ndiscount_window_days: 60",
+      "digested": "Early-payment discount request\npolicy: The early-payment discount is approved automatically when the invoice total is at least the discount minimum and payment arrived no more than the discount window (in days) after the invoice date.\namount_check: invoice total (1118.91 USD) is below discount minimum (2500 USD) by 1381.09 USD\ndate_check: days from invoice to payment (97 days) exceeds discount window (60 days) by 37 days",
+      "digestedRounded": "Early-payment discount request\npolicy: The early-payment discount is approved automatically when the invoice total is at least the discount minimum and payment arrived no more than the discount window (in days) after the invoice date.\namount_check: invoice total (1118.91 USD) is below discount minimum (2500 USD) by 1381.09 USD\ndate_check: days from invoice to payment (97 days) exceeds discount window (60 days) by 37 days"
+    },
+    {
+      "id": "discount-far-7",
+      "template": "discount",
+      "margin": "far",
+      "facts": {
+        "invoice_total": "$325.21",
+        "discount_minimum": "$250.00",
+        "invoice_date": "2026-10-20",
+        "payment_date": "2026-11-12",
+        "discount_window_days": 60
+      },
+      "amountOk": true,
+      "daysOk": true,
+      "truth": true,
+      "why": "both conditions hold (amount >= 250, 23 days <= 60)",
+      "raw": "Early-payment discount request\npolicy: The early-payment discount is approved automatically when the invoice total is at least the discount minimum and payment arrived no more than the discount window (in days) after the invoice date.\ninvoice_total: $325.21\ndiscount_minimum: $250.00\ninvoice_date: 2026-10-20\npayment_date: 2026-11-12\ndiscount_window_days: 60",
+      "digested": "Early-payment discount request\npolicy: The early-payment discount is approved automatically when the invoice total is at least the discount minimum and payment arrived no more than the discount window (in days) after the invoice date.\namount_check: invoice total (325.21 USD) exceeds discount minimum (250 USD) by 75.20999999999998 USD\ndate_check: days from invoice to payment (23 days) is below discount window (60 days) by 37 days",
+      "digestedRounded": "Early-payment discount request\npolicy: The early-payment discount is approved automatically when the invoice total is at least the discount minimum and payment arrived no more than the discount window (in days) after the invoice date.\namount_check: invoice total (325.21 USD) exceeds discount minimum (250 USD) by 75.21 USD\ndate_check: days from invoice to payment (23 days) is below discount window (60 days) by 37 days"
+    },
+    {
+      "id": "discount-far-8",
+      "template": "discount",
+      "margin": "far",
+      "facts": {
+        "invoice_total": "$1,530.49",
+        "discount_minimum": "$1,000.00",
+        "invoice_date": "2026-07-22",
+        "payment_date": "2026-11-04",
+        "discount_window_days": 90
+      },
+      "amountOk": true,
+      "daysOk": false,
+      "truth": false,
+      "why": "fails: outside the day window (amount 1530.49 vs 1000, 105 days vs 90)",
+      "raw": "Early-payment discount request\npolicy: The early-payment discount is approved automatically when the invoice total is at least the discount minimum and payment arrived no more than the discount window (in days) after the invoice date.\ninvoice_total: $1,530.49\ndiscount_minimum: $1,000.00\ninvoice_date: 2026-07-22\npayment_date: 2026-11-04\ndiscount_window_days: 90",
+      "digested": "Early-payment discount request\npolicy: The early-payment discount is approved automatically when the invoice total is at least the discount minimum and payment arrived no more than the discount window (in days) after the invoice date.\namount_check: invoice total (1530.49 USD) exceeds discount minimum (1000 USD) by 530.49 USD\ndate_check: days from invoice to payment (105 days) exceeds discount window (90 days) by 15 days",
+      "digestedRounded": "Early-payment discount request\npolicy: The early-payment discount is approved automatically when the invoice total is at least the discount minimum and payment arrived no more than the discount window (in days) after the invoice date.\namount_check: invoice total (1530.49 USD) exceeds discount minimum (1000 USD) by 530.49 USD\ndate_check: days from invoice to payment (105 days) exceeds discount window (90 days) by 15 days"
+    }
+  ]
+}

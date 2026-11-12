@@ -60,7 +60,7 @@ Easy items settle in one call; hard items buy more. Compare against a fixed-size
 
 ## 5. Chains: n dependent steps at p = 0.8 each, with and without verified commits
 
-Unverified, success is 0.8^n. The ratchet verifies each step with an independent judge, resamples on a reject, and commits only verified work. That does not remove the dependence on n; it changes the base. With catch rate t and false-alarm rate f, a committed step is good with probability q = p(1-f) / (p(1-f) + (1-p)(1-t)): a 90% verifier lifts the base from 0.80 to 0.97, a 99% verifier to 0.9975. The retry cap and the act bar trim that a little. 'Claimed' counts chains the verifier passed; 'true' counts chains whose final state is actually good.
+Unverified, success is 0.8^n. The ratchet verifies each step with an independent judge, resamples on a reject, and commits only verified work. That does not remove the dependence on n; it changes the base. With catch rate t and false-alarm rate f, a committed step is good with probability q = p(1-f) / (p(1-f) + (1-p)(1-t)): a 90% verifier lifts the base from 0.80 to 0.97, a 99% verifier to 0.9975. q is the precision of commits, so it says how often a chain that finishes is right, not how often it finishes; the retry cap and the act bar trim it a little. 'Claimed' counts chains the verifier passed; 'true' counts chains whose final state is actually good.
 
 Verifier accuracy 90%, up to 3 attempts per step. Analytic per-step base with unbounded retries: q = 0.9730.
 
@@ -94,6 +94,17 @@ Verifier accuracy 99%, up to 6 attempts per step. Analytic per-step base with un
 | 10    | 10.7%            | 97.5%        | 97.3%           | 96.8%        | 1.28                        |
 | 20    | 1.2%             | 95.1%        | 93.8%           | 93.5%        | 1.29                        |
 | 50    | 0.0%             | 88.2%        | 90.0%           | 89.5%        | 1.27                        |
+
+Correlated false alarms. Whether a chain finishes is a different number from q: one attempt is accepted with probability a = p(1-f) + (1-p)(1-t), so a step commits within m attempts with probability 1 - (1-a)^m and a chain finishes with probability (1 - (1-a)^m)^n, but only if attempts are independent. A verifier that dislikes a step instance tends to dislike every fresh correct answer to it: live (T2), a held-back correct attempt was held back again 56% of the time against a 15% base rate, and chains finished 48% to 62% of the time where the formula said 74% to 99.8%. Below, each step is an independent task right with p = 0.8 (a wrong commit does not spoil later steps), the verifier catches 95% of wrong attempts, each step gets 3 attempts, and the mean false-alarm rate is f = 15% either way: independent per attempt, or concentrated on 26.8% of step instances whose every correct attempt is held back with probability 56% (so a held-back correct attempt is held back again 56% of the time). Commit precision, q, barely moves; completion falls well below the formula. The correlated "predicted" column mixes the two kinds of instance, which only a ledger that records retries can measure.
+
+| steps | (1-(1-a)^m)^n | independent f: finished | independent f: q | correlated f: predicted | correlated f: finished | correlated f: q |
+| ----- | ------------- | ----------------------- | ---------------- | ----------------------- | ---------------------- | --------------- |
+| 1     | 97.0%         | 97.3%                   | 98.9%            | 92.5%                   | 92.3%                  | 98.7%           |
+| 3     | 91.3%         | 92.5%                   | 98.3%            | 79.3%                   | 79.2%                  | 98.8%           |
+| 5     | 86.0%         | 86.6%                   | 98.4%            | 67.9%                   | 69.0%                  | 98.4%           |
+| 8     | 78.5%         | 79.3%                   | 98.5%            | 53.8%                   | 54.8%                  | 98.5%           |
+| 10    | 73.9%         | 74.6%                   | 98.4%            | 46.1%                   | 46.3%                  | 98.3%           |
+| 20    | 54.6%         | 54.9%                   | 98.5%            | 21.2%                   | 22.4%                  | 98.6%           |
 
 
 ## 6. Same 80% oracle, same cascade bar (0.9), different calibration

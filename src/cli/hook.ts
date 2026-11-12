@@ -13,7 +13,14 @@
 import { appendFile, mkdir, stat } from "node:fs/promises";
 import { join } from "node:path";
 import { Engine } from "../engine.ts";
-import { EVENTS_FOR, type Harness, isHarness, parseHookInput } from "../hook/event.ts";
+import {
+  EVENTS_FOR,
+  type Harness,
+  type HookContext,
+  hookContext,
+  isHarness,
+  parseHookInput,
+} from "../hook/event.ts";
 import { hookGateId, hookGateSpec } from "../hook/gate.ts";
 import { ingestPrompts } from "../hook/ingest.ts";
 import { installText } from "../hook/install.ts";
@@ -60,6 +67,11 @@ export interface HookIo {
   /** replay --live: the oracle to ask. Default: Jev from the environment. */
   readonly oracle?: Oracle;
   readonly now?: () => string;
+  /**
+   * event: where the hook runs (project directory, home, the harness's own directories).
+   * Default: `hookContext(harness)`, read from the process's environment.
+   */
+  readonly context?: HookContext;
 }
 
 export async function hook(argv: readonly string[], io: HookIo = {}): Promise<CommandResult> {
@@ -122,7 +134,7 @@ async function event(harness: Harness, paths: HookPaths, io: HookIo): Promise<Co
   try {
     const raw = await (io.stdin ?? readProcessStdin)();
     if (raw.trim() === "") return SILENT;
-    const parsed = parseHookInput(raw, harness, io.now);
+    const parsed = parseHookInput(raw, harness, io.now, io.context ?? hookContext(harness));
     if ("reason" in parsed) {
       await mkdir(paths.dir, { recursive: true });
       await appendFile(
@@ -213,6 +225,14 @@ async function replay(
   const r = resolvePrompts(journal.events);
   const settled = r.outcomes.filter((o) => o.label === "allowed" || o.label === "denied");
   const ledgerPath = opts.ledger ?? paths.ledger;
+  // Paths are placed afresh against this machine's harness directories, so a prompt journalled
+  // under an older rule is judged by the current one.
+  const { home, harnessHomes, harnessScratch } = opts.io.context ?? hookContext(harness);
+  const placement = {
+    ...(home === undefined ? {} : { home }),
+    ...(harnessHomes === undefined ? {} : { harnessHomes }),
+    ...(harnessScratch === undefined ? {} : { harnessScratch }),
+  };
   const head = [
     `${journal.events.length} events; ${r.outcomes.length} prompts, ${settled.length} settled by a person, ` +
       `${r.outcomes.filter((o) => o.label === "open").length} open.`,
@@ -226,7 +246,10 @@ async function replay(
             "",
             "Dry run. This is the exact text the gate would send for the earliest settled prompt:",
             "",
-            promptState(first.prompt).text,
+            promptState(first.prompt, {
+              ...(first.root === undefined ? {} : { root: first.root }),
+              placement,
+            }).text,
           ];
     return {
       exitCode: 0,
@@ -251,7 +274,7 @@ async function replay(
       reserveUsd: 0.001,
     });
     const gate = engine.gate(hookGateSpec(harness));
-    const result = await ingestPrompts(engine, gate, harness, r.outcomes);
+    const result = await ingestPrompts(engine, gate, harness, r.outcomes, placement);
     const lines = [
       ...head,
       `Asked ${result.asked}; ${result.already} already in the ledger; ${result.open} still open; ` +

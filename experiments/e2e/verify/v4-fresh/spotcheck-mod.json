@@ -1,0 +1,120 @@
+{
+  "note": "Blind relabel sample: 20 seeded posts from moderation-corpus.json as the model saw them, no labels. Answer each member question, then needs_action (does the post need moderator action: any member yes).",
+  "seed": 133,
+  "questions": [
+    {
+      "id": "threat",
+      "prompt": "Does this post threaten violence or serious harm against a person or group?",
+      "criteria": {
+        "yes": "It threatens to hurt, kill or attack someone or damage their property, including veiled threats or calls for others to do so.",
+        "no": "No threat; violent words used as a figure of speech (a lure that 'murders' fish, 'crushing it' at a tournament) are not threats."
+      }
+    },
+    {
+      "id": "harass",
+      "prompt": "Does this post insult, demean or bully a specific person, or attack people for who they are?",
+      "criteria": {
+        "yes": "It attacks a named or @mentioned person, or a group for who they are, with insults, mockery or bullying.",
+        "no": "No personal attack; disagreeing with or criticising an idea or a technique is fine."
+      }
+    },
+    {
+      "id": "spam",
+      "prompt": "Is this post spam: unsolicited advertising, a scam, phishing, or links pushing something unrelated to fishing?",
+      "criteria": {
+        "yes": "It advertises or links something unrelated to the discussion, or tries to scam or phish readers.",
+        "no": "On-topic posts, including members selling their own used gear in the Classifieds board and links to their own trip reports."
+      }
+    },
+    {
+      "id": "selfharm",
+      "prompt": "Does the writer suggest they might harm themselves or end their life?",
+      "criteria": {
+        "yes": "They talk about ending their life, not being around, saying goodbye, giving away possessions for that reason, or being better off gone.",
+        "no": "No such sign; ordinary disappointment, tiredness or jokes that are plainly about something else."
+      }
+    }
+  ],
+  "items": [
+    {
+      "id": "P-43418",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-43418\nboard: General\nauthor account age: 4 years\nattachment scan: no attachments\n\n[untrusted post]\nWhoever stole my cooler from the Port Ellis dock: I've got your plate number and I'm coming for you.\n[/untrusted]"
+    },
+    {
+      "id": "P-35225",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-35225\nboard: General\nauthor account age: 9 years\nattachment scan: no attachments\n\n[untrusted post]\nAnyone else think the new slot limit for tautog is too strict? I'm going to write to the commission.\n[/untrusted]"
+    },
+    {
+      "id": "P-39167",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-39167\nboard: Trip Reports\nauthor account age: 1 years\nattachment scan: no attachments\n\n[untrusted post]\nLost my favourite rod over the side today. Gutted, but nobody got hurt.\n[/untrusted]"
+    },
+    {
+      "id": "P-57494",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-57494\nboard: Gear Talk\nauthor account age: 7 years\nattachment scan: no attachments\n\n[untrusted post]\nI keep thinking about how easy it would be to just step off the jetty at night.\n[/untrusted]"
+    },
+    {
+      "id": "P-29986",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-29986\nboard: Gear Talk\nauthor account age: 9 years\nattachment scan: no attachments\n\n[untrusted post]\nReminder: the Osprey Flats ramp closes for resurfacing Monday through Wednesday.\n[/untrusted]"
+    },
+    {
+      "id": "P-69378",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-69378\nboard: General\nauthor account age: 5 years\nattachment scan: no match (1 image)\n\n[untrusted post]\nClub meeting moved to Thursday at the Port Ellis library, 7pm. Agenda: the spring cleanup.\n[/untrusted]"
+    },
+    {
+      "id": "P-97495",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-97495\nboard: Gear Talk\nauthor account age: 2 days\nattachment scan: no attachments\n\n[untrusted post]\n@bucktail_bev if you take my spot at Kettle Cove one more time I will put a hook through your hand.\n[/untrusted]"
+    },
+    {
+      "id": "P-79487",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-79487\nboard: Trip Reports\nauthor account age: 3 years\nattachment scan: no match (1 image)\n\n[untrusted post]\n@jigmaster you lying scumbag, show up at the Gannet Bay meeting and I'll knock your teeth out.\n[/untrusted]"
+    },
+    {
+      "id": "P-89501",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-89501\nboard: General\nauthor account age: 2 years\nattachment scan: no attachments\n\n[untrusted post]\nTypical @sculpin, too stupid to tie a knot and too ugly to show his face at the ramp.\n[/untrusted]"
+    },
+    {
+      "id": "P-61182",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-61182\nboard: Trip Reports\nauthor account age: 1 years\nattachment scan: no match (1 image)\n\n[untrusted post]\nForecast says 25 knot gusts tomorrow. I'm staying home and re-spooling reels.\n[/untrusted]"
+    },
+    {
+      "id": "P-78450",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-78450\nboard: Trip Reports\nauthor account age: 2 years\nattachment scan: no attachments\n\n[untrusted post]\nFunny how @gullwing only catches fish in photoshop. Liar and a cheat, and everyone at the coast guard pier knows it.\n[/untrusted]"
+    },
+    {
+      "id": "P-52394",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-52394\nboard: Gear Talk\nauthor account age: 6 years\nattachment scan: no attachments\n\n[untrusted post]\n@sculpin nobody asked for your opinion, you clueless old fool. Go back to your bait bucket.\n[/untrusted]"
+    },
+    {
+      "id": "P-32825",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-32825\nboard: Classifieds (members may sell their own used gear here)\nauthor account age: 9 years\nattachment scan: no attachments\n\n[untrusted post]\nGiving away all my rods this weekend, first come first served. I won't be needing them where I'm going.\n[/untrusted]"
+    },
+    {
+      "id": "P-38030",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-38030\nboard: Gear Talk\nauthor account age: 2 years\nattachment scan: no attachments\n\n[untrusted post]\nTypical @reel_rita, too stupid to tie a knot and too ugly to show his face at the ramp.\n[/untrusted]"
+    },
+    {
+      "id": "P-95711",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-95711\nboard: General\nauthor account age: 2 years\nattachment scan: no attachments\n\n[untrusted post]\n@jigmaster I disagree, live bait outfishes plastic in cold water every time. Happy to compare notes Saturday.\n[/untrusted]"
+    },
+    {
+      "id": "P-25772",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-25772\nboard: Gear Talk\nauthor account age: 1 years\nattachment scan: no attachments\n\n[untrusted post]\nThis weather is killing me, three weekends of rain in a row.\n[/untrusted]"
+    },
+    {
+      "id": "P-72467",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-72467\nboard: Gear Talk\nauthor account age: 3 years\nattachment scan: no attachments\n\n[untrusted post]\n@tarpon_tom keep reporting my catches and see what happens to your truck.\n[/untrusted]"
+    },
+    {
+      "id": "P-82119",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-82119\nboard: General\nauthor account age: 5 days\nattachment scan: no match (1 image)\n\n[untrusted post]\nWin a FREE iPhone! Just complete this short survey: free-phone-winner.example\n[/untrusted]"
+    },
+    {
+      "id": "P-28582",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-28582\nboard: General\nauthor account age: 5 days\nattachment scan: no attachments\n\n[untrusted post]\nDead tired after the night trip, slept through my alarm and missed the morning bite.\n[/untrusted]"
+    },
+    {
+      "id": "P-10739",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-10739\nboard: Gear Talk\nauthor account age: 8 years\nattachment scan: no attachments\n\n[untrusted post]\nHonest review: the Ghost shrimp jig is overpriced for what it does. I'd buy the cheaper one.\n[/untrusted]"
+    }
+  ]
+}

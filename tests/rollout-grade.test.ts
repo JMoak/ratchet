@@ -115,7 +115,9 @@ describe("Rollout promotes on a measured grade and nothing else", () => {
       grade: { kind: "measured", errors: 0, sampleSize: 29, at: completed },
     });
     expect(promoted.reason).toMatch(/^promoted: 0 wrong of 29 planned acts/);
+    // An enforce checkpoint carries the planned sample that promoted it (e2e T4-10).
     expect(Object.keys(rollout.checkpoint() ?? {}).sort()).toEqual([
+      "accepted",
       "afterId",
       "format",
       "mode",

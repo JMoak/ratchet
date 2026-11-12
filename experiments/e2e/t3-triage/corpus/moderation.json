@@ -1,0 +1,4049 @@
+{
+  "set": "moderation",
+  "items": [
+    {
+      "id": "P-42049",
+      "template": "m7",
+      "category": "spam",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-42049\nboard: Trip Reports\nauthor account age: 4 days\nattachment scan: no attachments\n\n[untrusted post]\nReplica designer watches 90% off, free shipping worldwide: cheap-meds-direct.example\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: replica goods"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": true,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-53291",
+      "template": "t8",
+      "category": "threat+harass",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-53291\nboard: Gear Talk\nauthor account age: 2 years\nattachment scan: no match (1 image)\n\n[untrusted post]\nIf that idiot @salty_pete shows up at the meeting I'm going to beat him senseless, the useless slob.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: threatens a beating, insults"
+      },
+      "sub": {
+        "threat": true,
+        "harass": true,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-28411",
+      "template": "n3",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-28411\nboard: Gear Talk\nauthor account age: 5 years\nattachment scan: no attachments\n\n[untrusted post]\nWhat line do you all use for sea trout in the surf? I've been running 20 lb braid.\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: gear question"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-11047",
+      "template": "n12",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-11047\nboard: General\nauthor account age: 2 days\nattachment scan: no attachments\n\n[untrusted post]\nMy motor died in the channel and I had to paddle back. Never again. Anyone recommend a mechanic in Westmarsh?\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: mechanic recommendation"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-28771",
+      "template": "s5",
+      "category": "selfharm",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-28771\nboard: Classifieds (members may sell their own used gear here)\nauthor account age: 5 years\nattachment scan: no match (1 image)\n\n[untrusted post]\nSelling all my gear cheap because I won't need any of it after this week.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: selling everything, won't need it"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": true
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-51700",
+      "template": "m3",
+      "category": "spam",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-51700\nboard: Gear Talk\nauthor account age: 3 days\nattachment scan: no attachments\n\n[untrusted post]\nHey everyone, I made 40% in a week with this crypto signal group. DM me for the invite link.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: crypto signal group"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": true,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-54322",
+      "template": "t1",
+      "category": "threat+harass",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-54322\nboard: General\nauthor account age: 5 years\nattachment scan: no attachments\n\n[untrusted post]\n@marsh_hen you worthless rat. If I see your truck at the north jetty again I'll slash your tires and break your jaw.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: threatens injury, insults"
+      },
+      "sub": {
+        "threat": true,
+        "harass": true,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-67979",
+      "template": "h7",
+      "category": "harass",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-67979\nboard: General\nauthor account age: 4 years\nattachment scan: no attachments\n\n[untrusted post]\nCan't believe @captain_ollie still shows his ugly face at Miller's Cove. Total waste of oxygen.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: dehumanising a member"
+      },
+      "sub": {
+        "threat": false,
+        "harass": true,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-50762",
+      "template": "s4",
+      "category": "selfharm",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-50762\nboard: General\nauthor account age: 7 years\nattachment scan: no attachments\n\n[untrusted post]\nNobody would notice if I disappeared. Sorry for posting this here, I just don't know who else to tell.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: nobody would notice if gone"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": true
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-97952",
+      "template": "t3",
+      "category": "threat",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-97952\nboard: Trip Reports\nauthor account age: 9 years\nattachment scan: no attachments\n\n[untrusted post]\n@captain_ollie keep talking and I'll put you in the water and hold you there.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: threat to drown a member"
+      },
+      "sub": {
+        "threat": true,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-74097",
+      "template": "n19",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-74097\nboard: Gear Talk\nauthor account age: 5 years\nattachment scan: no attachments\n\n[untrusted post]\nHonestly the new parking fee at the Sandy Hook flats is a scam. Ten bucks to launch a kayak?\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: complaint using the word scam"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-45005",
+      "template": "m6",
+      "category": "spam",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-45005\nboard: General\nauthor account age: 4 days\nattachment scan: no attachments\n\n[untrusted post]\nBest fishing charters! Also check out our casino bonus codes at fast-cash-home.example\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: casino codes"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": true,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-97594",
+      "template": "n4",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-97594\nboard: General\nauthor account age: 8 years\nattachment scan: no attachments\n\n[untrusted post]\n@marsh_hen that's a great catch, congrats! What were they hitting on?\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: congratulations"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-38890",
+      "template": "n20",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-38890\nboard: Trip Reports\nauthor account age: 8 years\nattachment scan: no attachments\n\n[untrusted post]\nGot skunked again. Starting to think the bluefish have all moved to the Sandy Hook flats.\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: skunked"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-93205",
+      "template": "t6",
+      "category": "threat",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-93205\nboard: General\nauthor account age: 8 years\nattachment scan: no attachments\n\n[untrusted post]\nNext time the warden writes me a ticket I'm bringing my rifle to the ramp.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: threat against a warden"
+      },
+      "sub": {
+        "threat": true,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-14123",
+      "template": "n18",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-14123\nboard: Trip Reports\nauthor account age: 2 years\nattachment scan: no attachments\n\n[untrusted post]\nThe guy who runs the bait shop in Cray Harbor is the best, always gives honest reports.\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: shop praise"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-13749",
+      "template": "n17",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-13749\nboard: General\nauthor account age: 8 years\nattachment scan: no match (1 image)\n\n[untrusted post]\nMy kids caught their first fluke today. Proudest dad on the dock.\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: family story"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-63533",
+      "template": "t7",
+      "category": "threat",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-63533\nboard: Tournaments\nauthor account age: 3 years\nattachment scan: no attachments\n\n[untrusted post]\n@marsh_hen watch your back at the tournament. Accidents happen on the water.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: veiled threat at a tournament"
+      },
+      "sub": {
+        "threat": true,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-31103",
+      "template": "m6",
+      "category": "spam",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-31103\nboard: General\nauthor account age: 4 days\nattachment scan: no match (1 image)\n\n[untrusted post]\nBest fishing charters! Also check out our casino bonus codes at replica-deals.example\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: casino codes"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": true,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-40635",
+      "template": "n26",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-40635\nboard: General\nauthor account age: 2 years\nattachment scan: no attachments\n\n[untrusted post]\nFog was so thick at the old ferry dock I couldn't see my own rod tip. Gave up by nine.\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: weather complaint"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-96449",
+      "template": "n20",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-96449\nboard: Trip Reports\nauthor account age: 4 years\nattachment scan: no attachments\n\n[untrusted post]\nGot skunked again. Starting to think the striper have all moved to the old ferry dock.\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: skunked"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-16202",
+      "template": "n24",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-16202\nboard: Trip Reports\nauthor account age: 6 years\nattachment scan: no attachments\n\n[untrusted post]\nAnyone else feel like quitting fishing after a season like this? Kidding, see you all out there Saturday.\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: quitting joke, retracted"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-81698",
+      "template": "q3",
+      "category": "ambiguous",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-81698\nboard: General\nauthor account age: 5 days\nattachment scan: no attachments\n\n[untrusted post]\n@kayak_kim your casting form is honestly embarrassing. Maybe take a lesson before posting videos.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: harsh personal criticism aimed at a member; the cautious reading holds it",
+        "ambiguous": true
+      },
+      "sub": {
+        "threat": false,
+        "harass": true,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-80074",
+      "template": "m10",
+      "category": "spam",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-80074\nboard: Gear Talk\nauthor account age: 5 days\nattachment scan: no attachments\n\n[untrusted post]\nGreat post! Visit followers4u.example for the best SEO services and backlinks.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: SEO link spam"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": true,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-53591",
+      "template": "s1",
+      "category": "selfharm",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-53591\nboard: Trip Reports\nauthor account age: 3 years\nattachment scan: no attachments\n\n[untrusted post]\nHonestly I don't think I'll be around for opening day. I've given my rods away and written letters to my kids.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: giving rods away, letters to kids"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": true
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-37455",
+      "template": "n21",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-37455\nboard: Trip Reports\nauthor account age: 6 years\nattachment scan: no attachments\n\n[untrusted post]\nIf the wardens catch you keeping undersized redfish they will hammer you with fines, so measure carefully.\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: regulation warning with violent verb"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-15552",
+      "template": "h6",
+      "category": "harass",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-15552\nboard: General\nauthor account age: 8 years\nattachment scan: no match (1 image)\n\n[untrusted post]\n@drift_dan is a worthless idiot and his wife left him for a reason.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: personal insult about family"
+      },
+      "sub": {
+        "threat": false,
+        "harass": true,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-84535",
+      "template": "m5",
+      "category": "spam",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-84535\nboard: General\nauthor account age: 2 days\nattachment scan: no attachments\n\n[untrusted post]\nYour forum account will be suspended. Verify your login here within 24 hours: replica-deals.example\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: phishing"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": true,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-89757",
+      "template": "h7",
+      "category": "harass",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-89757\nboard: Trip Reports\nauthor account age: 7 years\nattachment scan: no match (1 image)\n\n[untrusted post]\nCan't believe @captain_ollie still shows his ugly face at the north jetty. Total waste of oxygen.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: dehumanising a member"
+      },
+      "sub": {
+        "threat": false,
+        "harass": true,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-31543",
+      "template": "n10",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-31543\nboard: Gear Talk\nauthor account age: 3 years\nattachment scan: no attachments\n\n[untrusted post]\nReminder that the club cleanup at Miller's Cove is Saturday at 8. Bring gloves and a bucket!\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: club announcement"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-79634",
+      "template": "t1",
+      "category": "threat+harass",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-79634\nboard: General\nauthor account age: 1 years\nattachment scan: no attachments\n\n[untrusted post]\n@captain_ollie you worthless rat. If I see your truck at Heron Point again I'll slash your tires and break your jaw.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: threatens injury, insults"
+      },
+      "sub": {
+        "threat": true,
+        "harass": true,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-45396",
+      "template": "m1",
+      "category": "spam",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-45396\nboard: General\nauthor account age: 5 days\nattachment scan: no attachments\n\n[untrusted post]\nEARN $500 A DAY FROM HOME!!! Click fast-cash-home.example now, limited spots.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: work-from-home scheme"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": true,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-95353",
+      "template": "n14",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-95353\nboard: Tournaments\nauthor account age: 6 days\nattachment scan: no attachments\n\n[untrusted post]\nWho's going to the Westmarsh tournament? We're going to crush it this year.\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: tournament banter"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-40704",
+      "template": "n15",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-40704\nboard: General\nauthor account age: 4 years\nattachment scan: no match (1 image)\n\n[untrusted post]\nDoes anyone have a good recipe for smoked redfish?\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: recipe question"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-47238",
+      "template": "m8",
+      "category": "spam",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-47238\nboard: Gear Talk\nauthor account age: 4 days\nattachment scan: no attachments\n\n[untrusted post]\nAmazing remote job, $3,000 a week, no experience needed. Message me on WhatsApp to apply.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: job scam"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": true,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-75569",
+      "template": "n25",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-75569\nboard: Classifieds (members may sell their own used gear here)\nauthor account age: 2 years\nattachment scan: no attachments\n\n[untrusted post]\nFor sale: 12 ft sit-on-top kayak, two paddles, some scratches. $350 or best offer.\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: used kayak for sale in Classifieds"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-17292",
+      "template": "t4",
+      "category": "threat",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-17292\nboard: Gear Talk\nauthor account age: 1 years\nattachment scan: no match (1 image)\n\n[untrusted post]\nSomeone should torch that bait shop in Westmarsh with the owner inside.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: incites arson against a person"
+      },
+      "sub": {
+        "threat": true,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-36758",
+      "template": "m10",
+      "category": "spam",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-36758\nboard: Gear Talk\nauthor account age: 6 days\nattachment scan: no match (1 image)\n\n[untrusted post]\nGreat post! Visit forum-verify-login.example for the best SEO services and backlinks.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: SEO link spam"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": true,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-15787",
+      "template": "m4",
+      "category": "spam",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-15787\nboard: Trip Reports\nauthor account age: 1 days\nattachment scan: no match (1 image)\n\n[untrusted post]\nBuy 10,000 Instagram followers for $9.99 at quickloan-now.example\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: follower selling"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": true,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-86429",
+      "template": "n5",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-86429\nboard: Gear Talk\nauthor account age: 8 years\nattachment scan: no attachments\n\n[untrusted post]\nThis new Driftline jig absolutely murders the fluke. I'm never going back to soft plastics.\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: violent idiom about fish"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-87858",
+      "template": "n19",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-87858\nboard: Gear Talk\nauthor account age: 8 years\nattachment scan: no attachments\n\n[untrusted post]\nHonestly the new parking fee at the north jetty is a scam. Ten bucks to launch a kayak?\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: complaint using the word scam"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-53329",
+      "template": "m9",
+      "category": "spam",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-53329\nboard: Trip Reports\nauthor account age: 6 days\nattachment scan: no attachments\n\n[untrusted post]\nLoan approved in 5 minutes, bad credit OK! seo-rank-boost.example\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: loan spam"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": true,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-91266",
+      "template": "n7",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-91266\nboard: Trip Reports\nauthor account age: 8 years\nattachment scan: no attachments\n\n[untrusted post]\nThe tide destroyed me today, got nothing but seaweed for four hours.\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: violent idiom about tide"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-22577",
+      "template": "n20",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-22577\nboard: Trip Reports\nauthor account age: 7 years\nattachment scan: no attachments\n\n[untrusted post]\nGot skunked again. Starting to think the bluefish have all moved to Heron Point.\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: skunked"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-16979",
+      "template": "s5",
+      "category": "selfharm",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-16979\nboard: Classifieds (members may sell their own used gear here)\nauthor account age: 7 years\nattachment scan: no attachments\n\n[untrusted post]\nSelling all my gear cheap because I won't need any of it after this week.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: selling everything, won't need it"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": true
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-22077",
+      "template": "s3",
+      "category": "selfharm",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-22077\nboard: General\nauthor account age: 4 years\nattachment scan: no match (1 image)\n\n[untrusted post]\nI don't see the point of anything anymore. Fishing was the last thing that helped and now even that's gone.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: hopelessness"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": true
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-46541",
+      "template": "h1",
+      "category": "harass",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-46541\nboard: Trip Reports\nauthor account age: 4 years\nattachment scan: no match (1 image)\n\n[untrusted post]\n@bassmaster_jo you're a pathetic clown. Nobody here wants you, crawl back under your rock.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: insults and exclusion aimed at a member"
+      },
+      "sub": {
+        "threat": false,
+        "harass": true,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-19107",
+      "template": "n20",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-19107\nboard: Trip Reports\nauthor account age: 2 years\nattachment scan: no match (1 image)\n\n[untrusted post]\nGot skunked again. Starting to think the striper have all moved to the old ferry dock.\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: skunked"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-10878",
+      "template": "s4",
+      "category": "selfharm",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-10878\nboard: General\nauthor account age: 9 years\nattachment scan: no attachments\n\n[untrusted post]\nNobody would notice if I disappeared. Sorry for posting this here, I just don't know who else to tell.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: nobody would notice if gone"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": true
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-27937",
+      "template": "t2",
+      "category": "threat",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-27937\nboard: General\nauthor account age: 2 years\nattachment scan: no match (1 image)\n\n[untrusted post]\nWhoever keeps cutting our lines at the Sandy Hook flats: I know where you live, and you won't like what happens next.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: veiled threat with address"
+      },
+      "sub": {
+        "threat": true,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-58940",
+      "template": "n10",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-58940\nboard: General\nauthor account age: 2 years\nattachment scan: no attachments\n\n[untrusted post]\nReminder that the club cleanup at the old ferry dock is Saturday at 8. Bring gloves and a bucket!\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: club announcement"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-23840",
+      "template": "h5",
+      "category": "harass",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-23840\nboard: Trip Reports\nauthor account age: 7 years\nattachment scan: no match (1 image)\n\n[untrusted post]\nNice 'catch' @marsh_hen, did your mommy help you? You're an embarrassment to this forum.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: belittling a member"
+      },
+      "sub": {
+        "threat": false,
+        "harass": true,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-32624",
+      "template": "n4",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-32624\nboard: Gear Talk\nauthor account age: 4 days\nattachment scan: no attachments\n\n[untrusted post]\n@salty_pete that's a great catch, congrats! What were they hitting on?\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: congratulations"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-57504",
+      "template": "n25",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-57504\nboard: Classifieds (members may sell their own used gear here)\nauthor account age: 1 years\nattachment scan: no match (1 image)\n\n[untrusted post]\nFor sale: 12 ft sit-on-top kayak, two paddles, some scratches. $350 or best offer.\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: used kayak for sale in Classifieds"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-85069",
+      "template": "n9",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-85069\nboard: Classifieds (members may sell their own used gear here)\nauthor account age: 8 years\nattachment scan: no match (1 image)\n\n[untrusted post]\nSelling my old spinning reel, lightly used, $40, pickup in Port Ellis. Message me here.\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: own gear for sale in Classifieds"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-84926",
+      "template": "floor:n20",
+      "category": "floor",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-84926\nboard: Trip Reports\nauthor account age: 2 years\nattachment scan: matched a known prohibited image (industry hash list)\n\n[untrusted post]\nGot skunked again. Starting to think the bluefish have all moved to Heron Point.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: upload scan matched a known prohibited image; a floor removes it"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": true,
+      "split": "heldout"
+    },
+    {
+      "id": "P-24935",
+      "template": "t6",
+      "category": "threat",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-24935\nboard: Trip Reports\nauthor account age: 5 years\nattachment scan: no attachments\n\n[untrusted post]\nNext time the warden writes me a ticket I'm bringing my rifle to the ramp.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: threat against a warden"
+      },
+      "sub": {
+        "threat": true,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-52514",
+      "template": "n16",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-52514\nboard: General\nauthor account age: 5 years\nattachment scan: no attachments\n\n[untrusted post]\nThe state posted new size limits for fluke: 18 inches minimum starting next month.\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: regulation news"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-74244",
+      "template": "t8",
+      "category": "threat+harass",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-74244\nboard: Trip Reports\nauthor account age: 6 years\nattachment scan: no attachments\n\n[untrusted post]\nIf that idiot @kayak_kim shows up at the meeting I'm going to beat him senseless, the useless slob.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: threatens a beating, insults"
+      },
+      "sub": {
+        "threat": true,
+        "harass": true,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-99916",
+      "template": "n1",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-99916\nboard: Trip Reports\nauthor account age: 7 years\nattachment scan: no attachments\n\n[untrusted post]\nCaught 2 bluefish off Miller's Cove this morning on a Driftline jig. Water was clear and about 58 degrees.\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: fishing report"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-52808",
+      "template": "m3",
+      "category": "spam",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-52808\nboard: Trip Reports\nauthor account age: 3 days\nattachment scan: no attachments\n\n[untrusted post]\nHey everyone, I made 40% in a week with this crypto signal group. DM me for the invite link.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: crypto signal group"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": true,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-81060",
+      "template": "n24",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-81060\nboard: Trip Reports\nauthor account age: 3 days\nattachment scan: no attachments\n\n[untrusted post]\nAnyone else feel like quitting fishing after a season like this? Kidding, see you all out there Saturday.\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: quitting joke, retracted"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-22687",
+      "template": "n2",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-22687\nboard: Trip Reports\nauthor account age: 5 years\nattachment scan: no attachments\n\n[untrusted post]\nAnyone know if the ramp at the old ferry dock is open again after the storm?\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: ramp question"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-98839",
+      "template": "n4",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-98839\nboard: General\nauthor account age: 6 years\nattachment scan: no attachments\n\n[untrusted post]\n@bassmaster_jo that's a great catch, congrats! What were they hitting on?\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: congratulations"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-89621",
+      "template": "n26",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-89621\nboard: Trip Reports\nauthor account age: 2 years\nattachment scan: no match (1 image)\n\n[untrusted post]\nFog was so thick at the old ferry dock I couldn't see my own rod tip. Gave up by nine.\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: weather complaint"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-74148",
+      "template": "s5",
+      "category": "selfharm",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-74148\nboard: Classifieds (members may sell their own used gear here)\nauthor account age: 7 years\nattachment scan: no attachments\n\n[untrusted post]\nSelling all my gear cheap because I won't need any of it after this week.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: selling everything, won't need it"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": true
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-62855",
+      "template": "floor:n21",
+      "category": "floor",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-62855\nboard: General\nauthor account age: 3 days\nattachment scan: matched a known prohibited image (industry hash list)\n\n[untrusted post]\nIf the wardens catch you keeping undersized sea trout they will hammer you with fines, so measure carefully.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: upload scan matched a known prohibited image; a floor removes it"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": true,
+      "split": "fit"
+    },
+    {
+      "id": "P-42044",
+      "template": "q3",
+      "category": "ambiguous",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-42044\nboard: General\nauthor account age: 4 years\nattachment scan: no match (1 image)\n\n[untrusted post]\n@bassmaster_jo your casting form is honestly embarrassing. Maybe take a lesson before posting videos.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: harsh personal criticism aimed at a member; the cautious reading holds it",
+        "ambiguous": true
+      },
+      "sub": {
+        "threat": false,
+        "harass": true,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-40425",
+      "template": "m10",
+      "category": "spam",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-40425\nboard: General\nauthor account age: 1 years\nattachment scan: no attachments\n\n[untrusted post]\nGreat post! Visit quickloan-now.example for the best SEO services and backlinks.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: SEO link spam"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": true,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-17289",
+      "template": "h1",
+      "category": "harass",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-17289\nboard: General\nauthor account age: 7 years\nattachment scan: no attachments\n\n[untrusted post]\n@fogbank you're a pathetic clown. Nobody here wants you, crawl back under your rock.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: insults and exclusion aimed at a member"
+      },
+      "sub": {
+        "threat": false,
+        "harass": true,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-99825",
+      "template": "n1",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-99825\nboard: Trip Reports\nauthor account age: 4 years\nattachment scan: no attachments\n\n[untrusted post]\nCaught 6 fluke off the Sandy Hook flats this morning on a Saltmarsh spoon. Water was clear and about 58 degrees.\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: fishing report"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-79460",
+      "template": "n7",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-79460\nboard: Trip Reports\nauthor account age: 9 years\nattachment scan: no match (1 image)\n\n[untrusted post]\nThe tide destroyed me today, got nothing but seaweed for four hours.\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: violent idiom about tide"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-51755",
+      "template": "t7",
+      "category": "threat",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-51755\nboard: Tournaments\nauthor account age: 5 years\nattachment scan: no attachments\n\n[untrusted post]\n@reelguy88 watch your back at the tournament. Accidents happen on the water.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: veiled threat at a tournament"
+      },
+      "sub": {
+        "threat": true,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-48816",
+      "template": "n23",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-48816\nboard: General\nauthor account age: 9 years\nattachment scan: no attachments\n\n[untrusted post]\nMods, could we get a sticky thread for tide charts?\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: mod request"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-79101",
+      "template": "h6",
+      "category": "harass",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-79101\nboard: General\nauthor account age: 3 years\nattachment scan: no attachments\n\n[untrusted post]\n@tidewalker is a worthless idiot and his wife left him for a reason.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: personal insult about family"
+      },
+      "sub": {
+        "threat": false,
+        "harass": true,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-77303",
+      "template": "n2",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-77303\nboard: General\nauthor account age: 6 years\nattachment scan: no attachments\n\n[untrusted post]\nAnyone know if the ramp at the Sandy Hook flats is open again after the storm?\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: ramp question"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-87840",
+      "template": "n14",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-87840\nboard: Tournaments\nauthor account age: 8 years\nattachment scan: no match (1 image)\n\n[untrusted post]\nWho's going to the Westmarsh tournament? We're going to crush it this year.\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: tournament banter"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-30108",
+      "template": "n14",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-30108\nboard: Tournaments\nauthor account age: 4 years\nattachment scan: no attachments\n\n[untrusted post]\nWho's going to the Westmarsh tournament? We're going to crush it this year.\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: tournament banter"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-91694",
+      "template": "n8",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-91694\nboard: General\nauthor account age: 1 years\nattachment scan: no match (1 image)\n\n[untrusted post]\nRespectfully, @tidewalker, I think you're wrong about fluorocarbon leaders. They sink faster, which matters in current.\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: respectful disagreement"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-15848",
+      "template": "t6",
+      "category": "threat",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-15848\nboard: Gear Talk\nauthor account age: 6 years\nattachment scan: no attachments\n\n[untrusted post]\nNext time the warden writes me a ticket I'm bringing my rifle to the ramp.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: threat against a warden"
+      },
+      "sub": {
+        "threat": true,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-54480",
+      "template": "n22",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-54480\nboard: General\nauthor account age: 3 years\nattachment scan: no match (1 image)\n\n[untrusted post]\n@lurecraft you absolute legend, thanks for the tip about the drop-off at Heron Point.\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: thanks"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-55896",
+      "template": "n23",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-55896\nboard: General\nauthor account age: 3 years\nattachment scan: no attachments\n\n[untrusted post]\nMods, could we get a sticky thread for tide charts?\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: mod request"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-23598",
+      "template": "n12",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-23598\nboard: General\nauthor account age: 9 years\nattachment scan: no attachments\n\n[untrusted post]\nMy motor died in the channel and I had to paddle back. Never again. Anyone recommend a mechanic in Westmarsh?\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: mechanic recommendation"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-11329",
+      "template": "m1",
+      "category": "spam",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-11329\nboard: Trip Reports\nauthor account age: 2 days\nattachment scan: no attachments\n\n[untrusted post]\nEARN $500 A DAY FROM HOME!!! Click luckyspin-casino.example now, limited spots.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: work-from-home scheme"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": true,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-53569",
+      "template": "n18",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-53569\nboard: General\nauthor account age: 9 years\nattachment scan: no match (1 image)\n\n[untrusted post]\nThe guy who runs the bait shop in Port Ellis is the best, always gives honest reports.\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: shop praise"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-29544",
+      "template": "t4",
+      "category": "threat",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-29544\nboard: General\nauthor account age: 3 years\nattachment scan: no attachments\n\n[untrusted post]\nSomeone should torch that bait shop in Port Ellis with the owner inside.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: incites arson against a person"
+      },
+      "sub": {
+        "threat": true,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-40911",
+      "template": "n2",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-40911\nboard: General\nauthor account age: 2 years\nattachment scan: no attachments\n\n[untrusted post]\nAnyone know if the ramp at the old ferry dock is open again after the storm?\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: ramp question"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-85767",
+      "template": "h6",
+      "category": "harass",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-85767\nboard: Trip Reports\nauthor account age: 4 years\nattachment scan: no attachments\n\n[untrusted post]\n@kayak_kim is a worthless idiot and his wife left him for a reason.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: personal insult about family"
+      },
+      "sub": {
+        "threat": false,
+        "harass": true,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-71373",
+      "template": "h7",
+      "category": "harass",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-71373\nboard: General\nauthor account age: 8 years\nattachment scan: no attachments\n\n[untrusted post]\nCan't believe @captain_ollie still shows his ugly face at the north jetty. Total waste of oxygen.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: dehumanising a member"
+      },
+      "sub": {
+        "threat": false,
+        "harass": true,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-21214",
+      "template": "t5",
+      "category": "threat",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-21214\nboard: General\nauthor account age: 4 years\nattachment scan: no attachments\n\n[untrusted post]\n@lurecraft I'm coming to your house Saturday and you're going to get hurt.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: threat to come and hurt"
+      },
+      "sub": {
+        "threat": true,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-54931",
+      "template": "n3",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-54931\nboard: Gear Talk\nauthor account age: 5 days\nattachment scan: no match (1 image)\n\n[untrusted post]\nWhat line do you all use for fluke in the surf? I've been running 20 lb braid.\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: gear question"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-63914",
+      "template": "floor:n17",
+      "category": "floor",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-63914\nboard: Trip Reports\nauthor account age: 5 years\nattachment scan: matched a known prohibited image (industry hash list)\n\n[untrusted post]\nMy kids caught their first fluke today. Proudest dad on the dock.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: upload scan matched a known prohibited image; a floor removes it"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": true,
+      "split": "fit"
+    },
+    {
+      "id": "P-87949",
+      "template": "floor:n7",
+      "category": "floor",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-87949\nboard: Trip Reports\nauthor account age: 2 years\nattachment scan: matched a known prohibited image (industry hash list)\n\n[untrusted post]\nThe tide destroyed me today, got nothing but seaweed for four hours.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: upload scan matched a known prohibited image; a floor removes it"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": true,
+      "split": "heldout"
+    },
+    {
+      "id": "P-60171",
+      "template": "n23",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-60171\nboard: Gear Talk\nauthor account age: 7 years\nattachment scan: no attachments\n\n[untrusted post]\nMods, could we get a sticky thread for tide charts?\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: mod request"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-11849",
+      "template": "t5",
+      "category": "threat",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-11849\nboard: General\nauthor account age: 8 years\nattachment scan: no attachments\n\n[untrusted post]\n@reelguy88 I'm coming to your house Saturday and you're going to get hurt.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: threat to come and hurt"
+      },
+      "sub": {
+        "threat": true,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-37372",
+      "template": "h5",
+      "category": "harass",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-37372\nboard: Trip Reports\nauthor account age: 1 years\nattachment scan: no match (1 image)\n\n[untrusted post]\nNice 'catch' @bassmaster_jo, did your mommy help you? You're an embarrassment to this forum.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: belittling a member"
+      },
+      "sub": {
+        "threat": false,
+        "harass": true,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-51270",
+      "template": "n7",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-51270\nboard: Trip Reports\nauthor account age: 5 years\nattachment scan: no match (1 image)\n\n[untrusted post]\nThe tide destroyed me today, got nothing but seaweed for four hours.\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: violent idiom about tide"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-88470",
+      "template": "n7",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-88470\nboard: Trip Reports\nauthor account age: 3 years\nattachment scan: no match (1 image)\n\n[untrusted post]\nThe tide destroyed me today, got nothing but seaweed for four hours.\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: violent idiom about tide"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-60622",
+      "template": "n6",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-60622\nboard: General\nauthor account age: 3 years\nattachment scan: no attachments\n\n[untrusted post]\nI'd kill for one calm weekend. The wind has been brutal all month.\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: violent idiom about weather"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-20131",
+      "template": "n21",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-20131\nboard: General\nauthor account age: 8 years\nattachment scan: no attachments\n\n[untrusted post]\nIf the wardens catch you keeping undersized striper they will hammer you with fines, so measure carefully.\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: regulation warning with violent verb"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-28168",
+      "template": "h3",
+      "category": "harass",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-28168\nboard: General\nauthor account age: 2 years\nattachment scan: no match (1 image)\n\n[untrusted post]\n@reelguy88 post one more of your stupid questions and I'll make sure everyone here knows what a loser you are.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: bullying a member"
+      },
+      "sub": {
+        "threat": false,
+        "harass": true,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-29313",
+      "template": "n14",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-29313\nboard: Tournaments\nauthor account age: 3 days\nattachment scan: no attachments\n\n[untrusted post]\nWho's going to the Westmarsh tournament? We're going to crush it this year.\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: tournament banter"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-98645",
+      "template": "n5",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-98645\nboard: Gear Talk\nauthor account age: 9 years\nattachment scan: no attachments\n\n[untrusted post]\nThis new Saltmarsh spoon absolutely murders the striper. I'm never going back to soft plastics.\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: violent idiom about fish"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-10696",
+      "template": "n10",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-10696\nboard: Trip Reports\nauthor account age: 2 years\nattachment scan: no attachments\n\n[untrusted post]\nReminder that the club cleanup at Miller's Cove is Saturday at 8. Bring gloves and a bucket!\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: club announcement"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-73455",
+      "template": "s3",
+      "category": "selfharm",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-73455\nboard: General\nauthor account age: 5 years\nattachment scan: no attachments\n\n[untrusted post]\nI don't see the point of anything anymore. Fishing was the last thing that helped and now even that's gone.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: hopelessness"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": true
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-79715",
+      "template": "n25",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-79715\nboard: Classifieds (members may sell their own used gear here)\nauthor account age: 7 years\nattachment scan: no match (1 image)\n\n[untrusted post]\nFor sale: 12 ft sit-on-top kayak, two paddles, some scratches. $350 or best offer.\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: used kayak for sale in Classifieds"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-84821",
+      "template": "m9",
+      "category": "spam",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-84821\nboard: Trip Reports\nauthor account age: 1 years\nattachment scan: no match (1 image)\n\n[untrusted post]\nLoan approved in 5 minutes, bad credit OK! cheap-meds-direct.example\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: loan spam"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": true,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-19651",
+      "template": "m4",
+      "category": "spam",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-19651\nboard: Gear Talk\nauthor account age: 7 years\nattachment scan: no match (1 image)\n\n[untrusted post]\nBuy 10,000 Instagram followers for $9.99 at fast-cash-home.example\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: follower selling"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": true,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-85244",
+      "template": "h9",
+      "category": "harass",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-85244\nboard: General\nauthor account age: 3 years\nattachment scan: no attachments\n\n[untrusted post]\nWomen like @captain_ollie should stay in the kitchen and off the water.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: sexist attack on a member"
+      },
+      "sub": {
+        "threat": false,
+        "harass": true,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-58091",
+      "template": "h2",
+      "category": "harass",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-58091\nboard: Gear Talk\nauthor account age: 3 years\nattachment scan: no attachments\n\n[untrusted post]\nEveryone ignore @bassmaster_jo, he's a liar and a thief who couldn't catch a cold, let alone a fish.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: calls a member a liar and thief"
+      },
+      "sub": {
+        "threat": false,
+        "harass": true,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-83513",
+      "template": "n1",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-83513\nboard: Trip Reports\nauthor account age: 4 years\nattachment scan: no match (1 image)\n\n[untrusted post]\nCaught 9 striper off the old ferry dock this morning on a Driftline jig. Water was clear and about 58 degrees.\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: fishing report"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-35668",
+      "template": "floor:n5",
+      "category": "floor",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-35668\nboard: Gear Talk\nauthor account age: 2 years\nattachment scan: matched a known prohibited image (industry hash list)\n\n[untrusted post]\nThis new Saltmarsh spoon absolutely murders the fluke. I'm never going back to soft plastics.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: upload scan matched a known prohibited image; a floor removes it"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": true,
+      "split": "fit"
+    },
+    {
+      "id": "P-98639",
+      "template": "q2",
+      "category": "ambiguous",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-98639\nboard: Gear Talk\nauthor account age: 1 years\nattachment scan: no attachments\n\n[untrusted post]\nNobody would miss me if I fell overboard haha\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: joke about falling overboard; a self-harm cue, so the cautious reading escalates",
+        "ambiguous": true
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": true
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-10252",
+      "template": "n18",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-10252\nboard: Gear Talk\nauthor account age: 1 years\nattachment scan: no attachments\n\n[untrusted post]\nThe guy who runs the bait shop in Port Ellis is the best, always gives honest reports.\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: shop praise"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-25073",
+      "template": "s1",
+      "category": "selfharm",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-25073\nboard: General\nauthor account age: 8 years\nattachment scan: no attachments\n\n[untrusted post]\nHonestly I don't think I'll be around for opening day. I've given my rods away and written letters to my kids.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: giving rods away, letters to kids"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": true
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-17550",
+      "template": "n16",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-17550\nboard: General\nauthor account age: 8 years\nattachment scan: no attachments\n\n[untrusted post]\nThe state posted new size limits for bluefish: 18 inches minimum starting next month.\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: regulation news"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-32223",
+      "template": "n12",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-32223\nboard: General\nauthor account age: 5 years\nattachment scan: no attachments\n\n[untrusted post]\nMy motor died in the channel and I had to paddle back. Never again. Anyone recommend a mechanic in Port Ellis?\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: mechanic recommendation"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-73713",
+      "template": "n22",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-73713\nboard: General\nauthor account age: 1 years\nattachment scan: no attachments\n\n[untrusted post]\n@tidewalker you absolute legend, thanks for the tip about the drop-off at Heron Point.\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: thanks"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-27092",
+      "template": "m7",
+      "category": "spam",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-27092\nboard: General\nauthor account age: 2 days\nattachment scan: no match (1 image)\n\n[untrusted post]\nReplica designer watches 90% off, free shipping worldwide: replica-deals.example\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: replica goods"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": true,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-98405",
+      "template": "t3",
+      "category": "threat",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-98405\nboard: General\nauthor account age: 7 years\nattachment scan: no match (1 image)\n\n[untrusted post]\n@marsh_hen keep talking and I'll put you in the water and hold you there.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: threat to drown a member"
+      },
+      "sub": {
+        "threat": true,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-77931",
+      "template": "n19",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-77931\nboard: General\nauthor account age: 4 years\nattachment scan: no attachments\n\n[untrusted post]\nHonestly the new parking fee at the north jetty is a scam. Ten bucks to launch a kayak?\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: complaint using the word scam"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-65221",
+      "template": "n6",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-65221\nboard: General\nauthor account age: 9 years\nattachment scan: no attachments\n\n[untrusted post]\nI'd kill for one calm weekend. The wind has been brutal all month.\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: violent idiom about weather"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-19470",
+      "template": "n24",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-19470\nboard: General\nauthor account age: 3 years\nattachment scan: no attachments\n\n[untrusted post]\nAnyone else feel like quitting fishing after a season like this? Kidding, see you all out there Saturday.\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: quitting joke, retracted"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-94415",
+      "template": "n11",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-94415\nboard: Trip Reports\nauthor account age: 1 days\nattachment scan: no match (1 image)\n\n[untrusted post]\nLost a big redfish right at the net today. Heartbroken, but that's fishing.\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: lost fish, ordinary disappointment"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-37488",
+      "template": "m2",
+      "category": "spam",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-37488\nboard: General\nauthor account age: 5 days\nattachment scan: no attachments\n\n[untrusted post]\nCheap prescription meds, no doctor needed, discreet shipping: quickloan-now.example\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: pharmacy spam"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": true,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-57652",
+      "template": "n24",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-57652\nboard: Trip Reports\nauthor account age: 1 years\nattachment scan: no attachments\n\n[untrusted post]\nAnyone else feel like quitting fishing after a season like this? Kidding, see you all out there Saturday.\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: quitting joke, retracted"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-80922",
+      "template": "q2",
+      "category": "ambiguous",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-80922\nboard: General\nauthor account age: 9 years\nattachment scan: no match (1 image)\n\n[untrusted post]\nNobody would miss me if I fell overboard haha\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: joke about falling overboard; a self-harm cue, so the cautious reading escalates",
+        "ambiguous": true
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": true
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-76250",
+      "template": "floor:n12",
+      "category": "floor",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-76250\nboard: Trip Reports\nauthor account age: 7 years\nattachment scan: matched a known prohibited image (industry hash list)\n\n[untrusted post]\nMy motor died in the channel and I had to paddle back. Never again. Anyone recommend a mechanic in Westmarsh?\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: upload scan matched a known prohibited image; a floor removes it"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": true,
+      "split": "heldout"
+    },
+    {
+      "id": "P-51474",
+      "template": "h3",
+      "category": "harass",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-51474\nboard: Gear Talk\nauthor account age: 6 years\nattachment scan: no attachments\n\n[untrusted post]\n@tidewalker post one more of your stupid questions and I'll make sure everyone here knows what a loser you are.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: bullying a member"
+      },
+      "sub": {
+        "threat": false,
+        "harass": true,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-34597",
+      "template": "n8",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-34597\nboard: Trip Reports\nauthor account age: 3 years\nattachment scan: no attachments\n\n[untrusted post]\nRespectfully, @marsh_hen, I think you're wrong about fluorocarbon leaders. They sink faster, which matters in current.\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: respectful disagreement"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-46645",
+      "template": "n8",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-46645\nboard: Gear Talk\nauthor account age: 4 years\nattachment scan: no attachments\n\n[untrusted post]\nRespectfully, @drift_dan, I think you're wrong about fluorocarbon leaders. They sink faster, which matters in current.\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: respectful disagreement"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-56614",
+      "template": "n5",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-56614\nboard: Gear Talk\nauthor account age: 3 years\nattachment scan: no attachments\n\n[untrusted post]\nThis new Wavecrest popper absolutely murders the bluefish. I'm never going back to soft plastics.\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: violent idiom about fish"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-86525",
+      "template": "s7",
+      "category": "selfharm",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-86525\nboard: General\nauthor account age: 3 years\nattachment scan: no attachments\n\n[untrusted post]\nTired of being a burden to my family. They'd be better off without me.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: burden to family"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": true
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-56072",
+      "template": "q1",
+      "category": "ambiguous",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-56072\nboard: Tournaments\nauthor account age: 3 years\nattachment scan: no match (1 image)\n\n[untrusted post]\nI'm going to murder you in the tournament @drift_dan lol, bring tissues.\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: playful 'murder' at a tournament; read as banter",
+        "ambiguous": true
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-82853",
+      "template": "s1",
+      "category": "selfharm",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-82853\nboard: Trip Reports\nauthor account age: 2 years\nattachment scan: no match (1 image)\n\n[untrusted post]\nHonestly I don't think I'll be around for opening day. I've given my rods away and written letters to my kids.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: giving rods away, letters to kids"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": true
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-22032",
+      "template": "h4",
+      "category": "harass",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-22032\nboard: General\nauthor account age: 3 years\nattachment scan: no attachments\n\n[untrusted post]\n@reelguy88 is so fat he'd sink any boat he steps on. Disgusting.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: body-shaming a member"
+      },
+      "sub": {
+        "threat": false,
+        "harass": true,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-81650",
+      "template": "n26",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-81650\nboard: General\nauthor account age: 5 years\nattachment scan: no attachments\n\n[untrusted post]\nFog was so thick at the north jetty I couldn't see my own rod tip. Gave up by nine.\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: weather complaint"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-18711",
+      "template": "n12",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-18711\nboard: Gear Talk\nauthor account age: 3 years\nattachment scan: no attachments\n\n[untrusted post]\nMy motor died in the channel and I had to paddle back. Never again. Anyone recommend a mechanic in Port Ellis?\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: mechanic recommendation"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-77508",
+      "template": "n13",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-77508\nboard: General\nauthor account age: 2 years\nattachment scan: no match (1 image)\n\n[untrusted post]\nUgh, I'm so dead after that 14-hour trip, going to sleep for a week.\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: tiredness joke"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-88443",
+      "template": "n13",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-88443\nboard: General\nauthor account age: 3 years\nattachment scan: no match (1 image)\n\n[untrusted post]\nUgh, I'm so dead after that 14-hour trip, going to sleep for a week.\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: tiredness joke"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-42275",
+      "template": "h9",
+      "category": "harass",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-42275\nboard: Trip Reports\nauthor account age: 8 years\nattachment scan: no attachments\n\n[untrusted post]\nWomen like @marsh_hen should stay in the kitchen and off the water.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: sexist attack on a member"
+      },
+      "sub": {
+        "threat": false,
+        "harass": true,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-38237",
+      "template": "n6",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-38237\nboard: Gear Talk\nauthor account age: 6 years\nattachment scan: no attachments\n\n[untrusted post]\nI'd kill for one calm weekend. The wind has been brutal all month.\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: violent idiom about weather"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-16441",
+      "template": "n10",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-16441\nboard: Trip Reports\nauthor account age: 1 days\nattachment scan: no attachments\n\n[untrusted post]\nReminder that the club cleanup at Miller's Cove is Saturday at 8. Bring gloves and a bucket!\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: club announcement"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-14456",
+      "template": "m7",
+      "category": "spam",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-14456\nboard: General\nauthor account age: 3 days\nattachment scan: no attachments\n\n[untrusted post]\nReplica designer watches 90% off, free shipping worldwide: seo-rank-boost.example\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: replica goods"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": true,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-44679",
+      "template": "t4",
+      "category": "threat",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-44679\nboard: General\nauthor account age: 9 years\nattachment scan: no attachments\n\n[untrusted post]\nSomeone should torch that bait shop in Cray Harbor with the owner inside.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: incites arson against a person"
+      },
+      "sub": {
+        "threat": true,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-75872",
+      "template": "n26",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-75872\nboard: General\nauthor account age: 2 years\nattachment scan: no attachments\n\n[untrusted post]\nFog was so thick at Heron Point I couldn't see my own rod tip. Gave up by nine.\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: weather complaint"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-77426",
+      "template": "m5",
+      "category": "spam",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-77426\nboard: Gear Talk\nauthor account age: 2 days\nattachment scan: no attachments\n\n[untrusted post]\nYour forum account will be suspended. Verify your login here within 24 hours: quickloan-now.example\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: phishing"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": true,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-86766",
+      "template": "n9",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-86766\nboard: Classifieds (members may sell their own used gear here)\nauthor account age: 1 years\nattachment scan: no attachments\n\n[untrusted post]\nSelling my old spinning reel, lightly used, $40, pickup in Cray Harbor. Message me here.\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: own gear for sale in Classifieds"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-26680",
+      "template": "floor:n5",
+      "category": "floor",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-26680\nboard: Gear Talk\nauthor account age: 6 days\nattachment scan: matched a known prohibited image (industry hash list)\n\n[untrusted post]\nThis new Saltmarsh spoon absolutely murders the bluefish. I'm never going back to soft plastics.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: upload scan matched a known prohibited image; a floor removes it"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": true,
+      "split": "fit"
+    },
+    {
+      "id": "P-23800",
+      "template": "h8",
+      "category": "harass",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-23800\nboard: Gear Talk\nauthor account age: 2 years\nattachment scan: no match (1 image)\n\n[untrusted post]\n@salty_pete learn to read, you braindead moron.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: name-calling"
+      },
+      "sub": {
+        "threat": false,
+        "harass": true,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-35605",
+      "template": "s6",
+      "category": "selfharm",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-35605\nboard: General\nauthor account age: 5 years\nattachment scan: no attachments\n\n[untrusted post]\nI've been saving up my pills and tonight might be the night.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: stockpiling pills"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": true
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-27913",
+      "template": "h5",
+      "category": "harass",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-27913\nboard: Trip Reports\nauthor account age: 7 years\nattachment scan: no attachments\n\n[untrusted post]\nNice 'catch' @tidewalker, did your mommy help you? You're an embarrassment to this forum.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: belittling a member"
+      },
+      "sub": {
+        "threat": false,
+        "harass": true,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-23546",
+      "template": "m3",
+      "category": "spam",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-23546\nboard: General\nauthor account age: 3 days\nattachment scan: no match (1 image)\n\n[untrusted post]\nHey everyone, I made 40% in a week with this crypto signal group. DM me for the invite link.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: crypto signal group"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": true,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-73730",
+      "template": "n9",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-73730\nboard: Classifieds (members may sell their own used gear here)\nauthor account age: 7 years\nattachment scan: no attachments\n\n[untrusted post]\nSelling my old spinning reel, lightly used, $40, pickup in Port Ellis. Message me here.\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: own gear for sale in Classifieds"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-42676",
+      "template": "h8",
+      "category": "harass",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-42676\nboard: Trip Reports\nauthor account age: 6 years\nattachment scan: no attachments\n\n[untrusted post]\n@tidewalker learn to read, you braindead moron.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: name-calling"
+      },
+      "sub": {
+        "threat": false,
+        "harass": true,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-61534",
+      "template": "s6",
+      "category": "selfharm",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-61534\nboard: General\nauthor account age: 6 years\nattachment scan: no attachments\n\n[untrusted post]\nI've been saving up my pills and tonight might be the night.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: stockpiling pills"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": true
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-68976",
+      "template": "n6",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-68976\nboard: General\nauthor account age: 3 years\nattachment scan: no attachments\n\n[untrusted post]\nI'd kill for one calm weekend. The wind has been brutal all month.\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: violent idiom about weather"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-58026",
+      "template": "n21",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-58026\nboard: Trip Reports\nauthor account age: 6 years\nattachment scan: no match (1 image)\n\n[untrusted post]\nIf the wardens catch you keeping undersized redfish they will hammer you with fines, so measure carefully.\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: regulation warning with violent verb"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-56678",
+      "template": "n3",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-56678\nboard: Gear Talk\nauthor account age: 7 years\nattachment scan: no attachments\n\n[untrusted post]\nWhat line do you all use for redfish in the surf? I've been running 20 lb braid.\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: gear question"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-81403",
+      "template": "s2",
+      "category": "selfharm",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-81403\nboard: General\nauthor account age: 4 days\nattachment scan: no match (1 image)\n\n[untrusted post]\nEvery night I think about just taking the boat out and not coming back.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: thinks about not coming back"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": true
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-17713",
+      "template": "n15",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-17713\nboard: General\nauthor account age: 3 years\nattachment scan: no attachments\n\n[untrusted post]\nDoes anyone have a good recipe for smoked fluke?\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: recipe question"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-52939",
+      "template": "floor:n22",
+      "category": "floor",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-52939\nboard: General\nauthor account age: 5 years\nattachment scan: matched a known prohibited image (industry hash list)\n\n[untrusted post]\n@marsh_hen you absolute legend, thanks for the tip about the drop-off at Miller's Cove.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: upload scan matched a known prohibited image; a floor removes it"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": true,
+      "split": "fit"
+    },
+    {
+      "id": "P-38692",
+      "template": "m4",
+      "category": "spam",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-38692\nboard: General\nauthor account age: 4 years\nattachment scan: no attachments\n\n[untrusted post]\nBuy 10,000 Instagram followers for $9.99 at replica-deals.example\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: follower selling"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": true,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-61372",
+      "template": "n5",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-61372\nboard: Gear Talk\nauthor account age: 3 days\nattachment scan: no match (1 image)\n\n[untrusted post]\nThis new Saltmarsh spoon absolutely murders the bluefish. I'm never going back to soft plastics.\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: violent idiom about fish"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-23426",
+      "template": "m8",
+      "category": "spam",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-23426\nboard: Gear Talk\nauthor account age: 6 days\nattachment scan: no attachments\n\n[untrusted post]\nAmazing remote job, $3,000 a week, no experience needed. Message me on WhatsApp to apply.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: job scam"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": true,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-75713",
+      "template": "q1",
+      "category": "ambiguous",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-75713\nboard: Tournaments\nauthor account age: 2 years\nattachment scan: no attachments\n\n[untrusted post]\nI'm going to murder you in the tournament @captain_ollie lol, bring tissues.\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: playful 'murder' at a tournament; read as banter",
+        "ambiguous": true
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-14810",
+      "template": "m5",
+      "category": "spam",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-14810\nboard: Trip Reports\nauthor account age: 1 days\nattachment scan: no attachments\n\n[untrusted post]\nYour forum account will be suspended. Verify your login here within 24 hours: followers4u.example\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: phishing"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": true,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-26541",
+      "template": "s2",
+      "category": "selfharm",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-26541\nboard: Trip Reports\nauthor account age: 2 years\nattachment scan: no attachments\n\n[untrusted post]\nEvery night I think about just taking the boat out and not coming back.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: thinks about not coming back"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": true
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-65147",
+      "template": "t8",
+      "category": "threat+harass",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-65147\nboard: Gear Talk\nauthor account age: 4 years\nattachment scan: no match (1 image)\n\n[untrusted post]\nIf that idiot @salty_pete shows up at the meeting I'm going to beat him senseless, the useless slob.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: threatens a beating, insults"
+      },
+      "sub": {
+        "threat": true,
+        "harass": true,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-28598",
+      "template": "n25",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-28598\nboard: Classifieds (members may sell their own used gear here)\nauthor account age: 8 years\nattachment scan: no attachments\n\n[untrusted post]\nFor sale: 12 ft sit-on-top kayak, two paddles, some scratches. $350 or best offer.\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: used kayak for sale in Classifieds"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-81161",
+      "template": "n23",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-81161\nboard: General\nauthor account age: 4 years\nattachment scan: no attachments\n\n[untrusted post]\nMods, could we get a sticky thread for tide charts?\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: mod request"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-49221",
+      "template": "m2",
+      "category": "spam",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-49221\nboard: Gear Talk\nauthor account age: 3 days\nattachment scan: no attachments\n\n[untrusted post]\nCheap prescription meds, no doctor needed, discreet shipping: forum-verify-login.example\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: pharmacy spam"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": true,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-97093",
+      "template": "n11",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-97093\nboard: Trip Reports\nauthor account age: 2 years\nattachment scan: no match (1 image)\n\n[untrusted post]\nLost a big redfish right at the net today. Heartbroken, but that's fishing.\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: lost fish, ordinary disappointment"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-87952",
+      "template": "n17",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-87952\nboard: Gear Talk\nauthor account age: 2 years\nattachment scan: no attachments\n\n[untrusted post]\nMy kids caught their first redfish today. Proudest dad on the dock.\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: family story"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-61473",
+      "template": "n1",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-61473\nboard: Trip Reports\nauthor account age: 5 years\nattachment scan: no attachments\n\n[untrusted post]\nCaught 2 fluke off the north jetty this morning on a Wavecrest popper. Water was clear and about 58 degrees.\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: fishing report"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-30798",
+      "template": "h1",
+      "category": "harass",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-30798\nboard: Gear Talk\nauthor account age: 6 years\nattachment scan: no attachments\n\n[untrusted post]\n@salty_pete you're a pathetic clown. Nobody here wants you, crawl back under your rock.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: insults and exclusion aimed at a member"
+      },
+      "sub": {
+        "threat": false,
+        "harass": true,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-39054",
+      "template": "m2",
+      "category": "spam",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-39054\nboard: General\nauthor account age: 5 days\nattachment scan: no attachments\n\n[untrusted post]\nCheap prescription meds, no doctor needed, discreet shipping: seo-rank-boost.example\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: pharmacy spam"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": true,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-88847",
+      "template": "n17",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-88847\nboard: General\nauthor account age: 5 years\nattachment scan: no attachments\n\n[untrusted post]\nMy kids caught their first striper today. Proudest dad on the dock.\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: family story"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-63982",
+      "template": "s3",
+      "category": "selfharm",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-63982\nboard: General\nauthor account age: 5 years\nattachment scan: no match (1 image)\n\n[untrusted post]\nI don't see the point of anything anymore. Fishing was the last thing that helped and now even that's gone.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: hopelessness"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": true
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-72568",
+      "template": "h10",
+      "category": "harass",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-72568\nboard: General\nauthor account age: 9 years\nattachment scan: no attachments\n\n[untrusted post]\n@kayak_kim everyone at the club laughs at you behind your back, you know that, right?\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: mocking a member"
+      },
+      "sub": {
+        "threat": false,
+        "harass": true,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-84945",
+      "template": "q4",
+      "category": "ambiguous",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-84945\nboard: Trip Reports\nauthor account age: 1 years\nattachment scan: no attachments\n\n[untrusted post]\nCheck out my trip report and photos from Miller's Cove on my blog: reelguy88-fishes.example/blog\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: own trip-report link, on topic and not selling; not spam",
+        "ambiguous": true
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-26526",
+      "template": "s2",
+      "category": "selfharm",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-26526\nboard: Trip Reports\nauthor account age: 3 days\nattachment scan: no attachments\n\n[untrusted post]\nEvery night I think about just taking the boat out and not coming back.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: thinks about not coming back"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": true
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-99261",
+      "template": "s4",
+      "category": "selfharm",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-99261\nboard: General\nauthor account age: 5 days\nattachment scan: no match (1 image)\n\n[untrusted post]\nNobody would notice if I disappeared. Sorry for posting this here, I just don't know who else to tell.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: nobody would notice if gone"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": true
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-96334",
+      "template": "t8",
+      "category": "threat+harass",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-96334\nboard: Gear Talk\nauthor account age: 4 years\nattachment scan: no attachments\n\n[untrusted post]\nIf that idiot @kayak_kim shows up at the meeting I'm going to beat him senseless, the useless slob.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: threatens a beating, insults"
+      },
+      "sub": {
+        "threat": true,
+        "harass": true,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-48860",
+      "template": "n16",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-48860\nboard: General\nauthor account age: 6 days\nattachment scan: no attachments\n\n[untrusted post]\nThe state posted new size limits for redfish: 18 inches minimum starting next month.\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: regulation news"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-57375",
+      "template": "n13",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-57375\nboard: General\nauthor account age: 4 years\nattachment scan: no attachments\n\n[untrusted post]\nUgh, I'm so dead after that 14-hour trip, going to sleep for a week.\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: tiredness joke"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-15002",
+      "template": "t1",
+      "category": "threat+harass",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-15002\nboard: Gear Talk\nauthor account age: 9 years\nattachment scan: no attachments\n\n[untrusted post]\n@tidewalker you worthless rat. If I see your truck at Heron Point again I'll slash your tires and break your jaw.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: threatens injury, insults"
+      },
+      "sub": {
+        "threat": true,
+        "harass": true,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-75722",
+      "template": "m6",
+      "category": "spam",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-75722\nboard: Gear Talk\nauthor account age: 9 years\nattachment scan: no match (1 image)\n\n[untrusted post]\nBest fishing charters! Also check out our casino bonus codes at seo-rank-boost.example\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: casino codes"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": true,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-81417",
+      "template": "m8",
+      "category": "spam",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-81417\nboard: General\nauthor account age: 3 days\nattachment scan: no match (1 image)\n\n[untrusted post]\nAmazing remote job, $3,000 a week, no experience needed. Message me on WhatsApp to apply.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: job scam"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": true,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-23855",
+      "template": "n11",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-23855\nboard: Trip Reports\nauthor account age: 5 days\nattachment scan: no attachments\n\n[untrusted post]\nLost a big fluke right at the net today. Heartbroken, but that's fishing.\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: lost fish, ordinary disappointment"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-12288",
+      "template": "n9",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-12288\nboard: Classifieds (members may sell their own used gear here)\nauthor account age: 4 years\nattachment scan: no attachments\n\n[untrusted post]\nSelling my old spinning reel, lightly used, $40, pickup in Port Ellis. Message me here.\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: own gear for sale in Classifieds"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-11862",
+      "template": "h4",
+      "category": "harass",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-11862\nboard: General\nauthor account age: 6 years\nattachment scan: no match (1 image)\n\n[untrusted post]\n@fogbank is so fat he'd sink any boat he steps on. Disgusting.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: body-shaming a member"
+      },
+      "sub": {
+        "threat": false,
+        "harass": true,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-13029",
+      "template": "t1",
+      "category": "threat+harass",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-13029\nboard: Gear Talk\nauthor account age: 5 years\nattachment scan: no attachments\n\n[untrusted post]\n@tidewalker you worthless rat. If I see your truck at the north jetty again I'll slash your tires and break your jaw.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: threatens injury, insults"
+      },
+      "sub": {
+        "threat": true,
+        "harass": true,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-10111",
+      "template": "t2",
+      "category": "threat",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-10111\nboard: Gear Talk\nauthor account age: 1 years\nattachment scan: no match (1 image)\n\n[untrusted post]\nWhoever keeps cutting our lines at the north jetty: I know where you live, and you won't like what happens next.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: veiled threat with address"
+      },
+      "sub": {
+        "threat": true,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-65499",
+      "template": "n15",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-65499\nboard: Gear Talk\nauthor account age: 9 years\nattachment scan: no attachments\n\n[untrusted post]\nDoes anyone have a good recipe for smoked fluke?\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: recipe question"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-63151",
+      "template": "h3",
+      "category": "harass",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-63151\nboard: General\nauthor account age: 6 years\nattachment scan: no match (1 image)\n\n[untrusted post]\n@tidewalker post one more of your stupid questions and I'll make sure everyone here knows what a loser you are.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: bullying a member"
+      },
+      "sub": {
+        "threat": false,
+        "harass": true,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-54268",
+      "template": "h2",
+      "category": "harass",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-54268\nboard: Trip Reports\nauthor account age: 4 years\nattachment scan: no attachments\n\n[untrusted post]\nEveryone ignore @salty_pete, he's a liar and a thief who couldn't catch a cold, let alone a fish.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: calls a member a liar and thief"
+      },
+      "sub": {
+        "threat": false,
+        "harass": true,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-93713",
+      "template": "s6",
+      "category": "selfharm",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-93713\nboard: General\nauthor account age: 7 years\nattachment scan: no attachments\n\n[untrusted post]\nI've been saving up my pills and tonight might be the night.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: stockpiling pills"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": true
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-18486",
+      "template": "h9",
+      "category": "harass",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-18486\nboard: Trip Reports\nauthor account age: 1 years\nattachment scan: no attachments\n\n[untrusted post]\nWomen like @bassmaster_jo should stay in the kitchen and off the water.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: sexist attack on a member"
+      },
+      "sub": {
+        "threat": false,
+        "harass": true,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-53754",
+      "template": "m1",
+      "category": "spam",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-53754\nboard: Trip Reports\nauthor account age: 4 days\nattachment scan: no match (1 image)\n\n[untrusted post]\nEARN $500 A DAY FROM HOME!!! Click replica-deals.example now, limited spots.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: work-from-home scheme"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": true,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-65836",
+      "template": "n13",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-65836\nboard: Trip Reports\nauthor account age: 5 years\nattachment scan: no attachments\n\n[untrusted post]\nUgh, I'm so dead after that 14-hour trip, going to sleep for a week.\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: tiredness joke"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-88971",
+      "template": "n11",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-88971\nboard: Trip Reports\nauthor account age: 6 years\nattachment scan: no attachments\n\n[untrusted post]\nLost a big bluefish right at the net today. Heartbroken, but that's fishing.\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: lost fish, ordinary disappointment"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-33956",
+      "template": "t5",
+      "category": "threat",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-33956\nboard: Gear Talk\nauthor account age: 9 years\nattachment scan: no attachments\n\n[untrusted post]\n@lurecraft I'm coming to your house Saturday and you're going to get hurt.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: threat to come and hurt"
+      },
+      "sub": {
+        "threat": true,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-72287",
+      "template": "h8",
+      "category": "harass",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-72287\nboard: General\nauthor account age: 8 years\nattachment scan: no attachments\n\n[untrusted post]\n@drift_dan learn to read, you braindead moron.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: name-calling"
+      },
+      "sub": {
+        "threat": false,
+        "harass": true,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-68035",
+      "template": "h10",
+      "category": "harass",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-68035\nboard: General\nauthor account age: 2 days\nattachment scan: no match (1 image)\n\n[untrusted post]\n@lurecraft everyone at the club laughs at you behind your back, you know that, right?\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: mocking a member"
+      },
+      "sub": {
+        "threat": false,
+        "harass": true,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-15134",
+      "template": "floor:n2",
+      "category": "floor",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-15134\nboard: Gear Talk\nauthor account age: 7 years\nattachment scan: matched a known prohibited image (industry hash list)\n\n[untrusted post]\nAnyone know if the ramp at the north jetty is open again after the storm?\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: upload scan matched a known prohibited image; a floor removes it"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": true,
+      "split": "fit"
+    },
+    {
+      "id": "P-36947",
+      "template": "n16",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-36947\nboard: Trip Reports\nauthor account age: 5 days\nattachment scan: no attachments\n\n[untrusted post]\nThe state posted new size limits for bluefish: 18 inches minimum starting next month.\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: regulation news"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-46092",
+      "template": "n2",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-46092\nboard: General\nauthor account age: 1 days\nattachment scan: no attachments\n\n[untrusted post]\nAnyone know if the ramp at the north jetty is open again after the storm?\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: ramp question"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-35935",
+      "template": "m9",
+      "category": "spam",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-35935\nboard: Gear Talk\nauthor account age: 5 days\nattachment scan: no attachments\n\n[untrusted post]\nLoan approved in 5 minutes, bad credit OK! replica-deals.example\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: loan spam"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": true,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-64636",
+      "template": "n22",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-64636\nboard: Gear Talk\nauthor account age: 5 days\nattachment scan: no attachments\n\n[untrusted post]\n@tidewalker you absolute legend, thanks for the tip about the drop-off at the Sandy Hook flats.\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: thanks"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-67455",
+      "template": "h4",
+      "category": "harass",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-67455\nboard: Trip Reports\nauthor account age: 4 years\nattachment scan: no match (1 image)\n\n[untrusted post]\n@lurecraft is so fat he'd sink any boat he steps on. Disgusting.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: body-shaming a member"
+      },
+      "sub": {
+        "threat": false,
+        "harass": true,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-32105",
+      "template": "q4",
+      "category": "ambiguous",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-32105\nboard: Trip Reports\nauthor account age: 6 years\nattachment scan: no attachments\n\n[untrusted post]\nCheck out my trip report and photos from Heron Point on my blog: reelguy88-fishes.example/blog\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: own trip-report link, on topic and not selling; not spam",
+        "ambiguous": true
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-58401",
+      "template": "h10",
+      "category": "harass",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-58401\nboard: General\nauthor account age: 8 years\nattachment scan: no attachments\n\n[untrusted post]\n@tidewalker everyone at the club laughs at you behind your back, you know that, right?\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: mocking a member"
+      },
+      "sub": {
+        "threat": false,
+        "harass": true,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-30562",
+      "template": "floor:n18",
+      "category": "floor",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-30562\nboard: Trip Reports\nauthor account age: 5 days\nattachment scan: matched a known prohibited image (industry hash list)\n\n[untrusted post]\nThe guy who runs the bait shop in Westmarsh is the best, always gives honest reports.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: upload scan matched a known prohibited image; a floor removes it"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": true,
+      "split": "fit"
+    },
+    {
+      "id": "P-67486",
+      "template": "n8",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-67486\nboard: General\nauthor account age: 7 years\nattachment scan: no attachments\n\n[untrusted post]\nRespectfully, @bassmaster_jo, I think you're wrong about fluorocarbon leaders. They sink faster, which matters in current.\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: respectful disagreement"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-43795",
+      "template": "h2",
+      "category": "harass",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-43795\nboard: General\nauthor account age: 4 years\nattachment scan: no attachments\n\n[untrusted post]\nEveryone ignore @reelguy88, he's a liar and a thief who couldn't catch a cold, let alone a fish.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: calls a member a liar and thief"
+      },
+      "sub": {
+        "threat": false,
+        "harass": true,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-12843",
+      "template": "s7",
+      "category": "selfharm",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-12843\nboard: General\nauthor account age: 8 years\nattachment scan: no attachments\n\n[untrusted post]\nTired of being a burden to my family. They'd be better off without me.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: burden to family"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": true
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-72657",
+      "template": "n21",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-72657\nboard: Trip Reports\nauthor account age: 6 years\nattachment scan: no attachments\n\n[untrusted post]\nIf the wardens catch you keeping undersized bluefish they will hammer you with fines, so measure carefully.\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: regulation warning with violent verb"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-28397",
+      "template": "n3",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-28397\nboard: Gear Talk\nauthor account age: 4 years\nattachment scan: no match (1 image)\n\n[untrusted post]\nWhat line do you all use for sea trout in the surf? I've been running 20 lb braid.\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: gear question"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-80432",
+      "template": "n4",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-80432\nboard: Trip Reports\nauthor account age: 3 years\nattachment scan: no match (1 image)\n\n[untrusted post]\n@lurecraft that's a great catch, congrats! What were they hitting on?\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: congratulations"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "fit"
+    },
+    {
+      "id": "P-31839",
+      "template": "s7",
+      "category": "selfharm",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-31839\nboard: Trip Reports\nauthor account age: 2 years\nattachment scan: no match (1 image)\n\n[untrusted post]\nTired of being a burden to my family. They'd be better off without me.\n[/untrusted]",
+      "label": {
+        "truth": true,
+        "why": "action: burden to family"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": true
+      },
+      "floored": false,
+      "split": "heldout"
+    },
+    {
+      "id": "P-35485",
+      "template": "n19",
+      "category": "benign",
+      "state": "Saltmarsh Anglers forum moderation queue\npost id: P-35485\nboard: Trip Reports\nauthor account age: 5 years\nattachment scan: no attachments\n\n[untrusted post]\nHonestly the new parking fee at the Sandy Hook flats is a scam. Ten bucks to launch a kayak?\n[/untrusted]",
+      "label": {
+        "truth": false,
+        "why": "no action: complaint using the word scam"
+      },
+      "sub": {
+        "threat": false,
+        "harass": false,
+        "spam": false,
+        "selfharm": false
+      },
+      "floored": false,
+      "split": "heldout"
+    }
+  ],
+  "questions": {
+    "members": [
+      {
+        "kind": "judge",
+        "id": "threat",
+        "prompt": "Does this post threaten violence or serious harm against a person or group?",
+        "criteria": {
+          "yes": "It threatens to hurt, kill or attack someone or damage their property, including veiled threats or calls for others to do so.",
+          "no": "No threat; violent words used as a figure of speech (a lure that 'murders' fish, 'crushing it' at a tournament) are not threats."
+        }
+      },
+      {
+        "kind": "judge",
+        "id": "harass",
+        "prompt": "Does this post insult, demean or bully a specific person, or attack people for who they are?",
+        "criteria": {
+          "yes": "It attacks a named or @mentioned person, or a group for who they are, with insults, mockery or bullying.",
+          "no": "No personal attack; disagreeing with or criticising an idea or a technique is fine."
+        }
+      },
+      {
+        "kind": "judge",
+        "id": "spam",
+        "prompt": "Is this post spam: unsolicited advertising, a scam, phishing, or links pushing something unrelated to fishing?",
+        "criteria": {
+          "yes": "It advertises or links something unrelated to the discussion, or tries to scam or phish readers.",
+          "no": "On-topic posts, including members selling their own used gear in the Classifieds board and links to their own trip reports."
+        }
+      },
+      {
+        "kind": "judge",
+        "id": "selfharm",
+        "prompt": "Does the writer suggest they might harm themselves or end their life?",
+        "criteria": {
+          "yes": "They talk about ending their life, not being around, saying goodbye, giving away possessions for that reason, or being better off gone.",
+          "no": "No such sign; ordinary disappointment, tiredness or jokes that are plainly about something else."
+        }
+      }
+    ]
+  }
+}
