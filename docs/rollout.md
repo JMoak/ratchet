@@ -75,7 +75,7 @@ tie-break (`awaitingAdjudication`).
 Neither decides anything. The planned test alone promotes, once, at its planned size. An early
 wrong label does not reject the configuration: reviewer error is the size of the error budget (a
 blind relabel disagreed on 4 of 157 labels), so the sample completes and a disputed label can be
-adjudicated first. Before the first `evaluate()` there is no phase, and `progress()` says so. It
+adjudicated first ([Label noise and `confirm-wrong`](#label-noise-and-confirm-wrong)). Before the first `evaluate()` there is no phase, and `progress()` says so. It
 does not run the search for an earlier failed sample that the next evaluation runs, so a shadow
 readout can look healthy for a configuration that evaluation rejects.
 

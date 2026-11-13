@@ -28,14 +28,6 @@ options that used to throw on a sequential run or in a cascade now pool:
   notice for a sample in progress (`Rollout.progress()`). The promotion e-process and the
   futility test are read by nothing: promotion is still the planned test, and an early wrong
   label does not reject a configuration.
-- The exact fixed-sequence act bar over rows or groups (`src/ledger/exact-bar.ts`), printed beside
-  the act bar on request (`ratchet report --exact-bar [--group <tagPrefix>]`).
-- Floors over state entries (`floorOn`, `entryFloor`, `allowOn`), done as the T3-10 item below.
-- Read by nothing yet: beta and Venn-Abers calibrators, and the panel measurements in
-  `src/ledger/dependence.ts`.
-- `PoolOptions.priorYes`; a Platt fit for `any` and `all` batteries; `concur`; the chain frailty
-  model with `runChain`'s candidate keys, attempt pool and second opinion. Pool options now work
-  on every compound path.
 - Label history and adjudication: every row keeps its labels (`DecisionRecord.labels`);
   `adjudication: "confirm-wrong"` lets the acceptance test count a "wrong" only once a second
   reviewer confirms it (a perfect gate at a 1.25% false-"wrong" rate passes the 149-act plan
@@ -43,6 +35,14 @@ options that used to throw on a sequential run or in a cascade now pool:
   [sim-results.md](sim-results.md)); `ratchet review --adjudicate` is the queue; and every
   enforce-mode act records its audit probability. The default is unchanged (`latest`), and only
   the acceptance test reads the rule.
+- The exact fixed-sequence act bar over rows or groups (`src/ledger/exact-bar.ts`), printed beside
+  the act bar on request (`ratchet report --exact-bar [--group <tagPrefix>]`).
+- Read by nothing yet: beta and Venn-Abers calibrators, and the panel measurements in
+  `src/ledger/dependence.ts`.
+- Floors over state entries (`floorOn`, `entryFloor`, `allowOn`), done as the T3-10 item below.
+- `PoolOptions.priorYes`; a Platt fit for `any` and `all` batteries; `concur`; the chain frailty
+  model with `runChain`'s candidate keys, attempt pool and second opinion. Pool options now work
+  on every compound path.
 
 Measured and not shipped: pooling weights fitted from the within-class correlation, which lost to
 the phi matrix on T5's real rows. Two keys, tested on T5's act side, was no safer than the pools
@@ -50,16 +50,14 @@ or the cascade and acted on less; the cascade to a second family (the strong-def
 is the best measured way to use one. ([CHANGELOG](../CHANGELOG.md),
 [architecture](architecture.md), [catalogue](idea-catalog.md#foundations-review-2026-11-12).)
 
-Next: no building work is queued. What remains is the owner's open choices and the deferred
-list below.
+Next: nothing from this review is queued for building. What remains of it is the owner's open
+choices and the deferred list below; the end-to-end evaluation's backlog items further down that
+are not marked done still stand.
 
 Open choices, the owner's to make:
 
 - Whether the exact bar replaces the Wilson scan in reports; today it is printed beside it.
 - Whether the detector becomes the default demotion rule; today it is opt-in.
-- Whether demotion should wait for a confirmed "wrong". Today an audit's latest label is read
-  under every demotion rule, so an unconfirmed "wrong" can still return a gate to shadow, the
-  cautious direction.
 - Whether a hash-bound permit belongs in the library; the idea catalogue leaves one-use permits
   to the application.
 - Whether to drop the matrix-path confidence cap once member strengths are measured. In
@@ -85,7 +83,10 @@ Open choices, the owner's to make:
     are stated at the rate in force at promotion.
   - Neither demotion rule caps audits per session; the plan's `group` applies to the planned
     sample only, so session correlation weakens the detector's guarantee.
-- What to do about four things `confirm-wrong` leaves open (line numbers as of 2026-11-12):
+- What to do about five things `confirm-wrong` leaves open (line numbers as of 2026-11-12):
+  - Whether demotion should wait for a confirmed "wrong". Today an audit's latest label is read
+    under every demotion rule, so an unconfirmed "wrong" can still return a gate to shadow, the
+    cautious direction.
   - Grades still read the latest label, so they can disagree with what acceptance read. In
     shadow, the status `grade` (`src/rollout.ts` lines 793, 936 and 939, through `gradeOf`)
     counts a disputed act on its latest label while acceptance says `awaiting-labels`
@@ -170,7 +171,8 @@ fixes are wave 2's work packages in the registry. The evaluation added these to 
 - **The prompt-injection study** (T4). Planned and not run: a safety classifier stopped the
   agent authoring the payloads and the study was not rerouted. The injection figures in
   `vision.md` remain the literature's. Building the study from a published benchmark's
-  payloads is the next attempt.
+  payloads is the next attempt. (2026-11-12: deferred until evidence asks for it; its protocol
+  is now written, in `research_notes/Foundations review 2026-11/information_flow_security.md`.)
 
 ## Current priority: prove one tool gate and verifier lifecycle
 

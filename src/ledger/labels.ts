@@ -5,9 +5,10 @@
  * marks a right act wrong 1.25% of the time lets a perfect gate pass the 149-act zero-error plan
  * only about 15% of the time, and at 2% no valid test passes a perfect gate above its
  * false-acceptance level at any sample size. Having a second blind reviewer confirm every "wrong"
- * label, with a third to break a tie, cuts that false-wrong rate to about 0.03% for roughly five
- * extra reviews per 149 labels, if the reviewers err independently. `confirm-wrong` is that
- * protocol, read from the history a row keeps (`DecisionRecord.labels`).
+ * label, with a third to break a tie, cuts that false-wrong rate to about 0.03% for four to five
+ * extra reviews per 149 labels (3.7 on a perfect gate, 5.1 on a 99% one), if the reviewers err
+ * independently. `confirm-wrong` is that protocol, read from the history a row keeps
+ * (`DecisionRecord.labels`).
  *
  * Pure: nothing here reads a ledger or writes one.
  */
