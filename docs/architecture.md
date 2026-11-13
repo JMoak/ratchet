@@ -64,7 +64,7 @@ bin/ratchet.ts        The CLI entry point
 sim/                  The thesis as runnable tables (bun run sim -> docs/sim-results.md)
 examples/tool-gate.ts PreToolUse gate: shadow -> label -> fit -> enforce -> audit, as registered gates
 examples/quickstart.ts Live triage of one message through Jev via OpenRouter
-examples/arcade/      Four browser games with agent turns; loopback server, optional capped live oracle
+examples/arcade/      Four browser duels on seeded worlds; loopback server, optional capped live oracle
 examples/trail/       The decision trail viewer: a loopback server over src/cli/trail.ts and one static page
 experiments/pilot/    Sourced shadow fixtures, frozen-policy evidence experiment, static chart report
 scripts/set-key.ps1   Hidden-input prompt that writes API keys to the gitignored .env

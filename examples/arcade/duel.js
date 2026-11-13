@@ -141,7 +141,7 @@ function renderSweep(el, sweep) {
   const legend = sweep.series
     .map((s, k) => `<span><i style="background:${colors[k]}"></i>${escapeHtml(s.label)}</span>`)
     .join("");
-  el.innerHTML = `<div class="chart-legend">${legend}<span class="muted">larger dots: your setting, across 200 worlds a point</span></div>
+  el.innerHTML = `<div class="chart-legend">${legend}<span class="muted">larger dots mark your setting</span></div>
     <svg class="sweep" viewBox="0 0 ${w} ${h}" role="img" aria-label="${escapeHtml(sweep.lever)} swept across its range">
       ${grid}<line x1="${x(nearest)}" x2="${x(nearest)}" y1="${top}" y2="${h - bottom}" stroke="#c9d2cc" stroke-dasharray="4 4"/>
       ${lines}${ticks}</svg><p class="muted">${escapeHtml(sweep.lever)}, with every other lever as you set it.</p>`;
@@ -183,7 +183,7 @@ async function setupModel(onChange) {
   try {
     const response = await fetch("/api/capabilities");
     const capabilities = response.ok ? await response.json() : {};
-    if (capabilities.liveAvailable) {
+    if (capabilities.liveAvailable && select.dataset.live !== "off") {
       const option = document.createElement("option");
       option.value = "live";
       option.textContent = `Live ${capabilities.oracle}, this world only`;

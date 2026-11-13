@@ -45,6 +45,21 @@ describe("local arcade", () => {
     expect((await handleRequest(new Request(`${local}/common.js`))).status).toBe(404);
   });
 
+  it("answers a repeated seeded request from memory, and never a rejected one", async () => {
+    const ask = async (value: unknown) => {
+      const response = await handleRequest(post("/api/parcels", value));
+      return (await response.json()) as { ledger?: { rows: { id: string }[] }; error?: string };
+    };
+    const first = await ask({ seed: 7, worlds: 10 });
+    const again = await ask({ seed: 7, worlds: 10 });
+    // Row ids are random per run, so equal ids mean the world was not run twice.
+    expect(again.ledger?.rows.map((r) => r.id)).toEqual(first.ledger?.rows.map((r) => r.id));
+    const other = await ask({ seed: 8, worlds: 10 });
+    expect(other.ledger?.rows[0]?.id).not.toBe(first.ledger?.rows[0]?.id);
+    expect((await ask({ seed: 7, worlds: 10, bar: 2 })).error).toContain("bar must be");
+    expect((await ask({ seed: 7, worlds: 10, bar: 2 })).error).toContain("bar must be");
+  });
+
   it("only exposes the explicit static routes", async () => {
     for (const path of ["/.env", "/src/engine.ts", "/__proto__", "/api/constructor"]) {
       const req = path.startsWith("/api/") ? post(path, {}) : new Request(`${local}${path}`);
@@ -86,5 +101,8 @@ describe("local arcade", () => {
     expect(live.status).toBe(400);
     expect(await live.json()).toMatchObject({ error: expect.stringContaining("disabled") });
     expect((await handleRequest(post("/api/bridge", { model: "unknown" }))).status).toBe(400);
+    const expedition = await handleRequest(post("/api/treasure", { model: "live" }));
+    expect(expedition.status).toBe(400);
+    expect(await expedition.json()).toMatchObject({ error: expect.stringContaining("seeded") });
   });
 });

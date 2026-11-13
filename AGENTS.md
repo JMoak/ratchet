@@ -18,6 +18,7 @@ says what is next. The research that shaped the design lives in `research_notes/
 | Tests | `bun x vitest run` (or `bun run test`) |
 | Simulation tables | `bun run sim` (regenerate `docs/sim-results.md` with `bun sim/main.ts > docs/sim-results.md`) |
 | Demo gate | `bun run demo` |
+| Arcade (four browser duels, loopback, no key) | `bun run arcade` (`docs/arcade.md`) |
 | Live quick start (needs `.env`) | `bun run quickstart` |
 | Live experiments (needs `.env`, budget-capped $0.50) | `bun run live` (writes `docs/live-results.md` when redirected; see `experiments/live/main.ts`) |
 | Store an API key | `powershell -ExecutionPolicy Bypass -File scripts\set-key.ps1` |
@@ -82,6 +83,8 @@ path; use `bun x`.
   `labelHistory` in `src/ledger/ledger.ts`, `src/ledger/labels.ts`; the adjudication queue is
   `ratchet review --adjudicate` (`src/cli/review.ts`).
 - Recipes take an `Asker` (an `Engine` or a `Gate`), never a raw oracle: `src/recipes/`.
+- Arcade: `examples/arcade/` (one backend module and one page per game, `shared.ts`, the page
+  driver `duel.js`). Batch seeds are fixed, so its tests assert mechanisms with tolerances.
 - Scenario corpus for the gate demo: `examples/tool-gate.ts`. Trail viewer: `examples/trail/`
   (loopback server over `src/cli/trail.ts`; vanilla page, no build step, no dependency).
 - Promotion test: `src/acceptance.ts` (planned exact bound; Rollout promotes only through it).

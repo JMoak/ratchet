@@ -10,7 +10,7 @@ export interface LiveLimits {
 
 const defaults: LiveLimits = {
   maxCalls: 100,
-  maxRoundCalls: 16,
+  maxRoundCalls: 24,
   stopAfterUsd: 0.1,
   timeoutMs: 8_000,
 };

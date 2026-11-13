@@ -32,6 +32,29 @@ const headers = {
 };
 const json = (data: unknown, status = 200) => Response.json(data, { status, headers });
 
+/**
+ * A seeded game is a pure function of its request, so a repeated request is answered from
+ * memory: the launcher's cards, a reload, a lever moved back. Live play is never cached here;
+ * the live runtime keeps its own record of what it bought.
+ */
+const answers = new Map<string, Promise<unknown>>();
+const ANSWERS = 60;
+
+function offline(name: string, input: Record<string, unknown>): Promise<unknown> {
+  const play = games[name];
+  if (!play) throw new Error("Unknown game.");
+  const key = `${name}
+${JSON.stringify(input)}`;
+  const known = answers.get(key);
+  if (known) return known;
+  const answer = play(input);
+  if (answers.size >= ANSWERS) answers.delete(answers.keys().next().value as string);
+  answers.set(key, answer);
+  // A rejected request (bad settings) is not worth remembering.
+  answer.catch(() => answers.delete(key));
+  return answer;
+}
+
 async function body(req: Request): Promise<unknown> {
   if (!req.headers.get("content-type")?.startsWith("application/json")) {
     throw new Error("Send application/json.");
@@ -77,10 +100,17 @@ export async function handleRequest(req: Request, live?: LiveRuntime): Promise<R
       if (input.model !== undefined && input.model !== "offline" && input.model !== "live") {
         throw new Error("model must be offline or live.");
       }
+      // An expedition is 300 identical questions: nothing for a paid judge to add.
+      if (input.model === "live" && url.pathname === "/api/treasure") {
+        throw new Error("Treasure Survey runs on seeded judges only.");
+      }
       if (input.model === "live" && !live?.status().liveAvailable) {
         throw new Error("Live play is disabled. Start with ARCADE_LIVE=1 and a server key.");
       }
-      const result = await play(input, input.model === "live" ? live?.round() : undefined);
+      const result =
+        input.model === "live"
+          ? await play(input, live?.round())
+          : await offline(url.pathname.slice(5), input);
       return json({
         ...objectInput(result),
         backend: { kind: input.model === "live" ? "live" : "offline", ...live?.status() },
@@ -125,5 +155,7 @@ if (import.meta.main) {
       ? "Live model available (opt in per page). 100 distinct requests; $0.10 reported-spend cutoff."
       : "Offline play. To enable live model choices, set ARCADE_LIVE=1 with a server API key.",
   );
-  console.log("Only reversible game actions. Ctrl+C to stop.");
+  console.log("Seeded toy worlds only. Ctrl+C to stop.");
+  // Run each game's default duel now, so the launcher's cards are ready when the page opens.
+  for (const name of Object.keys(games)) await offline(name, {});
 }

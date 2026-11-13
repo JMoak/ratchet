@@ -132,7 +132,7 @@ Dry runs show the scrubbed subject before any live request. Live replay uses you
 
 ## The proving ground
 
-Four local browser games make the engine visible: every move passes through real `Engine` and `Gate` instances, with an inspectable in-memory ledger. No API key is needed for the arcade.
+Four local browser games make the engine visible. Each opens on its result: one seeded world run without the engine and with it, then the same duel in hundreds of worlds, with levers to move and a target to beat. Every decision passes through real `Engine` and `Gate` instances, with an inspectable in-memory ledger. No API key is needed for the arcade.
 
 ```sh
 git clone https://github.com/JMoak/ratchet.git
@@ -141,16 +141,16 @@ bun install --frozen-lockfile
 bun run arcade
 ```
 
-Open **http://127.0.0.1:3210**. Stop with Ctrl+C; set `ARCADE_PORT` to change the port. The server binds to loopback. Every game begins in shadow; **Play** or **Step** explicitly enables its reversible game actions.
+Open **http://127.0.0.1:3210**. Stop with Ctrl+C; set `ARCADE_PORT` to change the port. The server binds to loopback, and the judges are seeded simulations with known error rates.
 
-| Game | What you can feel working |
-| :--- | :--- |
-| **Signal Orchard** | Ensembles and abstention across a twelve-day harvest. |
-| **Bridge Builder** | Choose, verify, and commit before the supplies run out. |
-| **Parcel Patrol** | Trusted inputs, untrusted inputs, and hard floors on a conveyor shift. |
-| **Treasure Survey** | Practice labels, freeze a threshold, then put it to use. |
+| Game | The duel | At the defaults |
+| :--- | :--- | :--- |
+| **Bridge Builder** | Lay ten spans and walk, or verify each piece before building on it. | Crossed 17% → 69% |
+| **Signal Orchard** | Pool five alike scouts as five, or as what is independent. | Ripe picks 90% → 99%, both claiming 98% or more |
+| **Parcel Patrol** | A persuadable judge alone, or the same judge under rules in code. | Bad parcels shipped 33 → 9 in 100 |
+| **Treasure Survey** | Promote when it looks good, or plan the test and keep auditing. | Worse Scouts promoted 99% → 3% |
 
-[Arcade controls and design](docs/arcade.md) · [Decision-trail viewer](docs/cli.md)
+[How the arcade works](docs/arcade.md) · [Decision-trail viewer](docs/cli.md)
 
 ## Inspect the evidence
 
