@@ -130,9 +130,10 @@ The effective false-"wrong" rate falls from 1.25% to 0.031%. Two caveats:
 Sources without a name (`review:blind`, `keywork:person`) are one reviewer each, so name
 reviewers. Only the acceptance test reads the rule. Demotion is unchanged: an audit's latest
 label is read under every demotion rule, the cautious direction, and whether demotion should
-wait for confirmation is an open decision. The phase's estimated grade, and the measured grade
-in reports and `check`, still read the latest label, so under `confirm-wrong` they can disagree
-with what acceptance read ([roadmap](roadmap.md)).
+wait for confirmation was decided on 2026-11-12: it does not. A rollout's shadow grade reads
+labels as the plan does, so it agrees with the test beside it; its enforce grade reads the
+latest label, as demotion does. Reports and `check` take no plan, so the measured grade they
+print still reads the latest label ([roadmap](roadmap.md)).
 
 ## Fitting a bar the test will accept
 
@@ -296,10 +297,18 @@ transition. Drain in-flight work when changing deployment configuration.
 ## Demotion and audits
 
 In enforce mode the controller, under the default window rule, reads the last `window` (default
-200) audited rows of the current phase: enforce rows tagged `audit`, which the engine diverts to
-review at the gate's `auditRate`. Once `minAuditRows` (default 30) exist, an observed accuracy
-below the promise returns the gate to shadow, and a fresh acceptance test is needed to promote it
-again.
+200) audited acts of the current phase: enforce acts tagged `audit`, which the engine diverts to
+review at the gate's `auditRate`, with a label the plan's `sources` admit. Once `minAuditRows`
+(default 30) exist, an observed accuracy below the promise returns the gate to shadow, and a
+fresh acceptance test is needed to promote it again.
+
+*Revised 2026-11-12.* The rule used to read every labelled row tagged `audit`, whatever the
+label's source and whether or not the row was an act. Consequence labels are chosen by outcome (a
+revert lands on a wrong act, an acceptance on a right one), so they could demote a good gate or
+keep a bad one enforced, and a caller-tagged audit row that was not an act counted toward
+`minAuditRows` while adding nothing to the accuracy. It now reads what the other rules and the
+enforce grade read; an audited act labelled only by another source is counted in
+`audits.untrusted` and named in the status.
 
 Audits are opt-in. With an audit rate of 0, nothing can demote a promoted gate, and both the
 promotion reason and every later status say so. The rule errs toward caution: at 30 audits a
@@ -320,7 +329,7 @@ speed.
 ### Choosing a demotion rule
 
 *Added 2026-11-12.* `RolloutSettings.demotion` picks the rule. Absent, or `{ kind: "window" }`,
-it is the window rule above, unchanged in statuses, reasons, checkpoints and scope hashes.
+it is the window rule above, with the checkpoints and scope hashes it always had.
 
 | `kind` | demotes when | false demotions | fastest |
 | --- | --- | --- | --- |
@@ -334,8 +343,8 @@ it is the window rule above, unchanged in statuses, reasons, checkpoints and sco
   evaluation, and nothing is added to the checkpoint. First-error reads every labelled audit, so
   a pending audit cannot hide a later wrong one.
 - **Sources.** A label counts when the plan's `sources` admit it through `labelTrust`. An audit
-  labelled only by another source is pending. The window rule reads every label whatever its
-  source, unchanged.
+  labelled only by another source is pending under the detector and first-error, and unread
+  under the window rule, which counts it in `audits.untrusted`.
 - **Overdue audits.** A missing label is never an error; as one, it would void the detector's
   guarantee. `overdue: { after, action }` (default `{ after: 30, action: "report" }`) makes the
   first unlabelled audit overdue once `after` later audits exist, by ledger order. `"report"` says

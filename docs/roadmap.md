@@ -50,66 +50,63 @@ or the cascade and acted on less; the cascade to a second family (the strong-def
 is the best measured way to use one. ([CHANGELOG](../CHANGELOG.md),
 [architecture](architecture.md), [catalogue](idea-catalog.md#foundations-review-2026-11-12).)
 
-Next: nothing from this review is queued for building. What remains of it is the owner's open
-choices and the deferred list below; the end-to-end evaluation's backlog items further down that
-are not marked done still stand.
+Next: nothing from this review is queued for building. What remains of it is the two choices
+still open below and the deferred list; the end-to-end evaluation's backlog items further down
+that are not marked done still stand.
 
-Open choices, the owner's to make:
+Decided 2026-11-12 (the owner delegated the choices the evidence settles):
 
-- Whether the exact bar replaces the Wilson scan in reports; today it is printed beside it.
-- Whether the detector becomes the default demotion rule; today it is opt-in.
-- Whether a hash-bound permit belongs in the library; the idea catalogue leaves one-use permits
-  to the application.
-- Whether to drop the matrix-path confidence cap once member strengths are measured. In
-  simulation at 300 rows it would take held-out log loss from 0.061 to 0.058 and from 0.080 to
-  0.069, but it loosens a rule adopted for a verified defect.
-- Which promise the product makes: precision on acts, or the rate at which wrong requests are
-  acted on, which does not move with the base rate.
-- What to do about four things the review found in the existing window rule and left unchanged
-  (line numbers in `src/rollout.ts` as of 2026-11-12):
-  - It reads every audit label, whatever its source. `audits()` (lines 649 to 665) filters only on
-    `r.outcome` (line 651), with no `admits`, so consequence, moment and unregistered labels count
-    toward the window's accuracy, while the enforce grade beside it (line 1020), acceptance and
-    the new demotion rules read only the plan's `sources`. Consequence labels are chosen by
-    outcome (a revert lands on a wrong act, an acceptance on a right one), so they can demote a
-    good gate or keep a bad one enforced.
-  - Its `n` and `accuracy` count different rows (lines 661 and 663, read together at 1022): `n`
-    counts every labelled row tagged `audit`, `accuracy` only those ruled act. A caller-tagged
-    audit row that was not an act counts toward `minAuditRows`, and with no acts the accuracy is
-    0, so the gate demotes. Engine-drawn audits are always acts, so this needs caller-supplied
-    tags.
-  - The audit rate is not part of the scope hash (lines 611 to 626): a restart with a different
-    rate keeps the phase. That is harmless for the window rule, but the first-error CSP figures
-    are stated at the rate in force at promotion.
-  - Neither demotion rule caps audits per session; the plan's `group` applies to the planned
-    sample only, so session correlation weakens the detector's guarantee.
-- What to do about five things `confirm-wrong` leaves open (line numbers as of 2026-11-12):
-  - Whether demotion should wait for a confirmed "wrong". Today an audit's latest label is read
-    under every demotion rule, so an unconfirmed "wrong" can still return a gate to shadow, the
-    cautious direction.
-  - Grades still read the latest label, so they can disagree with what acceptance read. In
-    shadow, the status `grade` (`src/rollout.ts` lines 793, 936 and 939, through `gradeOf`)
-    counts a disputed act on its latest label while acceptance says `awaiting-labels`
-    (`src/ledger/evidence.ts` line 418). After settling, the latest label can be the losing vote:
-    wrong, wrong, then right from a third reviewer, and acceptance rejects while the estimate
-    reads right. When the sample is accepted, the measured grade's sources and date
-    (`evidence.ts` lines 401 and 402) count and date the latest label. Reports, `check`, `trail`
-    and `Engine.report` build the measured grade with `plan: { target }` (`src/ledger/bars.ts`
-    line 366), so a gate the rollout rejected under `confirm-wrong` could pass
-    `check --require measured`, the same gap that already exists for a non-default `confidence`,
-    `maxErrors`, `group` or `sources`. The smallest fix: in `Rollout.accept` (lines 936 and 939)
-    and the rejected branch (line 793), grade
-    `adjudicateRows(shadowRows, plan.adjudication, { sources: plan.sources, trust: target.trust })`
-    instead of `shadowRows` when `plan.adjudication` is set, and leave `watch` and `detect` (lines
-    1020 and 1066) on the latest label, so the enforce grade still matches what demotion reads.
-  - `ratchet review` takes no `--trust`, so the queue counts votes by the default sources
-    (`src/cli/review.ts` line 79); a plan with custom `sources` or `labelTrust` counts them
-    differently.
-  - Under `latest`, a later label from an untrusted source hides an earlier trusted one: a revert
-    that arrives after a blind review makes the act unlabelled to the test. That is cautious but
-    surprising, and the history now makes reading "the latest admitted label" possible.
-  - The adjudication queue tells a reviewer that the label is disputed, though not whose or which
-    way. Mixing a uniform sample of right-labelled acts into it as decoys would hide that.
+- **The exact bar stays beside the scan, on request.** They answer different questions: the scan
+  proposes where to freeze a bar, and the exact bar says what the rows already prove. A 98% bar
+  needs 149 clean rows at or above it, so on a fit phase of about 50 rows the exact bar is always
+  "none", and replacing the scan would blank the report where a candidate is needed. The planned
+  test stays the judge of a frozen bar. Run `--exact-bar --group` before a freeze whenever rows
+  cluster (section 13 of [sim-results.md](sim-results.md)).
+- **No hash-bound permit in the library.** A permit is about executing an action, and the engine
+  executes nothing; the catalogue's "won't" stands.
+- **The matrix-path confidence cap stays.** It was adopted for a verified defect, and the gain
+  from dropping it is a simulated 0.003 to 0.011 of log loss. Real rows showing the cap costs
+  acts would reopen it.
+- **The window rule reads what the other rules read** (fixed, [CHANGELOG](../CHANGELOG.md)):
+  audited acts only, with a label the plan's `sources` admit, so `n` and `accuracy` count the
+  same rows, and an act labelled only by another source is counted as unread.
+- **The audit rate stays out of the scope hash.** A passed plan's evidence does not depend on the
+  rate, so changing it must not send a gate back through its planned sample. The first-error
+  figures are stated at promotion, at the rate in force then; they move when the rate does.
+- **Demotion does not wait for a confirmed "wrong".** An unconfirmed "wrong" audit still returns
+  a gate to shadow under the window and first-error rules, the cautious direction. Under the
+  default detector one error never demotes, so the question does not arise there.
+- **Shadow grades read labels as the plan does** (fixed): under `confirm-wrong` a rollout's
+  shadow grade can no longer disagree with its acceptance test. Enforce grades stay on the
+  latest label, which is what demotion reads. Reports, `check`, `trail` and `Engine.report`
+  take no plan, so a gate the rollout rejected under a non-default plan can still pass
+  `check --require measured`; `check` is a convenience and promotes nothing, so this waits for
+  plan flags on the CLI.
+- **`latest` keeps reading the latest label, admitted or not.** A later label from a source the
+  plan does not read leaves the act unlabelled to the test, the status says how many acts are in
+  that state, and a blind re-review settles it. Reading the latest admitted label instead would
+  let a review stand after a revert contradicted it.
+- **Not built until someone needs them:** `--trust` on `ratchet review` (no plan combines custom
+  label trust with adjudication yet), decoys in the adjudication queue (the leak tells a reviewer
+  a label is disputed, which biases toward confirming "wrong", the cautious side; it belongs with
+  the seeded known errors), and one audit per session for the demotion rules (session
+  correlation makes the detector alarm sooner than its bound says, also the cautious side).
+
+Still open, the owner's to make:
+
+- **The default demotion rule.** The window rule has no stated guarantee and returns a healthy
+  99% gate to shadow 68.5% of the time within 10,000 acts at an audit rate of 0.1; the detector
+  cuts that to 4.7% and lets about four times as many wrong acts run after a drop to 95% (70.9
+  against 16.4); first-error is the most cautious and the only one with a stated outgoing-quality
+  limit (sections 10 and 11 of [sim-results.md](sim-results.md)). Which is right depends on what a
+  false demotion costs against a wrong act, which is a property of the deployment: on keywork's
+  volume a demotion costs months of labels.
+- **Which promise the product makes:** precision on acts, or the rate at which wrong requests
+  are acted on, which does not move with the base rate. Precision is what a planned sample of
+  acts can prove on real traffic; the other needs wrong requests in volume, which real traffic
+  rarely has. A gate that removes prompts sells the first and a gate that adds caution to a
+  harness that allows everything sells the second, so this follows the choice of what to build
+  next.
 
 Deferred until evidence asks for them: a novelty floor, a Venn-Abers review band, a conformal
 tripwire, verdict-dependent audit rates, the injection study (its protocol is in
@@ -347,10 +344,9 @@ do not replace the tool-gate pilot or establish a production accuracy guarantee.
 
 ## Open questions
 
-- Name. `ratchet` says what the chain runner does; `quorum`, `jury`, `tally` and `accrue`
-  say what the ensembles do. Decide before publishing.
-- Package boundary: one package, or core + adapters + integrations?
-- How much of the research corpus ships in the repo versus a linked report.
+- Settled: the name is `@jmoak/ratchet`, one package with no runtime dependencies (split only
+  when an adapter needs one), and the research stays in the repository while the package ships
+  `dist`, `NOTICE` and `CHANGELOG.md`.
 - Legal: the code is Apache-2.0, and [third-party terms](third-party-terms.md) records how
   provider terms apply. An open library that users run with their own key fits TypeSafe's
   Master Customer Agreement; a hosted engine reselling Jev does not, and nothing may train a

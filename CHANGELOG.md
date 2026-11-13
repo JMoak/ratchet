@@ -299,8 +299,9 @@ above) and the pool-option fixes below.
   157 labels, about 1.3% per reviewer: at a 1.25% false-"wrong" rate a perfect gate passes the
   149-act zero-error plan 15.3% of the time, and with every "wrong" confirmed 95.5%, for 3.7
   extra reviews per 149 acts; a 99% gate, 4.0% and 25.2% for 5.1, if reviewers err
-  independently (section 16 of `docs/sim-results.md`). Only the acceptance test reads the rule:
-  demotion, fits, grades, reports and `check` read the latest label.
+  independently (section 16 of `docs/sim-results.md`). The acceptance test reads the rule, and
+  so does the rollout's shadow grade (see "Fixed: the window rule and shadow grades"); demotion,
+  fits, reports and `check` read the latest label.
 - `ratchet review --adjudicate --reviewer <name>`: every planned act whose label awaits a second
   review or a tie-break, shown blind, skipping acts this reviewer already labelled; the summary
   says how many are now settled wrong, settled right, or awaiting a tie-break. A reviewer is a
@@ -398,6 +399,26 @@ above) and the pool-option fixes below.
   simulation and can never release a hold made by the primary gate's floor, one-way door, shadow
   baseline or audit. Also `keepHeld`, `summarizeChain`, `readChainTags`, and a context for
   `chainTags`. Section 5 of `docs/sim-results.md` is rewritten around the frailty.
+
+### Fixed: the window rule and shadow grades
+
+Settled from the foundations review's open choices; tests in `tests/rollout-demotion.test.ts`
+and `tests/adjudication.test.ts`.
+
+- The window demotion rule reads only audited acts whose label the plan's `sources` admit
+  **(evidence)**. Before, it read every labelled row tagged `audit`: a consequence label, which
+  is chosen by outcome, could demote a good gate or keep a bad one enforced (60 acceptances
+  lifted 2 right of 3 blind audits above a 98% promise), and the enforce grade beside it, which
+  reads only the plan's sources, could disagree with the demotion. Audited acts labelled only by
+  another source are counted in `AuditWindow.untrusted` and named in the status.
+- The window rule's `n` and `accuracy` count the same rows **(evidence)**. A caller-tagged audit
+  row that was not an act no longer counts toward `minAuditRows`; three of them used to read as
+  three audits at 0% and demote the gate.
+- Under `adjudication: "confirm-wrong"`, a rollout's shadow grade reads labels as the plan does.
+  A disputed act is unlabelled to the grade as it is to the test, a settled act carries the label
+  that settled it, and an accepted sample's sources and date are those of the settling labels.
+  Before, the grade read the latest label: wrong, wrong, then right from a third reviewer
+  rejected the sample while the estimate counted the act right.
 
 ### Fixed: pool options on every compound path
 

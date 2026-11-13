@@ -111,7 +111,7 @@ const SR: DetectorSpec = { promise: 0.98, threshold: 1000 };
 const feed = (outcomes: readonly boolean[], s = SR): DetectorState =>
   outcomes.reduce((state, wrong) => stepDetector(s, state, wrong), startDetector(s));
 
-describe("the window rule is untouched", () => {
+describe("the window rule", () => {
   it("gives today's statuses, reasons and scope hash with no setting and with { kind: 'window' }", async () => {
     const ledger = new MemoryLedger();
     const today = gateWith({ minAuditRows: 3 }, {}, ledger);
@@ -160,6 +160,75 @@ describe("the window rule is untouched", () => {
       audits: { n: 4, acted: 4, accuracy: 0.75 },
     });
     expect((await today.rollout.progress()).phase).toBe("shadow");
+  });
+
+  it("reads a label only from a source the plan reads, and says how many it left unread", async () => {
+    const gate = gateWith({ minAuditRows: 3 });
+    await promote(gate);
+    const reverted: string[] = [];
+    for (let i = 0; i < 3; i++)
+      reverted.push(await audit(gate, { right: false, source: "reverted:git" }));
+    // Three reverts are not three audits: nothing is judged, and the status says what it left.
+    const held = await gate.rollout.evaluate();
+    expect(held).toMatchObject({
+      mode: "enforce",
+      audits: { n: 0, acted: 0, accuracy: 0, untrusted: 3 },
+    });
+    expect(held.reason).toBe(
+      "live: 0 current-phase audited rows; need 3 to judge; 3 audited acts labelled only from sources the plan does not read",
+    );
+    // A blind review of the same audits is read.
+    for (const id of reverted) {
+      await gate.engine.label(id, { correct: false, truth: false, source: "review:blind:r" });
+    }
+    const demoted = await gate.rollout.evaluate();
+    expect(demoted).toMatchObject({
+      mode: "shadow",
+      reason: "demoted: 3 audited acts at 0.0% below promised 98.0%",
+    });
+    expect(demoted.audits).toEqual({ n: 3, acted: 3, accuracy: 0 });
+  });
+
+  it("is not kept enforcing by acceptances, which land on the acts that went well", async () => {
+    const gate = gateWith({ minAuditRows: 3 });
+    await promote(gate);
+    await audit(gate, { right: true, source: "review:blind:r" });
+    await audit(gate, { right: true, source: "review:blind:r" });
+    await audit(gate, { right: false, source: "review:blind:r" });
+    // Sixty acceptances would lift 2 of 3 to 62 of 63, above the promise, if they were read.
+    for (let i = 0; i < 60; i++) await audit(gate, { right: true, source: "accepted:merge" });
+    const demoted = await gate.rollout.evaluate();
+    expect(demoted.mode).toBe("shadow");
+    expect(demoted.audits).toEqual({ n: 3, acted: 3, accuracy: 2 / 3, untrusted: 60 });
+  });
+
+  it("counts audited acts only: a caller-tagged audit row that was not an act judges nothing", async () => {
+    // Sure of every state but those named "unsure", which the policy sends to review.
+    const mixed: Oracle = {
+      id: "demotion-mixed",
+      decide: async (state, questions) =>
+        questions.map((q) => {
+          const p = String(state).includes("unsure") ? 0.5 : 0.95;
+          return {
+            oracle: "demotion-mixed",
+            verdict: { kind: "judge" as const, questionId: q.id, pYes: p, confidence: p },
+            cost: 0,
+            latencyMs: 0,
+            at: AT,
+          };
+        }),
+    };
+    const gate = new Engine({ oracle: mixed }).gate(spec({ minAuditRows: 3 }));
+    await promote(gate);
+    for (let i = 0; i < 3; i++) {
+      const r = await gate.ask(`unsure-${i}`, { tags: ["audit"] });
+      expect(r.action).toBe("review");
+      await gate.engine.label(r.recordId, { correct: true, truth: true });
+    }
+    // Three labelled rows tagged audit, none of them an act: no accuracy of 0, no demotion.
+    const live = await gate.rollout.evaluate();
+    expect(live).toMatchObject({ mode: "enforce", audits: { n: 0, acted: 0 } });
+    expect(live.reason).toBe("live: 0 current-phase audited rows; need 3 to judge");
   });
 });
 

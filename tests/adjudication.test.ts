@@ -588,6 +588,47 @@ describe("a Rollout under confirm-wrong", () => {
     expect(evaluateAcceptance(phase, { target: 0.5, confidence: 0.5 }).status).toBe("rejected");
   });
 
+  it("grades a shadow phase as the plan reads its labels, so the grade agrees with the test", async () => {
+    const engine = new Engine({ oracle: new Fixed(), ledger: new MemoryLedger() });
+    // A 90% promise at 50% confidence: a seven-act plan, so one disputed act holds the sample
+    // while enough later rows are labelled to grade the phase estimated.
+    const gate = engine.gate({ ...spec(), promisedAccuracy: 0.9 });
+    await gate.rollout.evaluate();
+    const first = await gate.ask("the disputed act");
+    const label = (right: boolean, source: string) =>
+      engine.label(first.recordId, { correct: right, truth: right, source });
+    for (let i = 0; i < 34; i++) {
+      const r = await gate.ask(`a clean act ${i}`);
+      await engine.label(r.recordId, { correct: true, truth: true, source: ANA });
+    }
+
+    // One "wrong" vote: acceptance waits for a second review, and the grade does not count the
+    // act wrong either. Read by its latest label it was 34 of 35.
+    await label(false, ANA);
+    const disputed = await gate.rollout.evaluate();
+    expect(disputed.acceptance).toMatchObject({ status: "awaiting-labels" });
+    expect(disputed.grade).toMatchObject({ kind: "estimated", n: 34, accuracy: 1 });
+
+    // Wrong, wrong, then right: the latest label is the losing vote. The test rejects, and the
+    // grade reads the act wrong with it, at the rejection and on every status after.
+    await label(false, BEN);
+    await label(true, CY);
+    const rejected = await gate.rollout.evaluate();
+    expect(rejected.reason).toMatch(/^rejected: 1 wrong of 7 planned acts/);
+    expect(rejected.grade).toMatchObject({ kind: "estimated", n: 35, accuracy: 34 / 35 });
+    // The rejection starts a fresh phase, which is graded the same way while it is held: a new
+    // disputed act is unlabelled to the grade, not one wrong of 31.
+    for (let i = 0; i < 30; i++) {
+      const r = await gate.ask(`a later act ${i}`);
+      await engine.label(r.recordId, { correct: true, truth: true, source: ANA });
+    }
+    const later = await gate.ask("a later disputed act");
+    await engine.label(later.recordId, { correct: false, truth: false, source: ANA });
+    const held = await gate.rollout.evaluate();
+    expect(held.reason).toMatch(/^holding shadow: this configuration was rejected/);
+    expect(held.grade).toMatchObject({ kind: "estimated", n: 30, accuracy: 1 });
+  });
+
   it("refuses an unknown rule as an invalid plan, holding shadow", async () => {
     const engine = new Engine({ oracle: new Fixed(), ledger: new MemoryLedger() });
     const gate = engine.gate(spec({ adjudication: "vote" as unknown as "latest" }));

@@ -25,13 +25,13 @@ import {
 } from "./anytime.ts";
 import type { Engine } from "./engine.ts";
 import type { Gate } from "./gate.ts";
-import { actWasRight, recordedGoIsYes } from "./ledger/calibration.ts";
 import {
   type EvidenceGrade,
   type GradeOptions,
   gradeOf,
   type MeasuredGrade,
 } from "./ledger/evidence.ts";
+import { adjudicateRows } from "./ledger/labels.ts";
 import {
   type DecisionRecord,
   decisionRows,
@@ -163,8 +163,8 @@ export interface RolloutSettings {
    * reviewer's rate of false "wrong" labels can be as large as the promise's whole error budget.
    * It is part of the plan's identity, so opting in starts a fresh phase. Promotion only:
    * demotion reads an audit's latest label under every demotion rule, so an unconfirmed "wrong"
-   * audit can still return the gate to shadow, which is the cautious direction. Whether
-   * demotion should wait for confirmation is the owner's decision, not made here.
+   * audit can still return the gate to shadow, which is the cautious direction (decided
+   * 2026-11-12: demotion does not wait for confirmation).
    */
   readonly adjudication?: AcceptancePlan["adjudication"];
   /** Demotion (window rule): the most recent audited rows of the current enforce phase read. */
@@ -188,11 +188,18 @@ export type RolloutOptions = RolloutSettings & {
   readonly promisedAccuracy: number;
 } & ({ readonly engine: Engine } | { readonly gate: Gate });
 
-/** What the current enforce phase's blind audits show. */
+/**
+ * What the window rule read of the current enforce phase: its audited acts whose label the
+ * plan's sources admit, cut to the last `window`. `n` and `acted` are the same count (a row
+ * that was not an act is not an audited act), and `accuracy` is the share of them that were
+ * right to act on.
+ */
 export interface AuditWindow {
   readonly n: number;
   readonly acted: number;
   readonly accuracy: number;
+  /** Audited acts of the phase labelled only by a source the plan does not read, when any. */
+  readonly untrusted?: number;
 }
 
 /**
@@ -646,21 +653,29 @@ export class Rollout {
     );
   }
 
-  private audits(rows: readonly DecisionRecord[], scope: Scope): AuditWindow {
-    const audited = this.eligible(rows, scope)
-      .filter((r) => r.outcome && !r.failedOpen && !settledWithoutAnswer(r))
-      .filter((r) => r.mode === "enforce" && r.tags.includes("audit"))
-      .slice(-scope.window);
-    const acted = audited.filter((r) => r.soft === "act");
-    const right = acted.filter((r) => {
-      const polarity = recordedGoIsYes(r);
-      if (r.verdict.kind === "judge" && polarity === undefined) return false;
-      return actWasRight(r, polarity ?? true) === true;
-    }).length;
+  /**
+   * What the window rule reads: the phase's audited acts, as the other demotion rules define
+   * them (`readDemotion`), with a label the plan's sources admit, as acceptance and the enforce
+   * grade read labels. One set of rows gives both `n` and `accuracy`. A label from a source the
+   * plan does not read is selected by its outcome (a revert lands on a wrong act, an acceptance
+   * on a right one), so it neither demotes a gate nor keeps one enforced; `untrusted` counts
+   * those acts, so they are not dropped silently.
+   */
+  private audits(rows: readonly DecisionRecord[], scope: Scope, trust: TrustRegistry): AuditWindow {
+    const filter = { sources: scope.plan.sources, trust };
+    const reads = (r: DecisionRecord): boolean =>
+      r.outcome !== undefined && admits(filter, r.outcome.source);
+    const audited = this.eligible(rows, scope).filter(
+      (r) => r.mode === "enforce" && r.tags.includes("audit") && isPlannedAct(r),
+    );
+    const untrusted = audited.filter((r) => r.outcome !== undefined && !reads(r)).length;
+    const read = audited.filter(reads).slice(-scope.window);
+    const right = read.filter(rightToAct).length;
     return {
-      n: audited.length,
-      acted: acted.length,
-      accuracy: acted.length ? right / acted.length : 0,
+      n: read.length,
+      acted: read.length,
+      accuracy: read.length ? right / read.length : 0,
+      ...(untrusted > 0 ? { untrusted } : {}),
     };
   }
 
@@ -790,7 +805,11 @@ export class Rollout {
       const shadowRows = this.eligible(fresh, scope).filter((r) => r.mode === "shadow");
       return status(
         "holding shadow: this configuration was rejected; change its rubric, policy, model, plan or evidence version to test a new one",
-        { grade: graded(shadowRows, { sources: scope.plan.sources }) },
+        {
+          grade: graded(this.asPlanReads(shadowRows, scope, target.trust), {
+            sources: scope.plan.sources,
+          }),
+        },
       );
     }
     return this.accept(
@@ -803,6 +822,23 @@ export class Rollout {
       graded,
       state?.afterId ?? null,
     );
+  }
+
+  /**
+   * Shadow rows as the plan's label rule reads them (`adjudicateRows`): unchanged under
+   * `latest`; under `confirm-wrong`, a settled row carries the label that settled it and a
+   * disputed one carries none. Shadow grades read these. Enforce grades stay on the latest
+   * label, which is what every demotion rule reads.
+   */
+  private asPlanReads(
+    rows: readonly DecisionRecord[],
+    scope: Scope,
+    trust: TrustRegistry,
+  ): DecisionRecord[] {
+    const rule = scope.plan.adjudication;
+    return rule === undefined
+      ? rows.slice()
+      : adjudicateRows(rows, rule, { sources: scope.plan.sources, trust });
   }
 
   /**
@@ -929,14 +965,18 @@ export class Rollout {
             target.trust,
             acceptance.status === "accepted" ? undefined : firstAct,
           );
+    // The grade reads each label as the plan's rule does, so it cannot disagree with the test
+    // beside it: a disputed act is unlabelled to both, and a settled one carries the label that
+    // settled it, which is also the label an accepted sample's sources and date count.
+    const read = this.asPlanReads(shadowRows, scope, target.trust);
     if (failed !== undefined) {
       boundary("shadow", true);
       return status(
         `rejected: this configuration already failed a planned sample on this ledger (the one starting at ${failed[0]?.id}); change its rubric, policy, model, plan or evidence version to test a new one`,
-        { grade: graded(shadowRows, { sources: plan.sources }) },
+        { grade: graded(read, { sources: plan.sources }) },
       );
     }
-    const grade = graded(shadowRows, { acceptance, sources: plan.sources });
+    const grade = graded(read, { acceptance, sources: plan.sources });
     if (grade.kind === "measured") {
       return this.promote(grade, acceptance, scope, target, status, boundary, phaseStart);
     }
@@ -1016,7 +1056,7 @@ export class Rollout {
     if (scope.demotion.kind !== "window") {
       return this.detect(fresh, scope, scope.demotion, target, status, boundary, graded);
     }
-    const audits = this.audits(fresh, scope);
+    const audits = this.audits(fresh, scope, target.trust);
     const grade = graded(this.eligible(fresh, scope), { sources: scope.plan.sources });
     const promised = this.opts.promisedAccuracy;
     if (audits.n >= scope.minAuditRows && audits.accuracy < promised) {
@@ -1034,7 +1074,14 @@ export class Rollout {
         : target.auditRate() > 0
           ? `need ${scope.minAuditRows} to judge`
           : "audits are off, so nothing can demote this gate";
-    return status(`live: ${audits.n} current-phase audited rows; ${watching}`, { grade, audits });
+    const unread =
+      audits.untrusted !== undefined
+        ? `; ${plural(audits.untrusted, "audited act")} labelled only from sources the plan does not read`
+        : "";
+    return status(`live: ${audits.n} current-phase audited rows; ${watching}${unread}`, {
+      grade,
+      audits,
+    });
   }
 
   /**
@@ -1249,7 +1296,7 @@ export class Rollout {
         d.kind === "window"
           ? {
               kind: "window",
-              audits: this.audits(phase, scope),
+              audits: this.audits(phase, scope, target.trust),
               window: scope.window,
               minAuditRows: scope.minAuditRows,
             }
