@@ -1,16 +1,27 @@
+import { isPlannedAct } from "../acceptance.ts";
 import { actWasRight, inferGoIsYes, recordedGoIsYes } from "../ledger/calibration.ts";
+import { type LabelReading, readLabel } from "../ledger/labels.ts";
 import {
   type DecisionRecord,
   inheritOutcome,
   isMemberOf,
   JsonlLedger,
+  labelHistory,
   type Outcome,
 } from "../ledger/ledger.ts";
+import type { TrustFilter } from "../ledger/sources.ts";
 import { rng, shuffled } from "../math.ts";
 import { CliError, ledgerPath, numberFlag, parseArgs, requiredString } from "./args.ts";
-import { type CommandResult, findGate, groupGates, loadLedger, runCommand } from "./common.ts";
+import {
+  type CommandResult,
+  findGate,
+  groupGates,
+  loadLedger,
+  readRows,
+  runCommand,
+} from "./common.ts";
 
-export const REVIEW_USAGE = `Usage: ratchet review <ledger> --gate <id> [--sample 20] [--seed <n>] [--reviewer <name>] [--denied | --audits]
+export const REVIEW_USAGE = `Usage: ratchet review <ledger> --gate <id> [--sample 20] [--seed <n>] [--reviewer <name>] [--denied | --audits | --adjudicate]
 
 Blind review: label a uniform random sample of one gate's decisions yourself. Each item
 shows the question the gate asks and the state the oracle saw, and asks for that question's
@@ -36,6 +47,12 @@ seed, never chosen by hand: a hand-picked review would be a selected sample, not
   --audits             Review every unreviewed blind audit (rows tagged audit: acts an
                        enforcing gate diverted to review at random), in ledger order. They
                        are the labels that can demote an enforcing gate.
+  --adjudicate         Review every act whose label, read under the confirm-wrong rule,
+                       awaits a second review or a tie-break, in ledger order, except acts
+                       you have already labelled (--sample and --seed are then ignored).
+                       Needs --reviewer: a second review is a vote only from a reviewer who
+                       can be told apart from the first. Labels count as an acceptance plan
+                       reads them by default (blind, census and unsourced labels).
 
 Answer the question: y (yes), n (no), s (skip, not recorded) or q (stop and keep what you
 answered). Your answer is the row's truth for that question. A battery asks each member's
@@ -52,6 +69,18 @@ export interface ReviewIo {
 }
 
 export const REVIEW_SOURCE = "review:blind";
+
+/**
+ * Which labels are votes for `--adjudicate`: the acceptance test's defaults (blind, census and
+ * unsourced labels, classified by `DEFAULT_TRUST`). The command takes no `--trust`, and the
+ * other queues read no trust class at all, so this is the reading a plan that sets neither
+ * `sources` nor `labelTrust` gives the same rows.
+ */
+const ADJUDICATION_FILTER: TrustFilter = {};
+
+/** An act whose label, under confirm-wrong, awaits a second review or a tie-break. */
+const awaitingAdjudication = (r: DecisionRecord): boolean =>
+  isPlannedAct(r) && readLabel(r, "confirm-wrong", ADJUDICATION_FILTER).status === "awaiting";
 
 interface Reviewed {
   readonly row: DecisionRecord;
@@ -144,7 +173,10 @@ export function review(argv: readonly string[], io?: ReviewIo): Promise<CommandR
   return runCommand("review", async () => {
     const p = parseArgs(
       argv,
-      { values: ["gate", "sample", "seed", "reviewer"], booleans: ["denied", "audits"] },
+      {
+        values: ["gate", "sample", "seed", "reviewer"],
+        booleans: ["denied", "audits", "adjudicate"],
+      },
       "review",
     );
     const path = ledgerPath(p, "review");
@@ -154,20 +186,46 @@ export function review(argv: readonly string[], io?: ReviewIo): Promise<CommandR
     const reviewer = p.values.get("reviewer");
     const denied = p.booleans.has("denied");
     const audits = p.booleans.has("audits");
+    const adjudicate = p.booleans.has("adjudicate");
     if (denied && audits)
       throw new CliError("--denied and --audits are separate queues; pick one", "review");
+    if (adjudicate && (denied || audits)) {
+      throw new CliError(
+        "--adjudicate is a separate queue from --denied and --audits; pick one",
+        "review",
+      );
+    }
+    if (adjudicate && reviewer === undefined) {
+      throw new CliError(
+        "--adjudicate needs --reviewer <name>: a second review from an unnamed reviewer cannot be told apart from the first, so it would confirm nothing",
+        "review",
+      );
+    }
     if (io === undefined) throw new CliError("review needs an interactive terminal", "review");
     const rows = await loadLedger(path, "review");
     const gate = findGate(groupGates(rows), gateKey, "review");
     if (gate.memberOf !== undefined) {
       throw new CliError("review a battery through its gate, not one member", "review");
     }
-    const pool = gate.rows.filter(
-      (r) =>
-        r.verdict.kind === "judge" &&
-        typeof r.state === "string" &&
-        !(r.outcome?.source ?? "").startsWith("review:"),
-    );
+    const source = reviewer === undefined ? REVIEW_SOURCE : `${REVIEW_SOURCE}:${reviewer}`;
+    // The adjudication queue holds rows already reviewed, by design: their labels are disputed.
+    const pool = adjudicate
+      ? gate.rows.filter(
+          (r) =>
+            r.verdict.kind === "judge" && typeof r.state === "string" && awaitingAdjudication(r),
+        )
+      : gate.rows.filter(
+          (r) =>
+            r.verdict.kind === "judge" &&
+            typeof r.state === "string" &&
+            !(r.outcome?.source ?? "").startsWith("review:"),
+        );
+    if (adjudicate && pool.length === 0) {
+      throw new CliError(
+        `gate ${gateKey} has no judge acts with a stored state (Engine keepState) whose label awaits a second review or a tie-break`,
+        "review",
+      );
+    }
     if (pool.length === 0) {
       throw new CliError(
         `gate ${gateKey} has no unreviewed judge rows with a stored state (Engine keepState)`,
@@ -176,18 +234,34 @@ export function review(argv: readonly string[], io?: ReviewIo): Promise<CommandR
     }
     const polarityOf = goPolarity(gate.rows);
     const actingWasWrong = (r: DecisionRecord): boolean => actWasRight(r, polarityOf(r)) === false;
-    const draw = denied
-      ? pool.filter(actingWasWrong)
-      : audits
-        ? pool.filter((r) => r.tags.includes("audit"))
-        : shuffled(pool, rng(seed)).slice(0, size);
+    // A reviewer who already voted on a row cannot be its second or third vote: their new label
+    // would only replace their own (one source, one reviewer).
+    const draw = adjudicate
+      ? pool.filter((r) => !labelHistory(r).some((o) => o.source === source))
+      : denied
+        ? pool.filter(actingWasWrong)
+        : audits
+          ? pool.filter((r) => r.tags.includes("audit"))
+          : shuffled(pool, rng(seed)).slice(0, size);
+    if (adjudicate && draw.length === 0) {
+      throw new CliError(
+        `gate ${gateKey}: every act awaiting adjudication already carries a label from ${source}; the next vote must come from another reviewer`,
+        "review",
+      );
+    }
     if (denied && draw.length === 0) {
       throw new CliError(`gate ${gateKey} has no unreviewed denials`, "review");
     }
     if (audits && draw.length === 0) {
       throw new CliError(`gate ${gateKey} has no unreviewed audits`, "review");
     }
-    const drawn = denied ? "every denial" : audits ? "every audit" : `seed ${seed}`;
+    const drawn = adjudicate
+      ? "every act awaiting adjudication"
+      : denied
+        ? "every denial"
+        : audits
+          ? "every audit"
+          : `seed ${seed}`;
     const prompts = new Set(draw.map((r) => r.prompt));
     const shared =
       prompts.size === 1 && !draw.some((r) => r.combined === true)
@@ -195,11 +269,13 @@ export function review(argv: readonly string[], io?: ReviewIo): Promise<CommandR
         : undefined;
     io.print(
       `${
-        denied
-          ? `Blind review of ${gateKey}: every unreviewed denial, ${draw.length} of ${pool.length} rows.`
-          : audits
-            ? `Blind review of ${gateKey}: every unreviewed audit, ${draw.length} of ${pool.length} rows.`
-            : `Blind review of ${gateKey}: ${draw.length} of ${pool.length} unreviewed rows, seed ${seed}.`
+        adjudicate
+          ? `Blind review of ${gateKey}: every act awaiting adjudication that ${reviewer} has not labelled, ${draw.length} of ${pool.length} rows.`
+          : denied
+            ? `Blind review of ${gateKey}: every unreviewed denial, ${draw.length} of ${pool.length} rows.`
+            : audits
+              ? `Blind review of ${gateKey}: every unreviewed audit, ${draw.length} of ${pool.length} rows.`
+              : `Blind review of ${gateKey}: ${draw.length} of ${pool.length} unreviewed rows, seed ${seed}.`
       }\n${shared === undefined ? "" : `Question: ${shared}\n`}`,
     );
     const reviewed: Reviewed[] = [];
@@ -218,10 +294,39 @@ export function review(argv: readonly string[], io?: ReviewIo): Promise<CommandR
       if (answer === "skip") continue;
       reviewed.push({ row, truth: answer === "yes" });
     }
-    const source = reviewer === undefined ? REVIEW_SOURCE : `${REVIEW_SOURCE}:${reviewer}`;
     await record(path, rows, reviewed, source);
-    return { exitCode: 0, output: summary(gateKey, reviewed, drawn) };
+    const settled = adjudicate && reviewed.length > 0 ? await adjudicated(path, reviewed) : "";
+    return { exitCode: 0, output: `${summary(gateKey, reviewed, drawn)}${settled}` };
   });
+}
+
+/**
+ * After an adjudication session, how the rows answered read now under confirm-wrong, from the
+ * ledger as it stands with the labels just written: settled wrong, settled right, or still
+ * awaiting a tie-break (or, should a vote not have counted, a second review).
+ */
+async function adjudicated(path: string, reviewed: readonly Reviewed[]): Promise<string> {
+  const now = new Map(readRows(await new JsonlLedger(path).all()).map((r) => [r.id, r]));
+  let wrong = 0;
+  let right = 0;
+  let tie = 0;
+  let second = 0;
+  for (const { row } of reviewed) {
+    const current = now.get(row.id);
+    const reading: LabelReading =
+      current === undefined
+        ? { status: "unlabelled" }
+        : readLabel(current, "confirm-wrong", ADJUDICATION_FILTER);
+    if (reading.status === "settled") {
+      if (reading.right) right++;
+      else wrong++;
+    } else if (reading.status === "awaiting") {
+      if (reading.needs === "tie-break") tie++;
+      else second++;
+    }
+  }
+  const more = second > 0 ? `, ${second} still awaiting a second review` : "";
+  return `Adjudicated ${reviewed.length}: ${wrong} now settled wrong to act on, ${right} settled right, ${tie} still awaiting a tie-break${more}.\n`;
 }
 
 async function answerFor(io: ReviewIo, question: string): Promise<"yes" | "no" | "skip" | "quit"> {

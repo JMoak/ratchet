@@ -1,4 +1,6 @@
+import { anytimeLowerBound } from "./anytime.ts";
 import { actWasRight, recordedGoIsYes } from "./ledger/calibration.ts";
+import { adjudicateRows, isLabelRule, type LabelRule, readLabel } from "./ledger/labels.ts";
 import { type DecisionRecord, hashState, settledWithoutAnswer } from "./ledger/ledger.ts";
 import {
   admits,
@@ -48,6 +50,18 @@ export interface AcceptancePlan {
    * present but unreadable or unnamed is not known to be blind (register the source instead).
    */
   readonly sources?: readonly FitClass[];
+  /**
+   * How an act's labels are read (`labels.ts`). `latest`, the default, reads its latest label, as
+   * always. `confirm-wrong` reads the labels `sources` admits as one vote per reviewer and counts
+   * an act wrong only once a second reviewer confirms the "wrong" (a third breaks a tie); until
+   * then the act is unlabelled to the test, so the sample can neither pass nor be rejected on a
+   * disputed label. The test assumes correct labels, and a reviewer who marks a right act wrong
+   * 1.25% of the time already lets a perfect gate pass the 149-act zero-error plan only about 15%
+   * of the time; confirmation cuts that rate to about 0.03% if reviewers err independently. Part
+   * of the plan's identity only when it is `confirm-wrong`, so every plan written before it keeps
+   * its hash.
+   */
+  readonly adjudication?: LabelRule;
 }
 
 /** What a plan resolves to once validated: every default filled and the sample size fixed. */
@@ -59,6 +73,8 @@ export interface ResolvedPlan {
   readonly group?: { readonly tagPrefix: string; readonly maxPerGroup: number };
   /** The classes read, in `TRUST_CLASSES` order. */
   readonly sources: readonly FitClass[];
+  /** Present only when labels are read under `confirm-wrong`; absent is `latest`. */
+  readonly adjudication?: "confirm-wrong";
   /** Identity of the plan, so evidence gathered under one plan is never judged by another. */
   readonly hash: string;
 }
@@ -77,6 +93,11 @@ export type AcceptanceResult =
       readonly unlabelled: number;
       /** Of the unlabelled, acts whose only label came from a source the plan does not read. */
       readonly untrusted?: number;
+      /**
+       * Under `confirm-wrong` only, and only when not zero: of the unlabelled, acts whose "wrong"
+       * label awaits a second review or a tie-break.
+       */
+      readonly awaitingAdjudication?: number;
       readonly sample: readonly string[];
     }
   | {
@@ -86,6 +107,49 @@ export type AcceptanceResult =
       readonly lowerBound: number;
       readonly sample: readonly string[];
     };
+
+/**
+ * A planned sample read while it fills (`acceptanceProgress`). Plain data, and a readout only:
+ * nothing in it promotes, rejects or changes a phase.
+ */
+export interface AcceptanceProgress {
+  readonly plan: ResolvedPlan;
+  /** Acts drawn into the planned sample so far, at most `sampleSize`. */
+  readonly acts: number;
+  /** The plan's sample size: the acts the one evaluation reads. */
+  readonly sampleSize: number;
+  /** The ids of the acts drawn so far, in sample order. */
+  readonly sample: readonly string[];
+  /**
+   * The contiguous labelled prefix: the first `acts` acts in sample order that each carry a
+   * label the plan reads, and how many of them were right and wrong to act on. It ends at the
+   * first act without such a label, however many acts after it are labelled.
+   */
+  readonly prefix: { readonly acts: number; readonly right: number; readonly wrong: number };
+  /** Acts anywhere in the sample so far that carry a label the plan reads. */
+  readonly labelled: number;
+  /** Of those, the acts that were wrong to act on; an unreadable label counts as wrong. */
+  readonly wrong: number;
+  /** Acts whose only label came from a source the plan does not read: unlabelled here. */
+  readonly untrusted: number;
+  /**
+   * Under `confirm-wrong` only, and only when not zero: acts whose "wrong" label awaits a second
+   * review or a tie-break. Unlabelled here, as in the evaluation.
+   */
+  readonly awaitingAdjudication?: number;
+  /**
+   * True once `wrong` exceeds the plan's `maxErrors`: however the remaining acts are labelled,
+   * the completed sample is rejected unless a label already read is corrected. Information
+   * only: reviewer error can be as large as the error budget, so the planned sample still
+   * completes and is evaluated once, where a wrong label can be adjudicated first.
+   */
+  readonly cannotPass: boolean;
+  /**
+   * A lower confidence bound on the accuracy of acting, at the plan's confidence, valid at
+   * every look (`anytimeLowerBound` over the prefix). It decides nothing.
+   */
+  readonly lowerBound: number;
+}
 
 /**
  * Exact one-sided lower confidence bound on a success probability (Clopper-Pearson): the
@@ -155,8 +219,22 @@ function planSources(sources: readonly FitClass[] | undefined): readonly FitClas
 }
 
 /**
- * Validate a plan and fix its sample size. Throws on a target, confidence, group or sources
- * out of range.
+ * The plan's label rule. Read as untyped, since plans often arrive as parsed JSON: a misspelled
+ * rule would otherwise read as the default without a word.
+ */
+function planRule(rule: unknown): LabelRule {
+  if (rule === undefined) return "latest";
+  if (!isLabelRule(rule)) {
+    throw new Error(
+      `adjudication must be "latest" or "confirm-wrong", got ${JSON.stringify(rule)}`,
+    );
+  }
+  return rule;
+}
+
+/**
+ * Validate a plan and fix its sample size. Throws on a target, confidence, group, sources or
+ * adjudication out of range.
  */
 export function resolvePlan(plan: AcceptancePlan): ResolvedPlan {
   const confidence = plan.confidence ?? 0.95;
@@ -169,9 +247,13 @@ export function resolvePlan(plan: AcceptancePlan): ResolvedPlan {
     }
   }
   const sources = planSources(plan.sources);
+  // The latest-label rule is the default and stays out of the plan, as the default sources do.
+  const confirm = planRule(plan.adjudication) === "confirm-wrong";
+  const adjudication = confirm ? { adjudication: "confirm-wrong" as const } : {};
   const sampleSize = requiredActs(plan.target, confidence, maxErrors);
   // The default sources stay out of the identity, so a plan written before sources existed
-  // keeps its hash, and with it every rollout checkpoint scoped to it.
+  // keeps its hash, and with it every rollout checkpoint scoped to it; so does the default
+  // label rule, for plans written before rules existed.
   const identity = {
     target: plan.target,
     confidence,
@@ -179,6 +261,7 @@ export function resolvePlan(plan: AcceptancePlan): ResolvedPlan {
     sampleSize,
     group: group ?? null,
     ...(sources.join() === TRUSTED_SOURCES.join() ? {} : { sources }),
+    ...adjudication,
   };
   return {
     target: plan.target,
@@ -187,8 +270,27 @@ export function resolvePlan(plan: AcceptancePlan): ResolvedPlan {
     sampleSize,
     ...(group !== undefined ? { group: { ...group } } : {}),
     sources,
+    ...adjudication,
     hash: hashState(JSON.stringify(identity)),
   };
+}
+
+/**
+ * Rows as the plan's label rule reads them, and how many of them await adjudication: under
+ * `confirm-wrong`, through `adjudicateRows` with the plan's sources and `trust`; otherwise the
+ * rows themselves and none. Every reader of labels in this module reads through it at one place,
+ * so the rest of each reader is the same under either rule.
+ */
+function underRule(
+  rows: readonly DecisionRecord[],
+  plan: ResolvedPlan,
+  trust: TrustRegistry,
+): { readonly rows: readonly DecisionRecord[]; readonly awaiting: number } {
+  const rule = plan.adjudication;
+  if (rule === undefined) return { rows, awaiting: 0 };
+  const filter = { sources: plan.sources, trust };
+  const awaiting = rows.filter((r) => readLabel(r, rule, filter).status === "awaiting").length;
+  return { rows: adjudicateRows(rows, rule, filter), awaiting };
 }
 
 /**
@@ -245,16 +347,21 @@ export function evaluateAcceptance(
   return judgeSample(acceptanceSample(rows, resolved), resolved, trust);
 }
 
-/** The one evaluation of a planned sample already drawn (`acceptanceSample`). */
+/**
+ * The one evaluation of a planned sample already drawn (`acceptanceSample`), its labels read
+ * under the plan's rule. Under `confirm-wrong` an act whose "wrong" is unconfirmed or tied is
+ * unlabelled, so a disputed label holds the sample awaiting labels rather than rejecting it.
+ */
 function judgeSample(
-  sample: readonly DecisionRecord[],
+  drawn: readonly DecisionRecord[],
   resolved: ResolvedPlan,
   trust: TrustRegistry,
 ): AcceptanceResult {
-  if (sample.length < resolved.sampleSize) {
-    return { status: "collecting", plan: resolved, acts: sample.length };
+  if (drawn.length < resolved.sampleSize) {
+    return { status: "collecting", plan: resolved, acts: drawn.length };
   }
-  const ids = sample.map((r) => r.id);
+  const ids = drawn.map((r) => r.id);
+  const { rows: sample, awaiting } = underRule(drawn, resolved, trust);
   const filter = { sources: resolved.sources, trust };
   const unread = sample.filter((r) => r.outcome === undefined || !admits(filter, r.outcome.source));
   if (unread.length > 0) {
@@ -264,6 +371,7 @@ function judgeSample(
       plan: resolved,
       unlabelled: unread.length,
       ...(untrusted > 0 ? { untrusted } : {}),
+      ...(awaiting > 0 ? { awaitingAdjudication: awaiting } : {}),
       sample: ids,
     };
   }
@@ -275,6 +383,76 @@ function judgeSample(
     errors,
     lowerBound,
     sample: ids,
+  };
+}
+
+/**
+ * Read a planned sample while it fills, without evaluating it: over rows scoped as for
+ * `evaluateAcceptance`, the same sample `acceptanceSample` draws (retries once, groups capped),
+ * its labels read exactly as the evaluation reads them (the plan's `sources` through `trust`,
+ * an unreadable label counting as wrong, a label from another source counting as none).
+ *
+ * `lowerBound` is safe to watch where a fixed-sample bound is not. A Clopper-Pearson bound is
+ * exact only at the size planned: read after every label and acted on the first time it clears
+ * the promise, it is optional stopping and overstates the gate. This one is
+ * `anytimeLowerBound(right, wrong, 1 - confidence)`: a mixture of likelihood-ratio bets against
+ * each candidate accuracy x is a test supermartingale while every act, given those before it,
+ * is right with probability at most x, so by Ville's inequality the chance that the bound ever
+ * exceeds x, over every look at once, is at most 1 - confidence (a confidence sequence).
+ *
+ * It is computed on the labelled prefix in sample order, never on labels in the order they
+ * arrived. When a label's arrival depends on its outcome (wrong acts take longer to review),
+ * arrival order inflates the evidence (the research measured false promotion at 29% and 90%
+ * against 3.8% in ledger order), so an unlabelled act holds the bound where it stands until it
+ * is labelled, whatever is labelled after it.
+ *
+ * Nothing here decides. The planned test alone promotes or rejects (`evaluateAcceptance`), once,
+ * at its planned size; `cannotPass` is an early notice that the evaluation will reject unless a
+ * label is corrected. Stopping a configuration because its readout looks poor removes only
+ * promotions; starting over under a new version until one passes is multiple testing, as before.
+ */
+export function acceptanceProgress(
+  rows: readonly DecisionRecord[],
+  plan: AcceptancePlan | ResolvedPlan,
+  trust: TrustRegistry = DEFAULT_TRUST,
+): AcceptanceProgress {
+  const resolved = "hash" in plan ? plan : resolvePlan(plan);
+  const { rows: sample, awaiting } = underRule(acceptanceSample(rows, resolved), resolved, trust);
+  const filter = { sources: resolved.sources, trust };
+  let open = true;
+  let right = 0;
+  let prefixWrong = 0;
+  let labelled = 0;
+  let wrong = 0;
+  let untrusted = 0;
+  for (const r of sample) {
+    if (r.outcome === undefined || !admits(filter, r.outcome.source)) {
+      if (r.outcome !== undefined) untrusted++;
+      open = false;
+      continue;
+    }
+    const ok = rightToAct(r);
+    labelled++;
+    if (!ok) wrong++;
+    if (open) {
+      if (ok) right++;
+      else prefixWrong++;
+    }
+  }
+  return {
+    plan: resolved,
+    acts: sample.length,
+    sampleSize: resolved.sampleSize,
+    sample: sample.map((r) => r.id),
+    prefix: { acts: right + prefixWrong, right, wrong: prefixWrong },
+    labelled,
+    wrong,
+    untrusted,
+    ...(awaiting > 0 ? { awaitingAdjudication: awaiting } : {}),
+    // Labels the plan reads never change on completion, so these wrong acts stay in the
+    // evaluated sample; with at most `maxErrors` the plan's own sample size guarantees the bound.
+    cannotPass: wrong > resolved.maxErrors,
+    lowerBound: anytimeLowerBound(right, prefixWrong, 1 - resolved.confidence),
   };
 }
 
@@ -293,6 +471,15 @@ export function cannotPass(
   trust: TrustRegistry = DEFAULT_TRUST,
 ): boolean {
   if (sample.length < plan.sampleSize) return false;
+  return doomed(underRule(sample, plan, trust).rows, plan, trust);
+}
+
+/** `cannotPass` on a complete sample whose labels are already read under the plan's rule. */
+function doomed(
+  sample: readonly DecisionRecord[],
+  plan: ResolvedPlan,
+  trust: TrustRegistry,
+): boolean {
   const filter = { sources: plan.sources, trust };
   const wrong = sample.filter(
     (r) => r.outcome !== undefined && admits(filter, r.outcome.source) && !rightToAct(r),
@@ -310,11 +497,12 @@ export function cannotPass(
  * the phase start is set (e2e V1, T4-10). Pass rows scoped as for `evaluateAcceptance`.
  */
 export function failedWindow(
-  rows: readonly DecisionRecord[],
+  scoped: readonly DecisionRecord[],
   plan: ResolvedPlan,
   trust: TrustRegistry = DEFAULT_TRUST,
   before?: string,
 ): readonly DecisionRecord[] | undefined {
+  const rows = underRule(scoped, plan, trust).rows;
   const filter = { sources: plan.sources, trust };
   // A window fails only on a wrong (or unreadable) label, so none can start after the last one.
   let last = -1;
@@ -330,7 +518,7 @@ export function failedWindow(
     const sample = acceptanceSample(rows, plan, i);
     // Later windows hold no more acts than this one: none of them is complete either.
     if (sample.length < plan.sampleSize) return undefined;
-    if (cannotPass(sample, plan, trust)) return sample;
+    if (doomed(sample, plan, trust)) return sample;
   }
   return undefined;
 }
@@ -365,8 +553,11 @@ function groupOf(
   return key === undefined ? undefined : { key, cap: maxPerGroup };
 }
 
-/** Was acting right on this labelled act? Judge rows read the go side the row was ruled with. */
-function rightToAct(r: DecisionRecord): boolean {
+/**
+ * Was acting right on this labelled act? Judge rows read the go side the row was ruled with; an
+ * unlabelled or unreadable act is not right. Demotion reads audits the same way (`Rollout`).
+ */
+export function rightToAct(r: DecisionRecord): boolean {
   const polarity = recordedGoIsYes(r);
   if (r.verdict.kind === "judge" && polarity === undefined) return false;
   return actWasRight(r, polarity ?? true) === true;

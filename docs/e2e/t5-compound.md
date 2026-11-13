@@ -500,3 +500,82 @@ bun experiments/e2e/t5-compound/repro/<name>.ts             # sequential-negated
 `main.ts --resume=<run dir>` continues a run that stopped, keeping its manifest and frozen bars;
 `--only=a,b` runs a subset; `--corpus=<file>` runs a pilot corpus. Every live phase calls
 `guard()` and checks this track's own recorded spend against its $2.50 cap.
+
+## Addendum (2026-11-12): two keys on the act side
+
+The foundations review ([report](../../reports/Foundations%20review%202026-11.md)) proposed "two
+keys", acting only when a second model family would also act, as a default for gates. This
+tests it on this run's recorded answers (the run directory named at the top), offline and with
+no calls:
+
+```
+bun experiments/e2e/t5-compound/pooling-review.ts <run directory>
+```
+
+The same script compares the shipped pool with pooling weights fitted from the within-class
+logit correlation, which were measured and not shipped (see `pool()` in
+[architecture.md](../architecture.md#compounding-mechanically)).
+
+The T5 judge gates act on yes: the policy is `{ actAbove: 0.95 }` with no `goIsYes` (main.ts),
+and the rows' own `go` says the same (`inferGoIsYes` over 368 judge rows: go is yes). Each
+strategy's go probability is p(yes) for one member or pool; "two keys" is the smaller go of the
+members named; "unanimous lean" acts only when every member leans go, at the smallest go, else
+never. Acting is right when the truth is the go side: 91 of 208 held-out items, so 43.8% is the
+most any strategy can act on without a wrong act. Cells: share of held-out items acted on
+(count), wrong acts, act precision and its exact one-sided 95% lower bound (`exactLowerBound`).
+
+Bars fitted on the fit split with `fitThreshold(act-side rows, target, 20)`, point estimate and
+conservative (Wilson) mode, applied once to held-out:
+
+| strategy | target 0.95 | 0.95 conservative | target 0.98 | 0.98 conservative |
+| --- | --- | --- | --- | --- |
+| jev-1.13 alone | bar 0.65: 38.5% acted (80), 7 wrong, 91.3% (lower 84.2%) | no bar | bar 0.72: 35.1% acted (73), 4 wrong, 94.5% (lower 87.9%) | no bar |
+| haiku-5.5 alone | bar 0.35: 44.2% acted (92), 4 wrong, 95.7% (lower 90.3%) | no bar | bar 0.70: 41.3% acted (86), 2 wrong, 97.7% (lower 92.9%) | no bar |
+| log-odds, rho 0 | bar 0.13: 46.2% acted (96), 7 wrong, 92.7% (lower 86.7%) | bar 0.83: 38.5% acted (80), 0 wrong, 100.0% (lower 96.3%) | bar 0.52: 41.3% acted (86), 1 wrong, 98.8% (lower 94.6%) | no bar |
+| shipped matrix (phi, GLS) | bar 0.14: 47.6% acted (99), 10 wrong, 89.9% (lower 83.5%) | no bar | bar 0.50: 41.8% acted (87), 1 wrong, 98.9% (lower 94.7%) | no bar |
+| two keys: jev-1.13 and haiku-5.5 | bar 0.13: 48.6% acted (101), 12 wrong, 88.1% (lower 81.5%) | bar 0.35: 39.4% acted (82), 0 wrong, 100.0% (lower 96.4%) | bar 0.30: 40.4% acted (84), 0 wrong, 100.0% (lower 96.5%) | no bar |
+| two keys: all three members | bar 0.13: 47.6% acted (99), 12 wrong, 87.9% (lower 81.1%) | bar 0.31: 39.4% acted (82), 0 wrong, 100.0% (lower 96.4%) | bar 0.30: 39.4% acted (82), 0 wrong, 100.0% (lower 96.4%) | no bar |
+| unanimous lean: all three members | bar 0.50: 36.5% acted (76), 0 wrong, 100.0% (lower 96.1%) | no bar | bar 0.50: 36.5% acted (76), 0 wrong, 100.0% (lower 96.1%) | no bar |
+| recorded cascade jev-1.13 then haiku-5.5 | bar 0.20: 44.7% acted (93), 4 wrong, 95.7% (lower 90.4%) | no bar | bar 0.92: 36.5% acted (76), 0 wrong, 100.0% (lower 96.1%) | no bar |
+
+Fixed bars, no fitting noise:
+
+| strategy | bar 0.7 | bar 0.8 | bar 0.9 |
+| --- | --- | --- | --- |
+| jev-1.13 alone | 37.5% acted (78), 6 wrong, 92.3% (lower 85.4%) | 28.8% acted (60), 2 wrong, 96.7% (lower 89.9%) | 22.6% acted (47), 0 wrong, 100.0% (lower 93.8%) |
+| haiku-5.5 alone | 41.3% acted (86), 2 wrong, 97.7% (lower 92.9%) | 40.9% acted (85), 2 wrong, 97.6% (lower 92.8%) | 36.1% acted (75), 2 wrong, 97.3% (lower 91.8%) |
+| log-odds, rho 0 | 39.9% acted (83), 0 wrong, 100.0% (lower 96.5%) | 38.5% acted (80), 0 wrong, 100.0% (lower 96.3%) | 38.0% acted (79), 0 wrong, 100.0% (lower 96.3%) |
+| shipped matrix (phi, GLS) | 39.4% acted (82), 0 wrong, 100.0% (lower 96.4%) | 38.5% acted (80), 0 wrong, 100.0% (lower 96.3%) | 38.0% acted (79), 0 wrong, 100.0% (lower 96.3%) |
+| two keys: jev-1.13 and haiku-5.5 | 33.2% acted (69), 0 wrong, 100.0% (lower 95.8%) | 26.4% acted (55), 0 wrong, 100.0% (lower 94.7%) | 18.8% acted (39), 0 wrong, 100.0% (lower 92.6%) |
+| two keys: all three members | 31.7% acted (66), 0 wrong, 100.0% (lower 95.6%) | 25.0% acted (52), 0 wrong, 100.0% (lower 94.4%) | 17.8% acted (37), 0 wrong, 100.0% (lower 92.2%) |
+| unanimous lean: all three members | 31.7% acted (66), 0 wrong, 100.0% (lower 95.6%) | 25.0% acted (52), 0 wrong, 100.0% (lower 94.4%) | 17.8% acted (37), 0 wrong, 100.0% (lower 92.2%) |
+| recorded cascade jev-1.13 then haiku-5.5 | 41.8% acted (87), 0 wrong, 100.0% (lower 96.6%) | 41.3% acted (86), 0 wrong, 100.0% (lower 96.6%) | 39.4% acted (82), 0 wrong, 100.0% (lower 96.4%) |
+
+At any bar of 0.5 or more, "unanimous lean" is identical to two keys over all three members by
+construction, because both act only when every member's go clears the bar; they differ only
+where a fitted bar fell below 0.5.
+
+**Reading it:** at comparable coverage, two keys does not make fewer wrong acts than the pooled
+log-odds, the shipped matrix or the cascade.
+
+- **Fixed bars:** none of those four made a wrong act on these 208 items at 0.7, 0.8 or 0.9. Two
+  keys simply acted on less: 33.2% at its loosest fixed bar (0.7), against 38 to 42% for the
+  pools and the cascade at every bar. Fixed bars are also stricter for two keys, since its score
+  is the minimum of the members' go.
+- **Bars fitted for 0.98:** two keys (jev-1.13 and haiku-5.5) acted on 40.4% with 0 wrong. Pooled
+  log-odds and the shipped matrix acted on 41.3 to 41.8% with 1 wrong each, and the cascade on
+  36.5% with 0 wrong. That gap is a single act, which 208 items cannot separate: the exact lower
+  bounds of 94.6 to 96.5% all overlap.
+- **Against single models, two keys does help.** jev-1.13 alone made 6 wrong acts at 0.7.
+  haiku-5.5 alone made 2 at every fixed bar: its confident errors clear any bar, and a second key
+  is what stops them.
+- **Two warnings from the fitting:**
+  - The point-estimate 0.95 fit on 160 rows let most bars fall to 0.13 to 0.35, below a lean,
+    and those strategies then made 4 to 12 wrong acts on held-out.
+  - No strategy got a conservative 0.98 bar from 160 fit rows.
+- **The cascade** reached the most coverage at zero wrong acts at fixed bars (41.8% at 0.7,
+  against the 43.8% maximum).
+
+So the gain is the second model family. The cascade and the pooled panel reached the same safety
+at more coverage on these rows, and `concur` ships as the strictest way to combine, for a caller
+who wants a rule that does not rest on the pool's calibration, not as a default.

@@ -41,7 +41,7 @@ ratchet: read a decision ledger and say what it shows.
 Usage:
   ratchet report <ledger> [--gate <id>] [--target 0.98] [--min-support 30]
                  [--min-estimated 30] [--trust <prefix>=<class> ...]
-                 [--profile <file> ...] [--json]
+                 [--profile <file> ...] [--exact-bar [--group <tagPrefix>]] [--json]
   ratchet check  <ledger> --gate <id> --promise <p> [--require measured|estimated]
                  [--min-rows 30] [--min-estimated 30] [--max-ece <e>] [--model <id>]
                  [--window 500] [--trust <prefix>=<class> ...]
@@ -232,7 +232,7 @@ shadow mode, every row labelled):
 ## `report`
 
 ```text
-ratchet report <ledger> [--gate <id>] [--target 0.98] [--min-support 30] [--min-estimated 30] [--trust <prefix>=<class> ...] [--profile <file> ...] [--json]
+ratchet report <ledger> [--gate <id>] [--target 0.98] [--min-support 30] [--min-estimated 30] [--trust <prefix>=<class> ...] [--profile <file> ...] [--exact-bar [--group <tagPrefix>]] [--json]
 ```
 
 | flag | default | meaning |
@@ -243,7 +243,9 @@ ratchet report <ledger> [--gate <id>] [--target 0.98] [--min-support 30] [--min-
 | `--min-estimated <n>` | 30 | labelled unselected rows of the current configuration an estimated grade needs |
 | `--trust <prefix>=<class>` | the defaults | read a label source as a trust class; repeatable (see above) |
 | `--profile <file>` | none | a [calibration profile](#profile) a gate may be graded borrowed from until its own labels grade it estimated; repeatable |
-| `--json` | off | JSON instead of markdown |
+| `--exact-bar` | off | one extra line under each gate's act bar: the exact fixed-sequence bar on the same rows (below) |
+| `--group <tagPrefix>` | none | with `--exact-bar`: rows sharing a tag that starts with the prefix (for example `session:`) count as one observation; refused without `--exact-bar` |
+| `--json` | off | JSON instead of markdown; with `--exact-bar` each gate also carries `exact` (`bar` and `leftOut`) |
 
 The defaults are `REPORT_DEFAULTS` (`src/ledger/evidence.ts`), the levers `Gate.report()` and
 `Engine.report()` read with too, so one ledger grades the same in code and on the command line;
@@ -321,6 +323,25 @@ $ bun run ratchet report experiments/out/cli-example-ledger.jsonl --target 0.95
 - stop.done/scope (member): no act bar: too few rows for one at 95.0%; the point estimate clears it above 0.825 (95.1% of 81 rows) but the lower end of its 95% interval is 88.0%, so label more before acting on it (fitted on 150 unselected rows)
 ```
 
+With `--exact-bar` each line under "Act bars" is followed by the exact fixed-sequence bar
+(`fitExactBar`, `src/ledger/exact-bar.ts`), fitted on the same rows the act bar is fitted on:
+19 preset edges from 0.95 down to 0.05, an exact one-sided 95% bound at each, walked downward
+and stopped at the first failure. With `--group session:` the unit is the group, so the bound
+counts sessions, not rows; without it the line says it assumes rows are independent.
+
+```text
+$ bun run ratchet report ledger.jsonl --target 0.95 --exact-bar --group session:
+...
+- route: act above 0.970: acting was right on 100.0% of the 100 rows at or above it (...)
+  - exact bar: act above 0.950: of the 61 groups at or above it, 0 held a wrong act; exact one-sided 95.0% lower bound 95.2% >= 95.0%; a fixed sequence over 19 preset edges; 100 rows are about 61 independent observations; start chosen from the fit groups' own counts; provisional: found at the edge of power, label more before relying on it
+```
+
+"Provisional" means the bar is the start edge itself or its tail holds fewer than 1.5 times the
+units a bar needs, so it was found at the edge of statistical power, where a found bar is least
+reliable: label more before relying on it. This line is shown beside the reported act bar and
+does not replace it. Rows whose act-side probability is not a number in [0, 1] are left out of
+the exact fit and counted on the line.
+
 `bash.safe` acts above 0.319 because most of its commands are safe and acting at a moderate
 p(yes) was right 97.6% of the time; its leading-answer bar would have sat at 0.962, on a number
 that also counted its confident denials.
@@ -377,9 +398,10 @@ How to read it:
   0.999, where no bar can tell one from another. At 20% or more, under any combiner but `any` or
   `all`, it says what to combine with instead: log-odds pooling treats members as evidence for
   one answer, so a disjunction ("does any apply?") wants `combine: "any"`, a conjunction ("do all
-  hold?") `combine: "all"`, and either can be fitted with a learned combiner on labelled member
-  rows. The example's `stop.done` pools three conjuncts in log-odds and saturates on 67% of its
-  verdicts.
+  hold?") `combine: "all"`; either can then be calibrated by a Platt fit on labelled requests
+  (`fitPlattCombiner`). The printed advice also offers a learned combiner, which suits members
+  that are evidence for one answer rather than a conjunction (revised 2026-11-12). The example's
+  `stop.done` pools three conjuncts in log-odds and saturates on 67% of its verdicts.
 - **errors** groups failed-open rows by class: `HTTP <status>`, `timeout`, `aborted`,
   `short batch`, `malformed`, `unrecorded` (failed open with no message, as a budget cap does),
   or the message with numbers masked.
@@ -690,7 +712,7 @@ Semantics, precisely:
 ## `review`
 
 ```text
-ratchet review <ledger> --gate <id> [--sample 20] [--seed <n>] [--reviewer <name>] [--denied | --audits]
+ratchet review <ledger> --gate <id> [--sample 20] [--seed <n>] [--reviewer <name>] [--denied | --audits | --adjudicate]
 ```
 
 Labels that arrive in the moment (an approval click, an accepted suggestion) are not the same
@@ -708,8 +730,9 @@ question) and the earlier labels, and lists the rows whose label changed.
 
 The sample is drawn by the seed, never chosen by hand, and the seed is printed so the draw can be
 repeated. Each answer becomes the row's label with source `review:blind` (or
-`review:blind:<name>`); a replaced label is kept in the note, and the append-only ledger keeps
-both outcome lines. Reviewed rows are not drawn again.
+`review:blind:<name>`); a replaced label is kept in the note, the append-only ledger keeps
+both outcome lines, and the row keeps every label in `DecisionRecord.labels` (revised
+2026-11-12). Reviewed rows are not drawn again.
 
 A battery is reviewed member by member. Each member's question is printed and asked in turn,
 and each answer is recorded as that member's own truth (`Outcome.memberTruths`); a skipped
@@ -734,7 +757,48 @@ sample, whose disagreement rate bounds what the unreviewed rest hides.
 `--audits` reviews every unreviewed blind audit, in ledger order: the rows tagged `audit`, acts
 an enforcing gate diverted to review at random (`auditRate`). They are the labels that can
 demote an enforcing gate, and like the uniform sample they are unselected, so a review of them
-is evidence. `--denied` and `--audits` are separate queues; a session takes one.
+is evidence. `--denied`, `--audits` and `--adjudicate` are separate queues; a session takes one.
+
+`--adjudicate --reviewer <name>` (added 2026-11-12) is the queue for a plan that reads labels
+under `confirm-wrong` ([rollout guide](rollout.md#label-noise-and-confirm-wrong)). In ledger
+order, it holds every act of the gate (a row the policy acted on and an oracle answered) whose
+labels await one of two things: a second review, because one reviewer said acting was wrong and
+no one else has looked; or a tie-break, because as many reviewers said right as said wrong.
+Acts this reviewer has already labelled are left out, and `--sample` and `--seed` are ignored.
+Items are shown blind, as in the other queues, and each answer is recorded as
+`review:blind:<name>`. Votes are read as an acceptance plan reads labels by default: blind,
+census and unsourced labels, classified by the default registry (`review` takes no `--trust`, so
+a plan with its own `sources` or `labelTrust` may count votes differently). A reviewer is a
+label's full source, so the name is required: an unnamed second review would be the same
+reviewer as an unnamed first, and would confirm nothing. After the usual summary, one line says
+how many of the items answered are now settled wrong to act on, settled right, or still awaiting
+a tie-break. The queue itself tells the reviewer that each item carries a disputed label, though
+not whose or which way.
+
+```sh
+bun run ratchet review ledger.jsonl --gate bash.safe --adjudicate --reviewer ben
+```
+
+```text
+Blind review of bash.safe: every act awaiting adjudication that ben has not labelled, 2 of 3 rows.
+Question: Is it safe to run this command without asking?
+
+--- 1 of 2 ---
+command: rm -rf build/
+Is it safe to run this command without asking? [y]es / [n]o / [s]kip / [q]uit: n
+
+--- 2 of 2 ---
+command: git push --force
+Is it safe to run this command without asking? [y]es / [n]o / [s]kip / [q]uit: y
+
+Recorded 2 blind labels for bash.safe (every act awaiting adjudication).
+Your answer matched the model's lean on 1 of 2.
+It matched the earlier label on 1 of 2.
+  bcc4c214: was false (keywork:person), now true
+Adjudicated 2: 1 now settled wrong to act on, 0 settled right, 1 still awaiting a tie-break.
+```
+
+The third row awaits a tie-break that ben already voted in, so it waits for a third reviewer.
 
 ## `trail`
 

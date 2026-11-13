@@ -142,7 +142,27 @@ export interface DecisionRecord {
   /** Questions that shared the request this answer came from, when the adapter reports it. */
   readonly batch?: number;
   readonly tags: readonly string[];
+  /** The latest label attached to the row. Every reader of a single label reads this one. */
   readonly outcome?: Outcome;
+  /**
+   * Every outcome attached to the row, oldest first in ledger order, present only once more than
+   * one has been attached; `outcome` is the last of them. A row labelled once, or never, carries
+   * none, exactly as before. The JSONL file always kept every outcome line and the row showed only
+   * the last; this is that history on the row, so a second review can confirm a first instead of
+   * silently replacing it. Reviewer error is the size of a 98% promise's whole error budget (a
+   * blind relabel disagreed on 4 of 157 slots), so the acceptance test may read these as votes
+   * (`labels.ts`, "confirm-wrong"); nothing that reads the latest label reads them.
+   */
+  readonly labels?: readonly Outcome[];
+  /**
+   * On a row the engine wrote in enforce mode whose ruling, before the audit draw, was act: the
+   * probability that the draw sends it to a blind audit, the gate's audit rate at that moment,
+   * whether or not this row was drawn. Absent on every other row. It is what lets a later reader
+   * weight audited acts by the inverse of their inclusion probability (Horvitz-Thompson) if the
+   * rate ever changes, or comes to depend on the verdict; a rate reconstructed afterwards from
+   * configuration is fragile once it has changed.
+   */
+  readonly auditProbability?: number;
 }
 
 /**
@@ -271,9 +291,35 @@ export function inheritOutcome(
 }
 
 /**
- * Decisions by id in first-read order, each with its latest outcome: the core of both ledgers.
- * A decision whose id was already read is a duplicate: the first record wins, so a second line
- * reusing a labelled row's id can neither replace the row nor drop its label (e2e T4-17).
+ * Every label attached to a row, oldest first: its `labels` when it carries a history, else its
+ * one `outcome`, else none. Entries that are not objects (a hand-edited row) are left out, so a
+ * reader of the history never dereferences one.
+ */
+export function labelHistory(r: DecisionRecord): readonly Outcome[] {
+  const labels: unknown = r.labels;
+  if (Array.isArray(labels) && labels.length > 1) {
+    return labels.filter((o): o is Outcome => typeof o === "object" && o !== null);
+  }
+  return r.outcome === undefined ? [] : [r.outcome];
+}
+
+/**
+ * The row with `outcome` attached as its latest label: `outcome` becomes the latest, and once the
+ * row holds more than one label, `labels` holds them all in order. Both ledgers, and the pending
+ * last line a JSONL read lays over its row, attach labels through this one function, so every
+ * reader sees the same history.
+ */
+function withLabel(row: DecisionRecord, outcome: Outcome): DecisionRecord {
+  const { labels: _earlier, ...rest } = row;
+  const history = [...labelHistory(row), outcome];
+  return { ...rest, outcome, ...(history.length > 1 ? { labels: history } : {}) };
+}
+
+/**
+ * Decisions by id in first-read order, each with its latest outcome and, once it has more than
+ * one, its label history: the core of both ledgers. A decision whose id was already read is a
+ * duplicate: the first record wins, so a second line reusing a labelled row's id can neither
+ * replace the row nor drop its label (e2e T4-17).
  */
 class RowIndex {
   readonly rows = new Map<string, DecisionRecord>();
@@ -295,7 +341,7 @@ class RowIndex {
   label(id: string, outcome: Outcome): boolean {
     const row = this.rows.get(id);
     if (!row) return false;
-    this.rows.set(id, { ...row, outcome });
+    this.rows.set(id, withLabel(row, outcome));
     return true;
   }
 
@@ -649,7 +695,7 @@ export class JsonlLedger implements Ledger {
     } else if (t?.type === "outcome") {
       const at = rows.findIndex((r) => r.id === t.id);
       const row = rows[at];
-      if (row) rows[at] = { ...row, outcome: t.outcome };
+      if (row) rows[at] = withLabel(row, t.outcome);
     }
     return rows;
   }
@@ -677,7 +723,7 @@ export class JsonlLedger implements Ledger {
   private find(id: string): DecisionRecord | undefined {
     const row = this.index.rows.get(id);
     const t = this.tail;
-    if (row) return t?.type === "outcome" && t.id === id ? { ...row, outcome: t.outcome } : row;
+    if (row) return t?.type === "outcome" && t.id === id ? withLabel(row, t.outcome) : row;
     return t?.type === "decision" && t.record.id === id ? t.record : undefined;
   }
 

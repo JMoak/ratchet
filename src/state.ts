@@ -20,7 +20,9 @@
  *   `relativeTime`, `count` from `recipes/digest.ts`, or a boolean comparison). Rendered like
  *   a field; kept apart so auditors can tell computed evidence from raw. Numbers and dates
  *   belong here whenever a comparison is the point: the model matches labels, it does not
- *   subtract.
+ *   subtract. `digest(name, value, { raw })` also keeps the raw value it was computed from
+ *   (`fromRecord`'s `digest` option does so itself): never rendered or hashed, only read by code,
+ *   so a floor on the amount holds whether the state shows the amount or a band of it.
  * - `untrusted(name, text, { maxChars, note })`: text from outside the harness (tool output,
  *   web pages, user-editable profiles). Rendered after every trusted line, between
  *   `[untrusted name]` and `[/untrusted]`, cut at `maxChars` with an explicit
@@ -56,6 +58,11 @@
  * tool output groups together for replay. Rendering is deterministic: the same calls in the
  * same order give the same text and hashes.
  *
+ * Floors and bypasses can read the structure as well as the text: `fields` holds the entries,
+ * and `trustedText` is the trusted block itself, the text `trustedHash` hashes. A rule built with
+ * `floorOn` reads a trusted entry by its path, never a span of the same name unless asked, and a
+ * bypass must match `trustedText` as well as `text` (`floors.ts`).
+ *
  * `State.from(string)` wraps a plain string unchanged (same text, same `stateHash` as before),
  * and for a flat record of single-line strings, numbers and booleans `State.fromRecord(r).text`
  * equals `lines(r)` from `recipes/digest.ts`, so callers moving to `State` keep their hashes.
@@ -89,6 +96,17 @@ const STEP = "  ";
 /** What `digest()` accepts: a scalar computed in code. */
 export type DigestValue = string | number | boolean | bigint | null | undefined;
 
+export interface DigestOptions {
+  /**
+   * The raw value the digest was computed from (the amount behind a band, the timestamp behind
+   * "3 days ago"). Never rendered and never hashed, so the oracle sees only the digest; floors
+   * read it (`floorOn` reads it in place of the digest), so a business floor on a number need
+   * not parse a rendering that differs between raw and digested states (e2e T3-10). Not checked
+   * for engine objects: the model never sees it.
+   */
+  readonly raw?: unknown;
+}
+
 export interface UntrustedOptions {
   /** Keep at most this many characters; the rest is cut and the cut is stated. */
   readonly maxChars?: number;
@@ -117,7 +135,10 @@ export interface FromRecordOptions<T extends object> {
   readonly title?: string;
   /** Keys rendered, in this order. Default: every key of the record, in its order. */
   readonly keep?: readonly (keyof T & string)[];
-  /** Per key, a digest computed from the raw value (not called for `null` or missing values). */
+  /**
+   * Per key, a digest computed from the raw value (not called for `null` or missing values). The
+   * raw value stays on the entry, unrendered, for floors (`DigestOptions.raw`).
+   */
   readonly digest?: {
     readonly [K in keyof T & string]?: (value: NonNullable<T[K]>, record: T) => DigestValue;
   };
@@ -147,6 +168,8 @@ export interface StateEntry {
   readonly trusted: boolean;
   /** What the caller passed, not copied: the value, the digest, the full text, or `{ left, right }`. */
   readonly value: unknown;
+  /** Digest only: the raw value it was computed from, when the builder was given it. Not rendered. */
+  readonly raw?: unknown;
   /** The entry's lines exactly as they appear in `text`. */
   readonly rendered: string;
   /** Pair only: the paths of the two sides. */
@@ -158,18 +181,22 @@ export interface StateEntry {
 }
 
 /**
- * The `StateLike` interface of `src/types.ts`, restated structurally. It is not imported
- * because that interface is being added to `types.ts` concurrently; `State` conforms to it.
+ * The core of the `StateLike` interface of `src/types.ts`, restated structurally. It is not
+ * imported because `types.ts` names `StateEntry` from this module, and restating four members
+ * keeps the two from importing each other; `State` conforms to the full interface.
  */
 interface StateShape {
   readonly text: string;
   readonly hash: string;
   readonly trustedHash: string;
   readonly untrusted: readonly string[];
+  readonly fields?: readonly StateEntry[];
+  readonly trustedText?: string;
 }
 
 interface StateParts {
   readonly text: string;
+  readonly trustedText: string;
   readonly trustedHash: string;
   readonly untrusted: readonly string[];
   readonly fields: readonly StateEntry[];
@@ -361,8 +388,11 @@ export class StateBuilder {
     });
   }
 
-  /** A scalar computed in code from raw data: a band, a comparison, a relative time, a count. */
-  digest(name: string, value: DigestValue): this {
+  /**
+   * A scalar computed in code from raw data: a band, a comparison, a relative time, a count.
+   * `opts.raw` keeps the value it was computed from for floors, unrendered (`DigestOptions`).
+   */
+  digest(name: string, value: DigestValue, opts: DigestOptions = {}): this {
     const path = this.claim(name, "digest()");
     if (value === undefined) return this;
     const what = `digest "${path}"`;
@@ -378,6 +408,7 @@ export class StateBuilder {
       ...this.where(),
       trusted: true,
       value,
+      ...(opts.raw !== undefined ? { raw: opts.raw } : {}),
       rendered,
     });
   }
@@ -543,6 +574,7 @@ export class StateBuilder {
     }
     return construct({
       text,
+      trustedText,
       trustedHash: hashState(trustedText),
       untrusted: spans.map((e) => e.name),
       fields: this.entries,
@@ -579,6 +611,7 @@ export class StateBuilder {
  * `stateHash` (`hash`), a hash of the trusted part alone (`trustedHash`), and the names of
  * the untrusted spans (`untrusted`) for the ledger row. Structurally a `StateLike` (see
  * `src/types.ts`). `toString()` returns `text`, so a State drops into any string slot.
+ * `fields` and `trustedText` are for floors and bypasses; the oracle is sent `text` alone.
  */
 export class State {
   readonly text: string;
@@ -586,11 +619,14 @@ export class State {
   readonly trustedHash: string;
   readonly untrusted: readonly string[];
   readonly fields: readonly StateEntry[];
+  /** The trusted block alone (title, fields, digests, pairs): the text `trustedHash` hashes. */
+  readonly trustedText: string;
 
   private constructor(parts: StateParts) {
     this.text = parts.text;
     this.hash = hashState(parts.text);
     this.trustedHash = parts.trustedHash;
+    this.trustedText = parts.trustedText;
     this.untrusted = Object.freeze([...parts.untrusted]);
     this.fields = Object.freeze([...parts.fields]);
     Object.freeze(this);
@@ -663,7 +699,9 @@ export class State {
    * like `field()`, because a raw string may already mix trusted and untrusted text and
    * refusing it would let planted text crash a gate. Another `StateLike` is wrapped with its
    * text, `trustedHash` and `untrusted` kept; `hash` is recomputed from `text` so it always
-   * matches the ledger's scheme, and `fields` is empty because the structure is unknown.
+   * matches the ledger's scheme. Its `fields` and `trustedText` are kept when it has them;
+   * otherwise `fields` is empty, because the structure is unknown, and `trustedText` is its
+   * text, as for a string. Entry floors read a state with no typed entries as unreadable.
    */
   static from(value: string | StateShape): State {
     if (value instanceof State) return value;
@@ -677,6 +715,7 @@ export class State {
       });
       return new State({
         text: value,
+        trustedText: value,
         trustedHash: hashState(value),
         untrusted: [],
         fields: [entry],
@@ -685,9 +724,10 @@ export class State {
     if (isStateShape(value))
       return new State({
         text: value.text,
+        trustedText: typeof value.trustedText === "string" ? value.trustedText : value.text,
         trustedHash: value.trustedHash,
         untrusted: value.untrusted,
-        fields: [],
+        fields: Array.isArray(value.fields) ? value.fields : [],
       });
     throw new Error(
       "State.from expects a string or a StateLike (text, hash, trustedHash, untrusted)",
@@ -738,8 +778,10 @@ export class State {
             : renderValue(v, `untrusted "${k}"`),
           span,
         );
-      else if (fn !== undefined) b.digest(k, v === undefined || v === null ? v : fn(v, record));
-      else b.field(k, v);
+      else if (fn === undefined) b.field(k, v);
+      else if (v === undefined || v === null) b.digest(k, v);
+      // The record's own value rides along unrendered, so a floor reads the amount, not its band.
+      else b.digest(k, fn(v, record), { raw: v });
     }
     return b.build(opts.maxChars === undefined ? {} : { maxChars: opts.maxChars });
   }

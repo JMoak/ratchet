@@ -29,7 +29,8 @@ The offline mode (`--offline`, a seeded `SimOracle`) runs the same wiring at no 
 - **The ratchet formula predicts the accuracy of what is committed, and nothing else.** Committed
   steps were correct 1,132 of 1,132 times, as q = 1.000 predicts (a weak test: t was 100%). End-to-end
   success was far below the formula's: 48% and 53% observed against 74% and 88% predicted at
-  p = 0.8 and 0.9; with six attempts 62% and 58% against 99% and 99.8%; at the pre-declared strict
+  p = 0.8 and 0.9; with six attempts 62% and 58% against 96.9% and 97.3% (revised 2026-11-12:
+  the arm tested three distinct candidates, not six; see section 3); at the pre-declared strict
   bar 0.9, 0 of 200 chains finished against 20% and 32% predicted. False alarms are not independent
   across retries: after one correct candidate was held back, the next correct one in the same step
   was held back 55.9% of the time against a 15.0% base rate.
@@ -199,14 +200,23 @@ t and f at the bar; "from realised" plugs in the t and f the chains themselves p
 | p=0.8: chain finishes (all truly correct) | 0.739 | 0.608-0.814 | 0.664 | 48% [38.5, 57.7] |
 | p=0.8: step exhausts its attempts | 0.037 | 0.025-0.056 | 0.050 | 8.8% [6.8, 11.4] |
 | p=0.8: unverified chain succeeds (p^8) | 0.168 | | | 16% [10.1, 24.4] |
-| p=0.8, 6 attempts: chain finishes | 0.989 | 0.940-0.995 | | 62% [52.2, 70.9] |
+| p=0.8, 6 attempts: chain finishes | 0.969 (revised) | 0.940-0.995 (six fresh draws) | | 62% [52.2, 70.9] |
 | p=0.9, bar 0.48, 3 attempts: committed step correct | 1.000 | 0.998-1.000 | 1.000 | 594/594 |
 | p=0.9: chain finishes | 0.882 | 0.778-0.933 | 0.791 | 53% [43.3, 62.5] |
 | p=0.9: step exhausts | 0.016 | 0.009-0.029 | 0.029 | 7.3% [5.6, 9.6] |
 | p=0.9: unverified chain succeeds | 0.430 | | | 43% [33.7, 52.8] |
-| p=0.9, 6 attempts: chain finishes | 0.998 | 0.977-0.999 | | 58% [48.2, 67.2] |
+| p=0.9, 6 attempts: chain finishes | 0.973 (revised) | 0.977-0.999 (six fresh draws) | | 58% [48.2, 67.2] |
 | p=0.8, strict bar 0.9: chain finishes | 0.203 | 0.101-0.331 | 0.022 | 0% [0, 3.7] |
 | p=0.9, strict bar 0.9: chain finishes | 0.318 | 0.173-0.481 | 0.033 | 0% [0, 3.7] |
+
+Revised 2026-11-12 (foundations review,
+[verified_chains.md](../../research_notes/Foundations%20review%202026-11/verified_chains.md)):
+the six-attempt arm replayed cached verdicts for identical candidates (the k-th and (k+3)-th
+correct candidates of a step had the same variant, state hash and score in all 165 pairs), so it
+tested three distinct candidates per step, not six. The two six-attempt rows read 0.989 and
+0.998, independence over six fresh draws, as their range column still does. With three distinct
+correct styles, independence gives 0.969 and 0.973 (at the chains' 15.0% false-alarm base rate);
+the frailty model fitted to the two rates below gives 0.612 and 0.615.
 
 Every chain that claimed success was truly correct (48/48, 53/53, 62/62, 58/58). The gap is
 completion, and the post-hoc analysis locates it:
@@ -244,7 +254,7 @@ nothing on a row records.
 | --- | --- | --- |
 | The verifier's confidence is calibrated | **Partly.** Ranking proved; literal calibration disproved (underconfident) | AUC 0.998; one-sided ECE 0.082; 0.2-0.5 scores passed 23/27; a 0.9 bar holds back 46% of correct outputs |
 | The formula predicts per-step committed accuracy | **Consistent, weak test** | q = 1.000 predicted, 1,132/1,132 observed live (t = 100%); offline with t = 99%: 0.995 and 0.998 predicted, 98.9% to 100% observed |
-| The formula predicts chain success | **Disproved** | 48%/53% observed vs 74%/88%; 62%/58% vs 99%/99.8% with 6 attempts; 0%/0% vs 20%/32% at bar 0.9 |
+| The formula predicts chain success | **Disproved** | 48%/53% observed vs 74%/88%; 62%/58% vs 96.9%/97.3% with 6 attempts (three distinct candidates; revised 2026-11-12); 0%/0% vs 20%/32% at bar 0.9 |
 | Verification turns a fragile chain into a ratchet | **Proved at p = 0.8, inconclusive at 0.9, reversed at a strict bar** | 48% vs 16%; 53% vs 43%; 0% vs 16%/43%; claimed successes 101/101 correct |
 | Decomposition + log-odds beats one question | **Disproved** | AUC -0.006 [-0.010, -0.002]; ECE 0.198 vs 0.082; frozen bar coverage 25% vs 31% |
 | Decomposition + log-odds beats per-question AND | **Proved on ranking, not at the frozen bar** | AUC +0.107 [0.072, 0.144]; at frozen bars 25% vs 29.6% coverage |

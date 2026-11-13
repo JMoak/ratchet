@@ -4,15 +4,30 @@
  * `bun run sim`. Nothing here needs a network or a key.
  */
 import { cascade } from "../src/compound/cascade.ts";
-import { runChain, type Step } from "../src/compound/chain.ts";
+import {
+  runChain,
+  type SecondOpinionMode,
+  type Step,
+  summarizeChain,
+} from "../src/compound/chain.ts";
 import { ensemble, replicate } from "../src/compound/ensemble.ts";
+import {
+  completionInterval,
+  frailtyFromRates,
+  independentFrailty,
+  predictChain,
+} from "../src/compound/frailty.ts";
 import { sequential } from "../src/compound/sequential.ts";
 import { ece, type Scored } from "../src/ledger/calibration.ts";
-import { majorityAccuracy, mean, rng } from "../src/math.ts";
+import { majorityAccuracy, mean, randBeta, randNormal, rng, sigmoid } from "../src/math.ts";
 import { SimOracle } from "../src/oracles/sim.ts";
 import { judge } from "../src/questions.ts";
 import type { Decision } from "../src/types.ts";
+import { anytimeTables } from "./anytime.ts";
+import { barTables } from "./bars.ts";
+import { labelTables } from "./labels.ts";
 import { fmt, heading, judgeItems, note, pct, table } from "./lib.ts";
+import { poolingTables } from "./pooling.ts";
 import { rolloutTables } from "./rollout.ts";
 
 const N = 3000;
@@ -213,21 +228,28 @@ note(
     );
   }
 
-  // Completion assumes independent attempts; a verifier whose dislike follows the instance breaks that.
-  const p = 0.8;
-  const t = 0.95;
-  const f = 0.15;
-  const again = 0.56;
-  const hardShare = f / again;
-  const maxAttempts = 3;
-  const accept = (fa: number) => p * (1 - fa) + (1 - p) * (1 - t);
-  const commits = (fa: number) => 1 - (1 - accept(fa)) ** maxAttempts;
-  const stepIndependent = commits(f);
-  const stepCorrelated = hardShare * commits(again) + (1 - hardShare) * commits(0);
-  note(
-    `Correlated false alarms. Whether a chain finishes is a different number from q: one attempt is accepted with probability a = p(1-f) + (1-p)(1-t), so a step commits within m attempts with probability 1 - (1-a)^m and a chain finishes with probability (1 - (1-a)^m)^n, but only if attempts are independent. A verifier that dislikes a step instance tends to dislike every fresh correct answer to it: live (T2), a held-back correct attempt was held back again 56% of the time against a 15% base rate, and chains finished 48% to 62% of the time where the formula said 74% to 99.8%. Below, each step is an independent task right with p = 0.8 (a wrong commit does not spoil later steps), the verifier catches ${pct(t, 0)} of wrong attempts, each step gets ${maxAttempts} attempts, and the mean false-alarm rate is f = ${pct(f, 0)} either way: independent per attempt, or concentrated on ${pct(hardShare, 1)} of step instances whose every correct attempt is held back with probability ${pct(again, 0)} (so a held-back correct attempt is held back again ${pct(again, 0)} of the time). Commit precision, q, barely moves; completion falls well below the formula. The correlated "predicted" column mixes the two kinds of instance, which only a ledger that records retries can measure.`,
-  );
+  // Whether a chain finishes is not q. A verifier whose dislike follows the step instance makes
+  // retries correlated; the beta frailty below is fitted to the live verifier track's two rates.
+  const LIVE = { first: 0.15, again: 0.559 };
+  const frail = frailtyFromRates(LIVE.first, LIVE.again);
+  const ruled = (pYes: number): Decision => ({
+    verdict: { kind: "judge", questionId: check.id, pYes, confidence: Math.max(pYes, 1 - pYes) },
+    oracle: "verifier",
+    latencyMs: 0,
+    cost: 0,
+    at: "2026-11-12T00:00:00.000Z",
+  });
+  const span = (iv: { readonly pessimistic: number; readonly optimistic: number }) =>
+    `[${pct(iv.pessimistic)}, ${pct(iv.optimistic)}]`;
+
   {
+    const p = 0.8;
+    const t = 0.95;
+    const m = 3;
+    const f = LIVE.first;
+    note(
+      `Correlated false alarms. Whether a chain finishes is a different number from q. One attempt is accepted with probability a = p(1-f) + (1-p)(1-t), and (1 - (1-a)^m)^n would be the completion rate if attempts were independent, but a verifier that dislikes a step instance tends to dislike every fresh correct answer to it (coincident failure). Live (T2), a held-back correct candidate was followed by another held-back one ${pct(LIVE.again)} of the time against a ${pct(LIVE.first)} base rate, and chains finished 48% to 62% of the time where independence at that base rate said 76.6% to 97.3% (the evaluation's own 74% to 99.8% took the held-out 16.7% false-alarm rate and counted replayed candidates as fresh ones). Below, each step instance's false-alarm propensity theta is drawn from the beta those two rates fit (a = ${fmt(frail.a)}, b = ${fmt(frail.b)}, intraclass correlation ${fmt(frail.rho)}, mean f = ${pct(f, 0)} as in the independent columns). Each step is an independent task right with p = ${p} (a wrong commit does not spoil later steps), the verifier catches ${pct(t, 0)} of wrong attempts, and each step gets ${m} attempts; 2,000 seeded chains per cell. "Predicted" is \`predictChain\`. "Two rates alone" is \`completionInterval\`, every completion a law with those two moments allows; its optimistic end is the two-point law this table used to show as the correlated case. Commit precision barely moves; completion falls well below the independent formula, where the beta puts it.`,
+    );
     interface Task {
       /** Every committed step so far was right. */
       readonly good: boolean;
@@ -237,59 +259,57 @@ note(
     }
     const rows: (string | number)[][] = [];
     for (const n of [1, 3, 5, 8, 10, 20]) {
-      const cells: string[] = [];
+      const simulated: { finished: number; precision: number }[] = [];
       for (const correlated of [false, true]) {
         const rand = rng(70 + n + (correlated ? 1000 : 0));
-        let hard: boolean[] = [];
+        let theta: number[] = [];
         const steps: Step<Task>[] = Array.from({ length: n }, (_, i) => ({
           name: `s${i}`,
           propose: async (st) => {
             const ok = rand() < p;
             return { good: st.good && ok, ok, token: rand() };
           },
-          // The verifier errs at the rates above; a step instance it dislikes (`hard`) holds
-          // back correct work at the same rate on every attempt.
+          // A correct attempt is held back with the instance's theta, or with f when independent.
           verify: async (_b, a) => {
-            const falseAlarm = correlated ? (hard[i] ? again : 0) : f;
-            const passes = a.ok ? rand() >= falseAlarm : rand() >= t;
-            return {
-              verdict: {
-                kind: "judge",
-                questionId: check.id,
-                pYes: passes ? 0.9 : 0.1,
-                confidence: 0.9,
-              },
-              oracle: "verifier",
-              latencyMs: 0,
-              cost: 0,
-              at: "2026-11-12T00:00:00.000Z",
-            } satisfies Decision;
+            const falseAlarm = correlated ? (theta[i] as number) : f;
+            return ruled((a.ok ? rand() >= falseAlarm : rand() >= t) ? 0.9 : 0.1);
           },
-          maxAttempts,
+          maxAttempts: m,
         }));
         const runs = 2000;
         let finished = 0;
         let committedSteps = 0;
         let rightSteps = 0;
         for (let r = 0; r < runs; r++) {
-          hard = Array.from({ length: n }, () => rand() < hardShare);
-          const res = await runChain({ good: true, ok: true, token: 0 }, steps, {
-            actAbove: 0.7,
-          });
+          theta = Array.from({ length: n }, () => randBeta(frail.a, frail.b, rand));
+          const res = await runChain({ good: true, ok: true, token: 0 }, steps, { actAbove: 0.7 });
           if (res.ok) finished++;
           for (const state of res.checkpoints.slice(1)) {
             committedSteps++;
             if (state.ok) rightSteps++;
           }
         }
-        const predicted = (correlated ? stepCorrelated : stepIndependent) ** n;
-        cells.push(
-          pct(predicted),
-          pct(finished / runs),
-          pct(committedSteps ? rightSteps / committedSteps : 0),
-        );
+        simulated.push({
+          finished: finished / runs,
+          precision: committedSteps ? rightSteps / committedSteps : 0,
+        });
       }
-      rows.push([n, ...cells]);
+      const [independent, beta] = simulated as [
+        { finished: number; precision: number },
+        { finished: number; precision: number },
+      ];
+      const model = { p, t, attempts: m, steps: n };
+      const predicted = predictChain(frail, model);
+      rows.push([
+        n,
+        pct(predictChain(independentFrailty(f), model).completion),
+        pct(independent.finished),
+        pct(independent.precision),
+        pct(predicted.completion),
+        pct(beta.finished),
+        span(completionInterval(LIVE, model)),
+        `${pct(predicted.precision)} / ${pct(beta.precision)}`,
+      ]);
     }
     table(
       [
@@ -297,11 +317,364 @@ note(
         "(1-(1-a)^m)^n",
         "independent f: finished",
         "independent f: q",
-        "correlated f: predicted",
-        "correlated f: finished",
-        "correlated f: q",
+        "beta frailty: predicted",
+        "beta frailty: finished",
+        "two rates alone",
+        "beta frailty: q predicted / simulated",
       ],
       rows,
+    );
+  }
+
+  // The live chains, reproduced from the two rates.
+  {
+    const chains = 4000;
+    interface Candidate {
+      readonly key: string;
+      readonly correct: boolean;
+    }
+    /** T2's proposer: correct candidates cycle three styles, wrong ones are all distinct. */
+    const simulate = async (p: number, m: number, seed: number): Promise<number> => {
+      const rand = rng(seed);
+      let theta: number[] = [];
+      let styles: number[][] = [];
+      let correctSoFar = 0;
+      const steps: Step<Candidate>[] = Array.from({ length: 8 }, (_, i) => ({
+        name: `s${i}`,
+        maxAttempts: m,
+        propose: async (_st, attempt) => {
+          if (attempt === 1) correctSoFar = 0;
+          if (rand() >= p) return { key: `s${i}:wrong${attempt}`, correct: false };
+          return { key: `s${i}:style${correctSoFar++ % 3}`, correct: true };
+        },
+        // t = 1: a wrong candidate is always held. A correct style is held when its own draw
+        // falls under the instance's theta; keyOf means a repeated style is never asked again.
+        verify: async (_b, a) => {
+          if (!a.correct) return ruled(0.1);
+          const style = Number(a.key.slice(a.key.lastIndexOf("style") + 5));
+          return ruled((styles[i]?.[style] as number) < (theta[i] as number) ? 0.1 : 0.9);
+        },
+      }));
+      let finished = 0;
+      for (let c = 0; c < chains; c++) {
+        theta = Array.from({ length: 8 }, () => randBeta(frail.a, frail.b, rand));
+        styles = Array.from({ length: 8 }, () => [rand(), rand(), rand()]);
+        const res = await runChain<Candidate>(
+          { key: "start", correct: true },
+          steps,
+          { actAbove: 0.5 },
+          { keyOf: (s) => s.key },
+        );
+        if (res.ok) finished++;
+      }
+      return finished / chains;
+    };
+    const fresh6 = predictChain(frail, { p: 0.8, t: 1, attempts: 6, steps: 8 }).completion;
+    const limit = completionInterval(LIVE, { p: 0.8, t: 1, attempts: 3, steps: 8 }).limit;
+    note(
+      `Reproducing the live completion (verifier track T2): eight steps; catch rate t = 1 (the verifier held back 270 of 270 wrong held-out candidates); three distinct correct candidates per step, which the six-attempt arm repeated, replaying their cached verdicts, so it tested three candidates, not six. Every column but the last two is exact. "Simulated" runs \`runChain\` with \`keyOf\` over ${chains.toLocaleString("en-US")} seeded chains per row: the proposer cycles three correct styles, so a fourth correct proposal repeats the first and \`runChain\` skips it instead of replaying a verdict, which is the same thing for completion. "Observed live" is the live run's (100 chains each, Wilson 95% intervals). The independent formula is far off; the two-point law is the most optimistic reading of the two rates, not a prediction; the beta lands inside every observed interval. With six fresh candidates the beta predicts ${pct(fresh6)} at p = 0.8. As attempts grow, the two rates alone cannot certify completion above ${pct(limit.pessimistic)} (the pessimistic law's limit); only deeper moments can.`,
+    );
+    const observed: Record<string, string> = {
+      "0.8,3": "48% [38.5, 57.7]",
+      "0.9,3": "53% [43.3, 62.5]",
+      "0.8,6": "62% [52.2, 70.9]",
+      "0.9,6": "58% [48.2, 67.2]",
+    };
+    const rows: (string | number)[][] = [];
+    for (const [i, [p, m]] of (
+      [
+        [0.8, 3],
+        [0.9, 3],
+        [0.8, 6],
+        [0.9, 6],
+      ] as const
+    ).entries()) {
+      const model = { p, t: 1, attempts: m, steps: 8, distinctCorrect: 3 };
+      const iv = completionInterval(LIVE, model);
+      rows.push([
+        p,
+        m,
+        pct(predictChain(independentFrailty(LIVE.first), model).completion),
+        pct(iv.optimistic),
+        pct(predictChain(frail, model).completion),
+        span(iv),
+        pct(await simulate(p, m, 80 + i)),
+        observed[`${p},${m}`] ?? "",
+      ]);
+    }
+    table(
+      [
+        "p",
+        "attempts",
+        "independent at f = 15%",
+        "two-point {0, 0.559}: optimistic end",
+        "beta frailty",
+        "two rates alone",
+        "simulated (runChain)",
+        "observed live",
+      ],
+      rows,
+    );
+  }
+
+  // Common random numbers: every budget below sees the same chains, steps and attempt draws.
+  const CHAINS = 4000;
+  interface Draw {
+    readonly correct: boolean;
+    readonly u: number;
+  }
+  const world = (() => {
+    const rand = rng(5151);
+    return Array.from({ length: CHAINS }, () =>
+      Array.from({ length: 8 }, () => ({
+        theta: randBeta(frail.a, frail.b, rand),
+        draws: Array.from({ length: 48 }, (): Draw => ({ correct: rand() < 0.8, u: rand() })),
+      })),
+    );
+  })();
+  interface Fresh {
+    readonly key: string;
+    readonly draw?: Draw;
+  }
+  const runWorld = async (budget: {
+    readonly maxAttempts?: number;
+    readonly attemptPool?: number;
+  }) => {
+    let finished = 0;
+    let proposals = 0;
+    let stepsRun = 0;
+    let exhausted = 0;
+    for (const chain of world) {
+      const steps: Step<Fresh>[] = chain.map((s, i) => ({
+        name: `s${i}`,
+        ...(budget.maxAttempts !== undefined ? { maxAttempts: budget.maxAttempts } : {}),
+        propose: async (_st, attempt) => ({
+          key: `s${i}:${attempt}`,
+          draw: s.draws[attempt - 1] as Draw,
+        }),
+        // t = 1: only a correct candidate whose draw clears the instance's theta passes.
+        verify: async (_b, a) => ruled(a.draw?.correct === true && a.draw.u >= s.theta ? 0.9 : 0.1),
+      }));
+      const res = await runChain<Fresh>(
+        { key: "start" },
+        steps,
+        { actAbove: 0.5 },
+        {
+          keyOf: (x) => x.key,
+          ...(budget.attemptPool !== undefined ? { attemptPool: budget.attemptPool } : {}),
+        },
+      );
+      if (res.ok) finished++;
+      proposals += summarizeChain(res).proposals;
+      stepsRun += res.trace.length;
+      exhausted += res.trace.filter((tr) => !tr.committed).length;
+    }
+    return {
+      completion: finished / CHAINS,
+      proposals: proposals / CHAINS,
+      exhausted: exhausted / stepsRun,
+    };
+  };
+
+  {
+    note(
+      `Exhaustion against the attempt budget, fresh candidates (\`keyOf\` on, no repeats), p = 0.8, t = 1, eight steps, the beta above. Independently, a step would exhaust geometrically, (1-a)^m; under the frailty exhaustion falls as a power law, about m^-b with b = ${fmt(frail.b)}, so doubling the budget roughly halves it instead of squaring it, and with b <= 1 the expected number of attempts to commit is infinite: open-ended retrying has unbounded expected cost. Simulated through \`runChain\` on ${CHAINS.toLocaleString("en-US")} chains of common random numbers.`,
+    );
+    const rows: (string | number)[][] = [];
+    for (const m of [3, 6, 12, 24]) {
+      const model = { p: 0.8, t: 1, attempts: m, steps: 8 };
+      const predicted = predictChain(frail, model);
+      const sim = await runWorld({ maxAttempts: m });
+      rows.push([
+        m,
+        (0.32 ** m).toExponential(2),
+        fmt(predicted.step.exhausts),
+        fmt(sim.exhausted),
+        pct(predicted.completion),
+        pct(sim.completion),
+        span(completionInterval(LIVE, model)),
+      ]);
+    }
+    table(
+      [
+        "attempts m",
+        "independent (1-a)^m",
+        "step exhausts: beta",
+        "step exhausts: simulated",
+        "8-step completion: beta",
+        "8-step completion: simulated",
+        "two rates alone",
+      ],
+      rows,
+    );
+  }
+
+  {
+    note(
+      `A shared attempt budget against per-step caps at the same worst-case spend (the same ${CHAINS.toLocaleString("en-US")} chains as above). \`attemptPool\` lets a step keep trying while the pool lasts but leaves one attempt for each step still to come; that reservation is lossless (a step that dipped into it would leave a later step with nothing). Per-step caps spend the budget on easy steps and starve hard ones.`,
+    );
+    const rows: (string | number)[][] = [];
+    for (const [label, worst, budget] of [
+      ["3 per step (the default)", 24, { maxAttempts: 3 }],
+      ["pool of 24", 24, { attemptPool: 24 }],
+      ["pool of 24, at most 6 per step", 24, { attemptPool: 24, maxAttempts: 6 }],
+      ["6 per step", 48, { maxAttempts: 6 }],
+      ["pool of 48", 48, { attemptPool: 48 }],
+    ] as const) {
+      const sim = await runWorld(budget);
+      rows.push([label, worst, pct(sim.completion), fmt(sim.proposals, 1)]);
+    }
+    table(["budget", "worst-case attempts", "chain completes", "attempts used per chain"], rows);
+  }
+
+  {
+    // The research's latent probit world: one step factor shared by correct and wrong candidates.
+    const r = 0.746; // probit-scale step ICC fitted to the two live rates
+    const d1 = 4.07; // primary verifier: binormal AUC 0.998 (T2 held-out)
+    const b1 = 3.034; // its bar: f1 = 15.0%, t1 = 99.88%
+    const d2 = 2.66; // second opinion of another family: AUC 0.97 (assumed)
+    const b2 = 1.623; // its lenient bar: f2 = 15.0%, t2 = 94.8%
+    const R = 0.0895; // candidate-level latent correlation giving phi 0.04 between their holds
+    const person = { correct: 0.98, wrong: 0.01 };
+    const N = 5000;
+    note(
+      `A second opinion on held candidates, and a person. The world is the research's latent probit model: a candidate's score is u + e, plus ${d1} when it is correct, held below ${b1}; u ~ N(0, ${r}) is the step instance's factor, shared by correct and wrong candidates, and e ~ N(0, ${fmt(1 - r)}) is candidate noise. That primary verifier has AUC 0.998 (T2 held-out), false alarm 15.0% and catch rate 99.88%. The second opinion, of another family, is assumed to have AUC 0.97 (separation ${d2}), its own step factor of the same size, a lenient bar ${b2} (false alarm 15.0%, catch rate 94.8%), and a latent correlation of ${R} with the primary (phi 0.04 between their holds on correct candidates, as low as the least correlated pair of models measured in e2e T5). The person is assumed to pass ${pct(person.correct, 0)} of correct and ${pct(person.wrong, 0)} of wrong candidates, independently of both models. p = 0.8, eight steps, three fresh proposals per step, ${N.toLocaleString("en-US")} seeded chains per row. The chain never treats the person's verdict: the application puts \`held\` (or \`pending\`) before them and resumes from the last checkpoint with what they pass; on a rejected route the step resumes with the attempts it had left. "Order" asks the second opinion after every hold, so it calls it more often than ordering only at exhaustion would, for the same outcome. Releasing on the second opinion is shown as the warning it is.`,
+    );
+    interface Cand {
+      readonly id: number;
+      readonly correct: boolean;
+    }
+    const policies: readonly {
+      readonly label: string;
+      readonly second?: SecondOpinionMode;
+      readonly personOnExhaustion?: boolean;
+    }[] = [
+      { label: "resample, 3 attempts (no person)" },
+      { label: "a person reviews the held candidates on exhaustion", personOnExhaustion: true },
+      {
+        label: "the second opinion orders that person's queue (order, the default)",
+        second: "order",
+        personOnExhaustion: true,
+      },
+      { label: "the second opinion's pass goes to a person at once (route)", second: "route" },
+      { label: "the second opinion's pass commits (commit; a warning)", second: "commit" },
+    ];
+    const rows: (string | number)[][] = [];
+    const wrongShare: number[] = [];
+    for (const [k, pol] of policies.entries()) {
+      const rand = rng(9000 + k);
+      let completed = 0;
+      let allRight = 0;
+      let commits = 0;
+      let right = 0;
+      let reviews = 0;
+      let secondCalls = 0;
+      for (let c = 0; c < N; c++) {
+        const u = Array.from({ length: 8 }, () => Math.sqrt(r) * randNormal(rand));
+        const v = Array.from({ length: 8 }, () => Math.sqrt(r) * randNormal(rand));
+        const latent = new Map<number, number>();
+        let next = 0;
+        let wrongCommit = false;
+        const commit = (cand: Cand) => {
+          commits++;
+          if (cand.correct) right++;
+          else wrongCommit = true;
+        };
+        const approves = (cand: Cand) => {
+          reviews++;
+          return rand() < (cand.correct ? person.correct : person.wrong);
+        };
+        const makeStep = (i: number): Step<Cand> => ({
+          name: `s${i}`,
+          maxAttempts: 3,
+          propose: async () => ({ id: ++next, correct: rand() < 0.8 }),
+          verify: async (_b, a) => {
+            const x1 = (u[i] as number) + Math.sqrt(1 - r) * randNormal(rand);
+            latent.set(a.id, x1);
+            return ruled(sigmoid(x1 + (a.correct ? d1 : 0) - b1));
+          },
+          ...(pol.second !== undefined
+            ? {
+                secondOpinion: async (_b: Cand, a: Cand) => {
+                  secondCalls++;
+                  const own = (v[i] as number) + Math.sqrt(1 - r) * randNormal(rand);
+                  const x2 = R * (latent.get(a.id) as number) + Math.sqrt(1 - R * R) * own;
+                  return ruled(sigmoid(x2 + (a.correct ? d2 : 0) - b2));
+                },
+              }
+            : {}),
+        });
+        let state: Cand = { id: 0, correct: true };
+        let queue = Array.from({ length: 8 }, (_, i) => makeStep(i));
+        let ok = false;
+        for (;;) {
+          const res = await runChain(
+            state,
+            queue,
+            { actAbove: 0.5 },
+            {
+              ...(pol.second !== undefined ? { secondOpinion: pol.second } : {}),
+              ...(pol.personOnExhaustion === true ? { keepHeld: true } : {}),
+            },
+          );
+          for (const cand of res.checkpoints.slice(1)) commit(cand);
+          if (res.ok) {
+            ok = true;
+            break;
+          }
+          const at = res.trace.length - 1;
+          const stopped = queue[at] as Step<Cand>;
+          let approved: Cand | undefined;
+          if (res.stopReason === "exhausted" && pol.personOnExhaustion === true) {
+            approved = (res.held ?? []).find((h) => approves(h.candidate))?.candidate;
+          } else if (res.stopReason === "review" && res.pending !== undefined) {
+            if (approves(res.pending.candidate)) approved = res.pending.candidate;
+            else {
+              const left =
+                (stopped.maxAttempts ?? 3) - (summarizeChain(res).steps[at]?.proposals ?? 0);
+              if (left > 0) {
+                state = res.state;
+                queue = [{ ...stopped, maxAttempts: left }, ...queue.slice(at + 1)];
+                continue;
+              }
+            }
+          }
+          if (approved === undefined) break;
+          commit(approved);
+          state = approved;
+          queue = queue.slice(at + 1);
+          if (queue.length === 0) {
+            ok = true;
+            break;
+          }
+        }
+        if (ok) completed++;
+        if (ok && !wrongCommit) allRight++;
+      }
+      wrongShare.push(commits ? 1 - right / commits : 0);
+      rows.push([
+        pol.label,
+        pct(completed / N),
+        pct(commits ? right / commits : 0, 2),
+        pct(allRight / N),
+        fmt(secondCalls / N, 2),
+        fmt(reviews / N, 2),
+      ]);
+    }
+    table(
+      [
+        "policy",
+        "chain completes",
+        "commit precision",
+        "completes, every commit right",
+        "second-opinion calls per chain",
+        "person reviews per chain",
+      ],
+      rows,
+    );
+    const [resample, , , , release] = wrongShare as [number, number, number, number, number];
+    note(
+      `Releasing on the second opinion trades the primary's catch rate for the second's: ${pct(release, 2)} of its commits were wrong against ${pct(resample, 2)} resampling alone, ${fmt(release / resample, 0)} times as many (about forty in the research's 20,000-chain run; the resampling baseline has few wrong commits to count). Ordering the queue releases nothing: the person still decides, and seeing the likeliest candidate first, reviews fewer for the same completion.`,
     );
   }
 }
@@ -364,6 +737,10 @@ note(
 }
 
 rolloutTables();
+anytimeTables();
+barTables();
+poolingTables();
+labelTables();
 
 note(
   "Takeaways: independence and calibration are the two properties that make 80% compound; verification is what makes chains survive; the ledger is where all three are measured instead of assumed.",

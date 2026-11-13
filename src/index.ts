@@ -2,7 +2,9 @@
 
 export {
   type AcceptancePlan,
+  type AcceptanceProgress,
   type AcceptanceResult,
+  acceptanceProgress,
   acceptanceSample,
   evaluateAcceptance,
   exactLowerBound,
@@ -10,6 +12,33 @@ export {
   requiredActs,
   resolvePlan,
 } from "./acceptance.ts";
+export {
+  anytimeLowerBound,
+  type CrossingOptions,
+  DEMOTION_SHIFTS,
+  type DetectorRule,
+  type DetectorSpec,
+  type DetectorState,
+  demotionAlternatives,
+  detectorStatistic,
+  type ExactCrossing,
+  exactCrossingProbability,
+  FUTILITY_GRID,
+  type FutilityTest,
+  falseAlarmBound,
+  fewestAlarmErrors,
+  futile,
+  futilityLogEValue,
+  logEValue,
+  outgoingQuality,
+  outgoingQualityLimit,
+  PROMOTION_GRID,
+  promotes,
+  type QualityLimit,
+  startDetector,
+  stepDetector,
+  worstOutgoingQuality,
+} from "./anytime.ts";
 // Compounding
 export {
   agreement,
@@ -33,13 +62,23 @@ export {
   type Attempt,
   type ChainOptions,
   type ChainResult,
+  type ChainSummary,
+  type ChainTagContext,
+  type ChainTagInfo,
   chainTags,
+  type DuplicateProposal,
   type GateVerification,
+  type HeldCandidate,
   isGateVerification,
+  readChainTags,
   runChain,
+  type SecondOpinionMode,
   type Step,
+  type StepSummary,
   type StepTrace,
+  summarizeChain,
   type Verification,
+  type Verified,
 } from "./compound/chain.ts";
 export {
   askOne,
@@ -49,6 +88,7 @@ export {
   type Strategy,
   single,
 } from "./compound/compound.ts";
+export { type ConcurStrategy, concur } from "./compound/concur.ts";
 export {
   compose,
   type EnsembleOptions,
@@ -63,13 +103,51 @@ export {
   untransform,
 } from "./compound/ensemble.ts";
 export {
+  type AfterHolds,
+  afterHolds,
+  betaFrailty,
+  type ChainModel,
+  type ChainPrediction,
+  type CompletionInterval,
+  completionInterval,
+  type EscalationOptions,
+  escalateAfter,
+  type Frailty,
+  type FrailtyCountOptions,
+  type FrailtyCounts,
+  type FrailtyFit,
+  fitFrailty,
+  frailtyCounts,
+  frailtyFromRates,
+  frailtyMoment,
+  type HoldRateCounts,
+  type HoldRates,
+  heldNext,
+  holdRates,
+  type InstanceCounts,
+  independentFrailty,
+  type LawPoint,
+  predictChain,
+  type StepCounts,
+  type StepPrediction,
+} from "./compound/frailty.ts";
+export {
   batteryFeatures,
   fitLogistic,
+  fitPlatt,
+  fitPlattCombiner,
+  type LogicalPool,
   type LogisticFit,
   type LogisticModel,
   type LogisticOptions,
+  type PlattCombiner,
+  type PlattFit,
+  type PlattModel,
+  type PlattOptions,
+  plattCombiner,
   poolLearned,
   predictLogistic,
+  predictPlatt,
 } from "./compound/learned.ts";
 export {
   independentLead,
@@ -96,13 +174,19 @@ export {
 } from "./engine.ts";
 export {
   allowIf,
+  allowOn,
   type BypassRule,
   bypassFor,
+  type EntryLookup,
+  entryFloor,
   evaluateFloors,
   FLOOR_FAILS_CLOSED_TO,
   type FloorEvaluation,
+  type FloorInput,
+  type FloorOnOptions,
   type FloorRule,
   floorFor,
+  floorOn,
   forQuestion,
   oneWayDoor,
   refuseIf,
@@ -170,6 +254,9 @@ export {
   batteryReadout,
   describeActBar,
   describeBattery,
+  describeExactBar,
+  type ExactBarReading,
+  exactBarFor,
   fitActBar,
   type GateEvidence,
   type GateEvidenceOptions,
@@ -223,6 +310,24 @@ export {
   wilsonLower,
 } from "./ledger/calibration.ts";
 export {
+  type BetaCalibration,
+  type BetaOptions,
+  fitBeta,
+  fitVennAbers,
+  type VennAbers,
+  type VennAbersPrediction,
+} from "./ledger/calibrators.ts";
+export {
+  allWrongCeiling,
+  type PanelCeiling,
+  type PanelMember,
+  type PanelRow,
+  type PanelSample,
+  panelCeiling,
+  panelFromLedger,
+  withinClassCorrelation,
+} from "./ledger/dependence.ts";
+export {
   atLeast,
   type BorrowedVia,
   type Configuration,
@@ -245,6 +350,32 @@ export {
   type StrayQuestion,
   strayQuestions,
 } from "./ledger/evidence.ts";
+export {
+  type ActRow,
+  type ActRowOptions,
+  actRows,
+  type EdgeTest,
+  EXACT_BAR_EDGES,
+  type ExactBar,
+  type ExactBarFound,
+  type ExactBarNone,
+  type ExactBarOptions,
+  fitExactBar,
+  type StratifiedBound,
+  type StratumBound,
+  type StratumEvidence,
+  stratifiedBound,
+} from "./ledger/exact-bar.ts";
+export {
+  actRightUnder,
+  adjudicateRows,
+  isLabelRule,
+  LABEL_RULES,
+  type LabelReading,
+  type LabelRule,
+  readLabel,
+  type Votes,
+} from "./ledger/labels.ts";
 // Ledger and learning
 export {
   type CostBasis,
@@ -260,6 +391,7 @@ export {
   type Ledger,
   type LedgerHealth,
   type LedgerScan,
+  labelHistory,
   type MemberRecord,
   MemoryLedger,
   type Mode,
@@ -402,13 +534,22 @@ export {
 export { type Speculated, type SpeculateOptions, speculate } from "./recipes/speculate.ts";
 export type { AcceptedSample } from "./rollout.ts";
 export {
+  type AuditReadout,
   type AuditWindow,
+  type DemotionReadout,
+  type DemotionSettings,
+  type DetectorReadout,
+  describeProgress,
+  type FirstErrorReadout,
+  type OverdueAudits,
   Rollout,
   type RolloutCheckpoint,
   type RolloutEvidence,
   type RolloutOptions,
+  type RolloutProgress,
   type RolloutSettings,
   type RolloutStatus,
+  type WindowReadout,
 } from "./rollout.ts";
 export {
   type DailyBudgetOptions,
@@ -420,6 +561,7 @@ export {
 export {
   type BuildOptions,
   DEFAULT_STATE_MAX_CHARS,
+  type DigestOptions,
   type DigestValue,
   type FromRecordOptions,
   type PairOptions,

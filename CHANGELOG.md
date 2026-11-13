@@ -11,7 +11,10 @@ Fixes and changes from an end-to-end evaluation: five tracks ran the engine live
 on new scenarios with every label fixed before the first call, a red team attacked every
 path, each defect found was fixed with a regression test, and independent verifiers attacked
 the fixes (a second round fixed what they broke). Findings, evidence and status:
-`docs/e2e/findings.md`; reports: `docs/e2e/`.
+`docs/e2e/findings.md`; reports: `docs/e2e/`. A foundations review followed, with the
+additions and fixes in its own two sections after the evaluation's ("Added: from the
+foundations review", "Fixed: pool options on every compound path"), except its fix to bypasses,
+which sits with the evaluation's under "Fixed: failure never grants permission".
 
 **Evidence changes.** Items marked **(evidence)** change what a gate records, pools, fits or
 reports for the same traffic. Bump the gate's `evidenceVersion` after upgrading if it uses an
@@ -79,6 +82,15 @@ affected feature; the rollout reads a new phase either way when a policy hash ch
 - `RuleOracle` and `judgeIf` with a global (`/g`) regex no longer alternate between matching and
   not matching the same state **(evidence)**; `judgeIf` throws when built with a p(yes) outside
   [0, 1].
+- A bypass is no longer granted by text inside an untrusted span **(evidence, more cautious)**.
+  On a `State` with untrusted spans, a text bypass (`allowIf` or any `BypassRule`) must match the
+  trusted block (`State.trustedText`) as well as the whole rendering; before,
+  `allowIf(/git status/)` answered yes without a call when only the tool output said
+  `git status`. The conjunction removes such grants and adds none. Plain strings, States without
+  spans and hand-built StateLikes without `trustedText` behave as before; the hook registers no
+  bypass. A gate whose bypass fired on untrusted text now asks the oracle there (those rows move
+  from `bypass` to an answered strategy), so bump its `evidenceVersion`. It follows the foundations
+  review's information-flow rule that nothing which lowers caution reads untrusted text.
 - `JsonlLedger`: an append after a torn final line starts on a new line instead of being lost
   inside the fragment.
 - A cost recorded while a new UTC day's spend is loading is applied after the load instead of
@@ -214,6 +226,195 @@ All change the hook gate's evidence; `HOOK_EVIDENCE` is now `agent-tool-v2`.
   growing). `scanJsonlLedger` is the tolerant reader.
 - `experiments/e2e/`: the five evaluation tracks, the verification scripts, the decider's
   charter and a shared harness; `docs/e2e/` holds the reports and the findings registry.
+
+### Added: from the foundations review
+
+An architectural and statistical review (`reports/Foundations review 2026-11.md`, six research
+notes in `research_notes/Foundations review 2026-11/`) found that no test shortens the road to
+a 98% promise, and that what does is a gate much better than its promise, evidence counted in
+independent units, and a second model family on the act path. These are its first
+implementation waves, grouped below by area: promotion, demotion and labels; bars and
+calibration; state; pooling and chains. Nothing added here changes a default or what a gate
+decides, fits or reports on upgrade: `Rollout` reads the new statistics and label rules only
+through opt-in settings, `ratchet report` prints the exact bar only on request, and `check` and
+profiles read none of them. Rows gain two fields that nothing reads by default (`labels`, once a
+second label arrives, and `auditProbability` on enforce-mode acts). Options marked **(evidence
+when adopted)** change a gate's evidence once it uses them, and strategies and function
+combiners are not hashed, so bump `evidenceVersion` then. What does apply on upgrade is the
+bypass rule for states with untrusted spans (under "Fixed: failure never grants permission"
+above) and the pool-option fixes below.
+
+- `src/anytime.ts`: the arithmetic of an anytime-valid rollout, pure. `Rollout` reads the
+  detector, the CSP-1 arithmetic and `anytimeLowerBound` when asked (`RolloutSettings.demotion`,
+  `Rollout.progress()`, below); the promotion e-process and the futility test are read by
+  nothing. Promotion by betting (`logEValue`, `promotes`, `anytimeLowerBound`): a mixture of
+  likelihood ratios over twelve error rates below the promise (`PROMOTION_GRID`), valid however
+  often it is read (Ville's inequality); at 98% it promotes after 179 clean acts, 313 with one
+  wrong and 430 with two, where the zero-error plan ends at the first wrong act. A reverse test
+  retires a hopeless configuration (`futilityLogEValue`, `futile`, `FUTILITY_GRID`), and
+  `exactCrossingProbability` gives the exact operating characteristic. Demotion as change
+  detection: a Shiryaev-Roberts or CUSUM mixture e-detector over audit outcomes
+  (`startDetector`, `stepDetector`, `detectorStatistic`, `demotionAlternatives`,
+  `DEMOTION_SHIFTS`) whose chance of a false alarm within n audits is at most n/A
+  (`falseAlarmBound`); at A = 1,000 four consecutive wrong audits alarm (`fewestAlarmErrors`).
+  The shadow, enforce, audit loop as Dodge's CSP-1 (`outgoingQuality`, `outgoingQualityLimit`,
+  `worstOutgoingQuality`): a 149-act clearance with 20% audits executes at most 0.479% wrong
+  acts per act-eligible decision at any stationary error rate. Sections 9 to 11 of
+  `docs/sim-results.md`.
+- Demotion rules for `Rollout`: `RolloutSettings.demotion` **(evidence when adopted: a kind other
+  than `window` is part of the rollout's scope, so opting in or changing it starts a fresh shadow
+  phase)**. `{ kind: "detector" }` demotes when a Shiryaev-Roberts (or CUSUM) mixture e-detector
+  over the current enforce phase's audits reaches its threshold (default 1,000): for a gate that
+  keeps its promise, a false demotion within n audits has probability at most n/A, where the
+  window rule demoted a healthy 99% gate 47.6% of the time within 1,000 acts at an audit rate of
+  0.2 (section 10). It reads audits in ledger order through the labelled prefix, only labels from
+  the plan's `sources`, and can demote after 4 consecutive audited errors at a 98% promise.
+  `{ kind: "first-error" }` demotes at the first wrong audited act; with a zero-error plan the
+  promotion reason states the loop's CSP-1 outgoing quality (0.479% of act-eligible decisions at
+  any stationary error rate, 2.60% in the worst case, at a 149-act clearance and an audit rate of
+  0.2). Both take `overdue: { after, action }` for audits whose label does not come, reported by
+  default and never read as errors, and their enforce statuses carry `demotion` in place of
+  `audits`. Absent, or `{ kind: "window" }`, demotion, statuses, reasons, checkpoints and scope
+  hashes are exactly as before.
+- `acceptanceProgress(rows, plan, trust?)` and `Rollout.progress()` read a planned sample while it
+  fills, without evaluating or changing anything: the labelled prefix in sample order, wrong acts
+  anywhere, `cannotPass`, and a running lower bound on accuracy that stays valid however often it
+  is read. In enforce, `progress()` returns what the demotion rule has read. `describeProgress`
+  renders either. Nothing in it promotes or rejects: the planned test still evaluates once, and
+  an early wrong label does not reject a configuration, since reviewer error is the size of the
+  error budget and a disputed label can be adjudicated before the sample completes.
+- A row keeps every label attached to it: `DecisionRecord.labels`, oldest first, present only
+  once a second label arrives. `outcome` stays the latest, a row labelled once is exactly the row
+  it was, and `labelHistory(row)` reads either. Both ledgers build it from the outcome lines the
+  JSONL file always kept, so nothing written changes, and every existing reader still reads the
+  latest label.
+- `AcceptancePlan.adjudication` and `RolloutSettings.adjudication` **(evidence when adopted:
+  `"confirm-wrong"` is part of the plan's identity, so opting in starts a fresh phase)**. The
+  default, `"latest"`, keeps every plan hash and checkpoint. `"confirm-wrong"` reads a planned
+  act's labels as one vote per reviewer (`readLabel`, `adjudicateRows`, `src/ledger/labels.ts`)
+  and counts a "wrong" only once a second blind reviewer confirms it, a third breaking a tie;
+  until then the act is unlabelled to the test, so a complete sample stays `awaiting-labels`
+  (with `awaitingAdjudication`, also on `acceptanceProgress`) and can neither pass nor be
+  rejected on a disputed label. A blind relabel in the end-to-end evaluation disagreed on 4 of
+  157 labels, about 1.3% per reviewer: at a 1.25% false-"wrong" rate a perfect gate passes the
+  149-act zero-error plan 15.3% of the time, and with every "wrong" confirmed 95.5%, for 3.7
+  extra reviews per 149 acts; a 99% gate, 4.0% and 25.2% for 5.1, if reviewers err
+  independently (section 16 of `docs/sim-results.md`). Only the acceptance test reads the rule:
+  demotion, fits, grades, reports and `check` read the latest label.
+- `ratchet review --adjudicate --reviewer <name>`: every planned act whose label awaits a second
+  review or a tie-break, shown blind, skipping acts this reviewer already labelled; the summary
+  says how many are now settled wrong, settled right, or awaiting a tie-break. A reviewer is a
+  label's full source, so the name is required.
+- `DecisionRecord.auditProbability`: on every enforce-mode act, drawn for audit or not, the
+  gate's audit rate at that moment (0 when audits are off), so audited acts can be weighted by
+  their inclusion probability if the rate ever changes. Nothing reads it yet.
+- `fitExactBar` (`src/ledger/exact-bar.ts`): the act bar by fixed-sequence testing over 19
+  preset edges (`EXACT_BAR_EDGES`, 0.95 down to 0.05) with the acceptance test's exact bound,
+  stopping at the first failure, over rows or whole groups (`actRows` reads `scoredForAct`'s rows
+  with a group from a tag prefix). It says whose counts chose its start edge (`startFrom`,
+  `startCounts`), marks a bar found at the edge of its power `provisional`, and gives a reason
+  when there is none; `stratifiedBound` reads the evidence at a bar for a deployment mix. In
+  simulation at 500 rows and a 98% promise, 81.6% of the bars today's conservative scan found
+  were below the promise, against 1.9% of the exact fit's; in groups of three at within-group
+  correlation 0.6 the scan broke a 95% promise 6.2% of the time and the fit on groups never
+  (sections 12 and 13). `ratchet report --exact-bar` prints it (below); `Rollout`, `check` and
+  profiles do not read it.
+- `ratchet report --exact-bar [--group <tagPrefix>]` prints, under each gate's act bar, the exact
+  fixed-sequence bar fitted on the same rows, with its unit of evidence ("N rows are about G
+  independent observations") and a `provisional` mark; `--json` adds `exact` per gate.
+  `gateEvidence` takes `exact` for the same reading, and `exactBarFor` and `describeExactBar` are
+  exported (`src/ledger/bars.ts`). It sits beside the reported bar and replaces nothing: no gate's
+  evidence and no default output changes. `--group` is refused without `--exact-bar`.
+- `fitBeta` and `fitVennAbers` (`src/ledger/calibrators.ts`), unused by the engine: calibration
+  maps for 50 to 500 labels, where `fitIsotonic` returns exact 0 and 1. Beta calibration is
+  three parameters with a ridge of 0.1 toward the identity, kept monotone, and reports `loss`,
+  `converged` and `reason` as `fitLogistic` does; the inductive Venn-Abers predictor returns
+  `p0`, `p1` and their merge. Neither returns exactly 0 or 1. On 50 rows of a simulated
+  miscalibrated judge their log loss was 0.29 and 0.32, against 0.35 raw and 0.64 for
+  `fitIsotonic` (`tests/calibrators.test.ts`).
+- Floors over state entries (e2e T3-10, T4-14): `floorOn(path, predicate, { action, untrusted,
+  optional })` and `entryFloor((input, question) => ...)` read the builder's entries rather than
+  the rendered text, sit in the same `floors` arrays and compose with `forQuestion`. They fail
+  closed to review, with the reason on the row, when the entry is absent (unless `optional`), the
+  state has no entries, two entries share the path, or the predicate throws or answers anything
+  but a boolean or an action. An untrusted span is read only with `untrusted: true`.
+  `allowOn(path, predicate)` is a bypass over one trusted entry. `StateLike` gains optional
+  `fields` and `trustedText` (a `State` has both, and `State.from` keeps them); `evaluateFloors`,
+  `floorFor` and `bypassFor` accept a `StateLike`, and the engine passes them the state.
+  `digest(name, value, { raw })` keeps the raw value behind a digest for floors, never rendered or
+  hashed, so two states that render the same band from different raw values share a `stateHash`
+  and can floor differently; `fromRecord`'s `digest` option keeps it itself. Rendering, `hash` and
+  `trustedHash` are unchanged for every state. Moving a gate from text floors to entry floors
+  changes its rulings where untrusted text used to match **(evidence when adopted)**.
+- `PoolOptions.priorYes`, the gate's base rate of yes **(evidence when adopted)**: judge members
+  pooled in log-odds count the prior once instead of once per member. Two members that each
+  answer an 0.8 base rate, which is no information, pool to 0.941 at rho 0 and three to 0.985;
+  with `priorYes: 0.8` they pool to 0.8. The matrix path keeps its cap, on the evidence part.
+  Other judge methods ignore it; it is refused on a pick or rate question. In simulation at a
+  base rate of 0.8 it took held-out log loss from 0.062 to 0.051 on the phi matrix (section 14);
+  e2e T5 cannot test it, its judge gates' base rate being 0.49.
+- `withinClassCorrelation`, `panelFromLedger`, `panelCeiling` and `allWrongCeiling`
+  (`src/ledger/dependence.ts`): a panel's within-class logit correlation, its labelled answers,
+  and the unanimity ceiling 1 - P(all wrong) with an exact interval. Measurements only; phi stays
+  the engine's measure. Pooling weights fitted from the within-class correlation were measured
+  on e2e T5 and not shipped: they tied the phi matrix on accuracy (202 of 208, no discordant
+  item) and lost on log loss (0.095 against 0.087) and ECE (0.035 against 0.016)
+  (`experiments/e2e/t5-compound/fitted-pool.ts`, `pooling-review.ts`; section 15 compares the
+  two measures).
+- `fitPlatt`, `predictPlatt`, `plattCombiner` and `fitPlattCombiner` (`src/compound/learned.ts`):
+  a battery's `any` or `all` pool followed by a two-parameter Platt fit on labelled requests, as
+  a function combiner for `GateSpec.combine` **(evidence when adopted)**. In the research
+  simulation of all-of batteries it was the only combiner calibrated in every configuration (ECE
+  0.010 to 0.016) at the product's AUC; the learned combiner on clamped logits ranked below the
+  product (AUC 0.686 against 0.925 with eight members whose noise correlated at 0.6). The pool's
+  correlation is the caller's alone and defaults to 0.
+- `concur(members, policy)` (`src/compound/concur.ts`): two keys to act, the ensemble pooled by
+  its most cautious member (`min` of p(yes) when yes means go, `max` when no means go), so either
+  member can hold and acting needs every one; a failed member fails the request open
+  **(evidence when adopted)**. Judge questions only. Not a recommended default: on T5's act side
+  at fixed bars of 0.7 to 0.9 it, pooled log-odds, the phi-matrix pool and the recorded cascade
+  all made no wrong act, and it acted on less (18.8% to 33.2% of items against 38.0% to 41.8%).
+  It is the strictest way to combine, for a rule that does not rest on the pool's calibration
+  (`docs/e2e/t5-compound.md`, addendum).
+- `src/compound/frailty.ts`: the beta frailty on each step instance's false-alarm propensity that
+  explains why verified chains finish less often than independent retries predict. Fitted from
+  two ledger rates (`frailtyFromRates`), `predictChain` reproduces e2e T2's completion (49.2,
+  56.8, 61.2 and 61.5% against 48, 53, 62 and 58% observed, where independence said 76.6% to
+  97.3%); `completionInterval` is what the two rates alone allow (no budget certifies more than
+  52.1% at T2's rates); `fitFrailty` fits per-instance counts by likelihood (`frailtyCounts`,
+  `holdRates`); `afterHolds` and `escalateAfter` give the next attempt's chance after k holds and
+  when to escalate.
+- `runChain` options, each off by default; without them it returns exactly what it did
+  **(evidence when adopted)**. `keyOf` tags each verification with run, step instance, candidate
+  and holds before it (`chain:run:`, `chain:instance:`, `chain:candidate:`, `chain:holds:`) and
+  does not verify a repeated candidate again (`StepTrace.duplicates`): T2's six-attempt arm had
+  replayed cached verdicts and so tested three candidates, not six. `attemptPool` gives the chain
+  one budget with one attempt reserved per later step: at the same worst-case 24 attempts over
+  eight steps, 84.8% of simulated chains finished against 49.6% at three per step.
+  `Step.secondOpinion` asks a second verifier only about held candidates; by default ("order")
+  it ranks them for a person when a step exhausts (`ChainResult.held`: 94.0% completion at
+  99.94% commit precision for 0.82 reviews a chain, simulated), `"route"` stops for review at
+  its first pass, and `"commit"` lets its pass commit, which raised wrong commits 26-fold in
+  simulation and can never release a hold made by the primary gate's floor, one-way door, shadow
+  baseline or audit. Also `keepHeld`, `summarizeChain`, `readChainTags`, and a context for
+  `chainTags`. Section 5 of `docs/sim-results.md` is rewritten around the frailty.
+
+### Fixed: pool options on every compound path
+
+Found while integrating the review's pooling work; each has a regression test in
+`tests/pool-paths.test.ts`.
+
+- `sequential` takes one weight per member: a member sampled again keeps its weight, and weights
+  of another length are refused before anything is bought **(evidence)**. Before, every
+  sequential run given `weights` threw on its first sample.
+- `cascade` with `pool` passes the member key of each tier that answered and narrows a weight per
+  tier to those tiers, so `pool: { correlations }` works in a cascade **(evidence)**. Before, a
+  matrix threw for want of member keys, and a weight per tier threw whenever fewer tiers answered
+  than were listed.
+- The engine's re-pool at a risen default correlation keeps `priorYes`, and for a sequential run
+  gives each sample its member's weight.
+- `checkStrategy` refuses `priorYes` on a pick or rate question when the gate is registered; on a
+  single ask that question fails open to review without buying an answer.
 
 ## 0.3.0 (2026-11-09)
 

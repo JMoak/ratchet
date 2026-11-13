@@ -190,6 +190,6 @@ export function rolloutTables(): void {
     demotion,
   );
   note(
-    "Reading it: the audit rule errs toward caution. Real drift is caught, faster with more audits, but at 30 audits a single error already reads below 98%, so a healthy gate is demoted often too: false demotions cost review work, not safety. A sequential test with an explicit false-alarm rate would trade some of that caution for fewer false alarms; it is not built.",
+    "Reading it: the audit rule errs toward caution. Real drift is caught, faster with more audits, but at 30 audits a single error already reads below 98%, so a healthy gate is demoted often too: false demotions cost review work, not safety. A sequential test with an explicit false-alarm rate trades some of that caution for fewer false alarms: section 10 compares it, and Rollout takes it as an opt-in demotion rule (kind detector).",
   );
 }

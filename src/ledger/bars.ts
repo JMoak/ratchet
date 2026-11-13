@@ -31,6 +31,7 @@ import {
   REPORT_DEFAULTS,
   type ReportLevers,
 } from "./evidence.ts";
+import { actRows, type ExactBar, fitExactBar } from "./exact-bar.ts";
 import { type DecisionRecord, settledWithoutAnswer } from "./ledger.ts";
 import type { CalibrationProfile } from "./profile.ts";
 import { DEFAULT_TRUST, type TrustRegistry } from "./sources.ts";
@@ -134,6 +135,87 @@ export function describeActBar(bar: ActBar, levers: ReportLevers): string {
   return `no act bar: acting delivers ${promise} at no bar with ${levers.minSupport} rows at or above it (fitted on ${from})`;
 }
 
+/** An exact bar and what was set aside before it was fitted. */
+export interface ExactBarReading {
+  /** `fitExactBar`'s result on the rows the reported bar is fitted on. */
+  readonly bar: ExactBar;
+  /**
+   * Rows of that fit set left out because their act-side probability was not a number in
+   * [0, 1]: `fitExactBar` throws on one, and a report never throws on a ledger's content.
+   * `bar.rows + leftOut` is `ActBar.fitRows`, except for a row whose probability is not finite,
+   * which the act-side reader drops before either fit sees it.
+   */
+  readonly leftOut: number;
+}
+
+/**
+ * The exact fixed-sequence bar (`fitExactBar`) on the rows `fitActBar` fits: the current
+ * configuration's labelled rows of trusted sources on the act side, unselected ones when there
+ * are at least `minSupport` of them and every trusted labelled row otherwise, so the two bars
+ * can be read side by side on one set of rows. The rows are read through `actRows`, which
+ * carries each row's group from `group.tagPrefix`. Throws when `target` is not in (0, 1), the
+ * range `fitExactBar` takes.
+ */
+export function exactBarFor(
+  rows: readonly DecisionRecord[],
+  opts: {
+    readonly trust?: TrustRegistry;
+    readonly target: number;
+    readonly minSupport: number;
+    readonly group?: { readonly tagPrefix: string };
+  },
+): ExactBarReading {
+  const { current } = currentConfiguration(rows);
+  const trust = opts.trust ?? DEFAULT_TRUST;
+  const goIsYes = inferGoIsYes(current).goIsYes;
+  const read = (unselectedOnly: boolean) =>
+    actRows(current, {
+      trust,
+      goIsYes,
+      ...(unselectedOnly ? { unselectedOnly: true } : {}),
+      ...(opts.group !== undefined ? { group: opts.group } : {}),
+    });
+  const unselected = read(true);
+  const fitSet = unselected.length >= opts.minSupport ? unselected : read(false);
+  const usable = fitSet.filter((r) => r.go >= 0 && r.go <= 1);
+  return {
+    bar: fitExactBar(usable, { target: opts.target }),
+    leftOut: fitSet.length - usable.length,
+  };
+}
+
+/**
+ * One sentence for an exact bar, in the voice of `describeActBar`: where to act, how many units
+ * in its tail and how many were wrong, the exact one-sided lower bound, that it is a fixed
+ * sequence over preset edges, what one observation is, whose counts chose the start, and
+ * whether it is provisional; or the reason there is none. With groups as the unit it speaks of
+ * groups, since that is what the bound is about.
+ */
+export function describeExactBar(reading: ExactBarReading): string {
+  const { bar, leftOut } = reading;
+  const left =
+    leftOut > 0
+      ? `; ${leftOut} ${leftOut === 1 ? "row" : "rows"} left out, their act-side probability not a number in [0, 1]`
+      : "";
+  if (bar.bar === undefined) return `${bar.reason}${left}`;
+  const word = bar.unit === "group" ? "group" : "row";
+  const plural = (n: number) => `${n} ${word}${n === 1 ? "" : "s"}`;
+  const t = bar.tail;
+  const wrong = bar.unit === "group" ? `${t.wrong} held a wrong act` : `${t.wrong} wrong`;
+  const unit =
+    bar.unit === "group"
+      ? `${bar.rows} rows are about ${bar.units} independent observations`
+      : "assumes rows are independent";
+  const start =
+    bar.startFrom === "independent"
+      ? "start chosen from independent counts"
+      : `start chosen from the fit ${word}s' own counts`;
+  const provisional = bar.provisional
+    ? "; provisional: found at the edge of power, label more before relying on it"
+    : "";
+  return `act above ${dec(bar.bar)}: of the ${plural(t.units)} at or above it, ${wrong}; exact one-sided ${pct(bar.confidence)} lower bound ${pct(t.lowerBound)} >= ${pct(bar.target)}; a fixed sequence over ${bar.edges.length} preset edges; ${unit}; ${start}${provisional}${left}`;
+}
+
 /**
  * A pooled probability this close to 0 or 1 is saturated: beyond 0.001 or 0.999, a log-odds of
  * about 6.9 either way. A battery pooled in log-odds at correlation 0 put 37% of a conjunctive
@@ -235,6 +317,12 @@ export interface GateEvidenceOptions {
   readonly profiles?: readonly CalibrationProfile[];
   /** The model a profile is matched against. Default the newest answered row's. */
   readonly pin?: string;
+  /**
+   * Also fit the exact fixed-sequence bar (`exactBarFor`) on the rows the act bar is fitted on,
+   * with `group` naming the tag prefix whose rows form one unit of evidence. Absent: the result
+   * has no `exact` field.
+   */
+  readonly exact?: { readonly group?: { readonly tagPrefix: string } };
 }
 
 /** A gate's bar and grade, and the levers they were read with. */
@@ -244,6 +332,8 @@ export interface GateEvidence {
   readonly grade: EvidenceGrade;
   /** Set on a battery's combined rows. */
   readonly battery?: BatteryReadout;
+  /** Set only when `exact` was asked for: the exact bar beside `bar`, which it does not replace. */
+  readonly exact?: ExactBarReading;
 }
 
 /**
@@ -281,5 +371,20 @@ export function gateEvidence(
     ...(lent !== undefined ? { borrowed: lent.via, stale: lent.stale } : {}),
   });
   const battery = batteryReadout(rows);
-  return { levers, bar, grade, ...(battery !== undefined ? { battery } : {}) };
+  const exact =
+    opts.exact === undefined
+      ? undefined
+      : exactBarFor(rows, {
+          trust,
+          target: levers.target,
+          minSupport: levers.minSupport,
+          ...(opts.exact.group !== undefined ? { group: opts.exact.group } : {}),
+        });
+  return {
+    levers,
+    bar,
+    grade,
+    ...(battery !== undefined ? { battery } : {}),
+    ...(exact !== undefined ? { exact } : {}),
+  };
 }

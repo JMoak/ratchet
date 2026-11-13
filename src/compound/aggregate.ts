@@ -28,8 +28,11 @@ import type {
  *   at full correlation.
  * - majority: count votes. mean: average the probabilities.
  * - geomean: mean log-odds (log-odds with no accumulation); the fully correlated case.
- * A learned combiner (`fitLogistic`) fits the members' weights on labelled rows instead, and
- * beat every fixed pool on a conjunctive battery (ECE 0.036 against 0.198 for log-odds).
+ * A learned combiner (`fitLogistic`) fits the members' weights on labelled rows instead; it
+ * suits members that are evidence for one answer. On a conjunctive battery it beat log-odds
+ * (ECE 0.036 against 0.198, e2e T2) but ranked below the product in simulation (AUC 0.686
+ * against 0.925 with eight correlated members), since no weighted sum of log-odds is a
+ * conjunction: use `all` or `any`, with a Platt fit (`fitPlattCombiner`) to set its level.
  * Soft pools tie or beat thresholding each sub-question and AND-ing the booleans, which lost
  * on 9 of 10 benchmarks in the "Just Ask Jev" study.
  */
@@ -84,6 +87,26 @@ export interface PoolOptions {
    * and `sequential` fill it from their members (a member sampled again keeps its key).
    */
   readonly memberKeys?: readonly string[];
+  /**
+   * The gate's base rate of yes, strictly between 0 and 1, measured on unselected labelled rows
+   * (shadow rows and blind audits). A calibrated member's log-odds already contain the prior log-odds
+   * lambda0 = logit(priorYes), so a log-odds sum counts the prior once per member: two members
+   * that both answer the base rate of 0.8, which is no information, pool to 0.941 at rho 0 and
+   * three to 0.985, always toward the majority class (on a tool gate, "allow"). With it the
+   * prior is counted once (supra-Bayesian pooling with Bordley's prior correction):
+   * lambda0 + k sum_i w_i (z_i - lambda0), with k the design-effect shrink, or on the matrix
+   * path lambda0 + sum_i g_i w_i (z_i - lambda0) under the same cap, now on the evidence part:
+   * |L - lambda0| <= |sum_i w_i (z_i - lambda0)|. A bar fitted on one fixed panel's pool absorbs
+   * the shift; a bar set from costs, borrowed, or read by a sequential stop does not.
+   *
+   * It applies to judge verdicts pooled by `logodds` and to members that are evidence for one
+   * answer. The other methods ignore it, as `mean` ignores `correlation`: mean, max, min,
+   * majority and geomean already count the prior once, and `any` and `all` combine different
+   * questions by the rules of probability. A pick or rate question has no yes, so it throws
+   * there. Opting in moves every pooled verdict and can change which answer wins: bump the
+   * gate's `evidenceVersion`.
+   */
+  readonly priorYes?: number;
 }
 
 /** Nitzan-Paroush weight for a voter whose accuracy is p. */
@@ -97,6 +120,28 @@ function weightsFor(n: number, o: PoolOptions): number[] {
 
 function shrink(n: number, o: PoolOptions): number {
   return n === 0 ? 1 : effectiveN(n, o.correlation ?? 0) / n;
+}
+
+/**
+ * The prior log-odds, checked, when `priorYes` is given; undefined otherwise, so a pool without
+ * it never reaches this arithmetic.
+ */
+function priorOf(o: PoolOptions): number | undefined {
+  if (o.priorYes === undefined) return undefined;
+  const p = o.priorYes;
+  if (!(typeof p === "number" && p > 0 && p < 1)) {
+    throw new Error(`priorYes must be a base rate strictly between 0 and 1, not ${String(p)}`);
+  }
+  return logit(p);
+}
+
+/** A yes-rate means nothing to a pick or rate question; refused rather than silently dropped. */
+function noPrior(o: PoolOptions): void {
+  if (o.priorYes !== undefined) {
+    throw new Error(
+      "priorYes pools judge verdicts only: a pick or rate question has no base rate of yes",
+    );
+  }
 }
 
 /** Off-diagonal correlations are read in [0, 0.99], as the scalar path reads rho in [0, 1]. */
@@ -279,6 +324,8 @@ export function poolJudge(vs: readonly JudgeVerdict[], o: PoolOptions = {}): Jud
   const q0 = vs[0] as JudgeVerdict;
   const ps = vs.map((v) => v.pYes);
   const method = o.method ?? "logodds";
+  // Checked whatever the method, so a malformed base rate is never silently ignored.
+  const lambda0 = priorOf(o);
   let pYes: number;
   if (method === "any" || method === "all") {
     pYes = poolLogical(ps, method, weightsFor(vs.length, o), o.correlation ?? 0);
@@ -303,6 +350,21 @@ export function poolJudge(vs: readonly JudgeVerdict[], o: PoolOptions = {}): Jud
       else if (p === 0.5) yes += wi / 2;
     });
     pYes = total === 0 ? 0.5 : yes / total;
+  } else if (lambda0 !== undefined) {
+    // The prior counted once: each verdict's evidence is its log-odds less lambda0, pooled as
+    // below, and lambda0 is added back once.
+    const w = weightsFor(vs.length, o);
+    const evidence = ps.map((p) => logit(p) - lambda0);
+    if (o.correlations === undefined) {
+      const sum = evidence.reduce((acc, e, i) => acc + (w[i] ?? 1) * e, 0);
+      pYes = sigmoid(lambda0 + sum * shrink(vs.length, o));
+    } else {
+      const g = poolWeights(vs.length, o).weights;
+      const z = evidence.reduce((acc, e, i) => acc + (g[i] ?? 0) * (w[i] ?? 1) * e, 0);
+      // The same cap as without a prior, on the evidence part (see capConfidence).
+      const independent = Math.abs(evidence.reduce((acc, e, i) => acc + (w[i] ?? 1) * e, 0));
+      pYes = sigmoid(lambda0 + Math.sign(z) * Math.min(Math.abs(z), independent));
+    }
   } else {
     const w = weightsFor(vs.length, o);
     if (o.correlations === undefined) {
@@ -328,6 +390,7 @@ export function poolPick<O extends string>(
   if (vs.length === 0) throw new Error("nothing to pool");
   const method = o.method ?? "logodds";
   if (method === "any" || method === "all") return judgeOnly(method);
+  noPrior(o);
   const w = weightsFor(vs.length, o);
   let probs: number[];
   if (method === "mean") {
@@ -385,6 +448,7 @@ export function poolRate(
   if (vs.length === 0) throw new Error("nothing to pool");
   const method = o.method ?? "logodds";
   if (method === "any" || method === "all") return judgeOnly(method);
+  noPrior(o);
   const w = weightsFor(vs.length, o);
   const n = q.levels.length;
   let probs: number[];

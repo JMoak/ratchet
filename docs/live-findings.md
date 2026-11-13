@@ -106,7 +106,8 @@ The playbook for bulk work:
    wrong (revised 2026-11-12, e2e T3).
 3. Treat questions as free, and decompose for the battery's shape. Log-odds is the composite
    for members that are evidence for one answer; an any-of battery takes `any`, an all-of
-   battery `all` or a learned combiner, and one well-written question is often as good as
+   battery `all`, either optionally followed by a Platt fit on labels (`fitPlattCombiner`;
+   revised 2026-11-12, foundations review), and one well-written question is often as good as
    any battery. Fit the bar on the composite (revised 2026-11-12, e2e T2, T3).
 4. Run 16 to 32 in flight. Throughput is limited by your concurrency, not the service.
 5. Never repeat a question to the same model for confidence. Use the probability it already

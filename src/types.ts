@@ -6,6 +6,8 @@
  * pick / rate / judge and adapters translate.
  */
 
+import type { StateEntry } from "./state.ts";
+
 export type QuestionKind = "pick" | "rate" | "judge";
 
 /** Pick exactly one option from a closed set (Jev: Choice). */
@@ -132,12 +134,28 @@ export interface Oracle {
  * names of the untrusted spans, which the ledger records so an auditor can see what evidence
  * the harness did not vouch for. The `State` builder satisfies it; a plain string is wrapped
  * as one trusted field, so existing callers change nothing.
+ *
+ * Two optional members carry the builder's structure to floors and bypasses; `State` provides
+ * both, and only code reads them (the oracle is still sent `text`). A StateLike without them
+ * is read as a plain string is: entry floors fail closed to review, and bypasses read `text`.
  */
 export interface StateLike {
   readonly text: string;
   readonly hash: string;
   readonly trustedHash: string;
   readonly untrusted: readonly string[];
+  /**
+   * The builder's entries in insertion order (`State.fields`): each one's path, kind, trust and
+   * the value the caller passed. Entry floors (`floorOn`, `entryFloor`) read these instead of
+   * parsing `text`, which renders a raw and a digested value differently (e2e T3-10).
+   */
+  readonly fields?: readonly StateEntry[];
+  /**
+   * The trusted block alone; for a built `State`, exactly the text `trustedHash` is the hash of.
+   * A bypass is granted only when it matches this as well as `text`, so text in an untrusted span
+   * cannot grant one. Absent means all of `text` is trusted, as for a plain string.
+   */
+  readonly trustedText?: string;
 }
 
 /** What the engine, gates and recipes accept as a state. */

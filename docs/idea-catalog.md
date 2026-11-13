@@ -8,7 +8,8 @@ what to do. Status legend: **have**, **partial**, **missing**, **won't**.
 Numbers are as reported by their sources; most are builder-reported on small sets. Where a
 pattern was tried and removed, that is recorded too, because removals teach more than launches.
 Patterns our own end-to-end evaluation measured live are listed with their results at the end
-([measured 2026-11-12](#measured-in-the-end-to-end-evaluation-2026-11-12)).
+([measured 2026-11-12](#measured-in-the-end-to-end-evaluation-2026-11-12)), followed by what the
+foundations review built and measured ([2026-11-12](#foundations-review-2026-11-12)).
 
 ## A. Interception points inside agent loops
 
@@ -33,7 +34,7 @@ Patterns our own end-to-end evaluation measured live are listed with their resul
 | 17 | Mid-stream token gating | jev-model-tokengate: 0 leaked tokens, +0.11 s | missing | streaming hook; later |
 | 18 | Permission tiers and scoped authority | Tenuo, PermitMCP one-use permits, jev-auto-approve never-deny at 0.95, r2r-jev "evidence not authority", siege learns from breaches | partial | floors + bypass + `Ruling.reason`; one-use permits belong to the application |
 | 19 | Advice-only adversarial review | omp-typesafe | have | shadow mode |
-| 20 | Engine infrastructure | metajev distribution ledger; jevcal CI threshold lock; stuntd 24 h shadow, 0.99 rolling-agreement auto-demotion, 2% continuous audit, novelty gate; decision-gate spend caps; Hev human-answered API | partial | ledger, audits, `budgetUsd`, `Rollout` (promote on shadow evidence, demote on audited drift); **missing**: novelty gate and a `check` CI gate |
+| 20 | Engine infrastructure | metajev distribution ledger; jevcal CI threshold lock; stuntd 24 h shadow, 0.99 rolling-agreement auto-demotion, 2% continuous audit, novelty gate; decision-gate spend caps; Hev human-answered API | partial | ledger, audits, `budgetUsd`, `Rollout` (promote on shadow evidence, demote on audited drift); **missing**: novelty gate (revised 2026-11-12: `ratchet check` is the CI gate, D) |
 
 ## B. Question and state design
 
@@ -77,7 +78,7 @@ Patterns our own end-to-end evaluation measured live are listed with their resul
 | Per-question thresholds from tiny label sets | ten labels lift F1 0.706 to 0.793; optimal bar near 0.35 | have | `fitThreshold`, `report()` per question |
 | CI threshold lock and drift gate | jevcal `check` exits 1 on accuracy, coverage or model-version drift | have | `ratchet check` (exit 1 on broken promise, ECE bound or foreign model) and `ratchet replay` |
 | Shadow-to-live state machine | stuntd: 24 h shadow, auto-demotion when rolling agreement drops below 0.99, 2% continuous audit, novelty gate | partial | `Rollout`: promote only through a planned exact acceptance test on fresh shadow acts, demote when audited acts fall below the promise; novelty gate still missing (revised 2026-11-12: this cell described the earlier point-estimate rule) |
-| Heterogeneous voting | flock: majority, unanimous and mean across different decision models; a refusal is no vote | have | `ensemble` with members on different oracles; failed-open members are dropped |
+| Heterogeneous voting | flock: majority, unanimous and mean across different decision models; a refusal is no vote | have | `ensemble` with members on different oracles; unanimous is `concur` (two keys); a failed-open member fails the request open unless `minMembers` allows fewer (revised 2026-11-12) |
 | Rotation budget early stop | AnyJev: 7.2 of 18 rotations at a 1% target | have | `sequential` with `settleLead` |
 | Outcome-joined ledger, signed receipts | jev-trust: outcome-joined JSONL, 10-bin ECE, ed25519-signed logs | partial | ledger joins outcomes; signatures later |
 | Feedback-loop hygiene | Arcjet: exclude engine outputs from model-visible state | docs | principle in vision.md; never feed a verdict back into the next state |
@@ -148,3 +149,25 @@ Five tracks ran the engine live on new, authored corpora with labels fixed befor
 | Feedback-loop hygiene (D) | T4: the State builder refused 8 of 16 ways to carry a verdict back; the 8 it accepted (strings, digests, untrusted text) are documented limits (T4-15). |
 | Business decisions (E, counter-evidence) | T3: approvals, routing and moderation ran on the stock engine; routing 98.4%, digested approvals decided 206 of 219 with no error. |
 | Prompt-only injection defences (won't) | Not measured: T4's injection study was not run. T2's 30 wrong outputs carrying a planted "approve this" note were all held back. |
+
+## Foundations review (2026-11-12)
+
+An architectural and statistical review ([report](../reports/Foundations%20review%202026-11.md),
+six research notes in `research_notes/Foundations review 2026-11/`) and its first implementation
+waves. One line per catalogued pattern it touched. "Built" means in the library and tested; each
+line says what, if anything, reads it. Simulation figures are from
+[sim-results.md](sim-results.md), sections 5 and 9 to 15.
+
+| Pattern (section) | Result |
+| --- | --- |
+| Shadow-to-live state machine (D) | **Built; demotion wired as an option, promotion not.** `Rollout` takes a Shiryaev-Roberts detector (a healthy 99% gate audited at 0.1 demoted within 10,000 acts 4.7% of the time, against 68.5% for the window rule) or a first-error rule that states the loop's CSP-1 outgoing quality, as `RolloutSettings.demotion`, and reads a sample in progress (`progress()`: labelled prefix, `cannotPass`, a running lower bound). The betting e-process for promotion (allowed 1,000 acts it promotes a 99.5% gate 95.9% of the time, against 47.4% for the 149-act plan) is built and read by nothing. The novelty gate stays deferred. |
+| Per-question thresholds, threshold fitting (D) | **Built; printed on request.** `fitExactBar`: fixed-sequence exact tests over 19 preset edges, on rows or groups, printed beside the act bar by `ratchet report --exact-bar`. At 500 rows and a 98% promise 1.9% of its bars were below the promise, against 81.6% of the conservative scan's; in groups of three at correlation 0.6 the scan broke a 95% promise 6.2% of the time and the group fit never. Whether it replaces the scan is open. |
+| Code-owned limits, floors (C) | **Built.** Entry floors (`floorOn`, `entryFloor`) read the builder's entries instead of the rendering, so an amount floor reads the raw value behind a digest (e2e T3-10) and a command floor can read the command field rather than tool output that mentions it (T4-14); they fail closed. A text bypass on a state with untrusted spans must match the trusted block too, and `allowOn` reads trusted entries only. |
+| Isotonic recalibration, confidence engineering (B, D) | **Built, unused by the engine.** `fitBeta` and `fitVennAbers` never return exactly 0 or 1; on 50 simulated labels their log loss was 0.29 and 0.32, against 0.35 raw and 0.64 for `fitIsotonic`, whose pure blocks are exactly 0 or 1. A Venn-Abers review band is deferred. |
+| Heterogeneous voting (D): two keys | **Built and measured; not a default.** `concur` acts only when every member would. On T5's act side, at fixed bars of 0.7 to 0.9, it, pooled log-odds, the phi-matrix pool and the recorded cascade all made no wrong act on 208 items, and it acted on less (18.8% to 33.2% against 38.0% to 41.8%); against one model it removed wrong acts (jev-1.13 alone made 6 at 0.7, haiku-5.5 alone 2 at every bar). The second family is what mattered. |
+| Heterogeneous voting (D): pooling | **Built:** `priorYes` counts a gate's base rate once (two members answering a 0.8 base rate pooled to 0.941, with it to 0.8; held-out log loss 0.062 to 0.051 on the phi matrix in simulation); T5's base rate of 0.49 could not test it. **Measured and not shipped:** weights fitted from the within-class logit correlation won in simulation and on T5 tied the phi matrix on accuracy (202 of 208) and lost on log loss (0.095 against 0.087) and ECE (0.035 against 0.016); only the measurements ship (`dependence.ts`). |
+| Questions as features, learned composition (B) | **Built.** `fitPlattCombiner`: an `any` or `all` pool with a two-parameter Platt fit, the only combiner calibrated in every simulated all-of configuration (ECE 0.010 to 0.016); the learned combiner on clamped logits ranked below the product (AUC 0.686 against 0.925 with eight correlated members). A logistic on log-probabilities was not built: unstable at 200 rows. |
+| Budget and effort routing, cascade (A14) | **Fixed and measured.** `pool` inside a cascade passes the tiers' keys, so a per-pair matrix works there. On T5's act side the cascade covered the most at zero wrong acts at fixed bars (41.8% at 0.7, of a possible 43.8%). |
+| Loop abort, verified chains (A4) | **Built.** A beta frailty fitted from two ledger rates reproduces T2's completion (49.2, 56.8, 61.2, 61.5% against 48, 53, 62, 58%); a shared `attemptPool` finished 84.8% of simulated chains against 49.6% at the same worst-case spend; a second opinion ordering held candidates for a person reached 94.0% at 99.94% commit precision, and releasing on it raised wrong commits 26-fold. T2's six-attempt arm tested three distinct candidates, not six (corrected in its report). |
+| Permission tiers and scoped authority (A18) | **Open choice.** Binding an act to the full hash of the exact call: `hashState` keeps 64 bits, enough to group and too few to bind, and this catalogue leaves one-use permits to the application. |
+| Prompt-only injection defences (won't) | **Corrected, deferred.** The review band's injection evidence came from a non-adaptive attack: the band is insurance against run-to-run noise and a filter for weak attacks, not an injection control. Ruling on the more cautious of a trusted-only ask and a full ask is the sound control for gates whose subject is trusted; entry floors and the trusted-text bypass rule are built, the two-ask mode is not. The injection study is deferred; its protocol is in `information_flow_security.md`. |

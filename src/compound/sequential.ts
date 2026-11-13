@@ -171,6 +171,14 @@ export async function sequential(
   if (typeof opts.settleAbove !== "number" || Number.isNaN(opts.settleAbove)) {
     throw new Error(`settleAbove must be a number, not ${String(opts.settleAbove)}`);
   }
+  // A weight belongs to a member, not to a sample: a member sampled again keeps its weight.
+  // Passed through as given, the weights were one per member while the pool held one verdict
+  // per sample, so every run with `weights` threw on its first sample.
+  if (opts.weights !== undefined && opts.weights.length !== opts.members.length) {
+    throw new Error(
+      `weights must hold one weight per member (${opts.members.length}), not ${opts.weights.length}`,
+    );
+  }
   let failedSamples = 0;
   let failure: string | undefined;
   const members: Decision[] = [];
@@ -204,10 +212,22 @@ export async function sequential(
     }
     const live = members.filter((x) => !x.failedOpen);
     if (live.length > 0) {
+      const answered = (_: unknown, k: number): boolean => members[k]?.failedOpen !== true;
+      // Sample k came from member k mod the member count, and takes that member's weight.
+      const weights =
+        opts.weights === undefined
+          ? undefined
+          : members.flatMap((x, k) =>
+              x.failedOpen ? [] : [opts.weights?.[k % opts.members.length] ?? 1],
+            );
       verdict = pool(
         question,
         live.map((x) => x.verdict),
-        { ...opts, memberKeys: poolKeys.filter((_, k) => members[k]?.failedOpen !== true) },
+        {
+          ...opts,
+          ...(weights !== undefined ? { weights } : {}),
+          memberKeys: poolKeys.filter(answered),
+        },
       );
     }
     trajectory.push(verdict.confidence);

@@ -1,5 +1,6 @@
 import { clamp, logit, sigmoid } from "../math.ts";
 import type { JudgeVerdict } from "../types.ts";
+import { poolJudge } from "./aggregate.ts";
 
 /**
  * Learned composition: treat a battery of judge answers as features and fit the pooling
@@ -246,4 +247,330 @@ export function poolLearned(vs: readonly JudgeVerdict[], m: LogisticModel): Judg
   if (!first) throw new Error("nothing to pool");
   const p = predictLogistic(m, batteryFeatures(vs));
   return { kind: "judge", questionId: first.questionId, pYes: p, confidence: Math.max(p, 1 - p) };
+}
+
+/**
+ * Platt scaling of one pooled probability: logit(q) = slope * logit(p) + intercept. A logical
+ * pool has the right shape for its battery (`all`, the product at independence, for a
+ * conjunction; `any`, noisy-OR, for a disjunction) but states its probability as if every
+ * member were calibrated on its own question and their errors independent. One model asked
+ * several questions about one state is neither, so the pool has the right shape and states the
+ * wrong level; two parameters fix the level and the spread without changing the order. In the
+ * research simulation of all-of batteries (three and eight members, conditions and member
+ * noise each independent or correlated, 200 labelled rows), the product followed by this fit
+ * had ECE 0.010 to 0.016 in every configuration, the only combiner calibrated in all of them;
+ * with eight members whose noise correlated at 0.6 the product alone read 0.040, and the learned
+ * combiner on clamped logits (`fitLogistic` over `batteryFeatures`) fell to AUC 0.686 against
+ * the product's 0.925, because a conjunction is close to the minimum of its members' log-odds,
+ * which no weighted sum of them represents.
+ */
+export interface PlattModel {
+  /** Above 1 sharpens the pool, below 1 softens it toward 0.5; 1 keeps its spread. */
+  readonly slope: number;
+  /** Shifts every pool's log-odds; above 0 raises p(yes). */
+  readonly intercept: number;
+}
+
+/** A fitted Platt map and how the fit ended, read as a `LogisticFit` is. */
+export interface PlattFit extends PlattModel {
+  /** Mean log loss on the rows fitted, plus the slope's ridge penalty: what the fit minimised. */
+  readonly loss: number;
+  /**
+   * True when the fit found the minimum: both gradient components fell below `tolerance`
+   * within the cap, on rows where a finite minimum exists. False, with `reason`, otherwise.
+   */
+  readonly converged: boolean;
+  /** Newton steps taken. */
+  readonly iterations: number;
+  /**
+   * Why the fit did not converge. "one class": every row has one label, so no finite intercept
+   * minimises the loss; the map is the identity, the pool as stated, because a one-class sample
+   * says nothing about the map and a fit would shift every pool toward the class seen (on a
+   * yes-is-go gate whose sample was all yes, toward acting). "separable": with `l2` 0 some map
+   * puts every row on its own side, so the slope grows without bound; the map is again the
+   * identity rather than the step a diverging slope approaches. Set `l2` above 0. "iteration
+   * cap": the cap came first. "no descent": no step along the Newton direction lowered the loss.
+   */
+  readonly reason?: "one class" | "separable" | "iteration cap" | "no descent";
+}
+
+export interface PlattOptions {
+  /** Most Newton steps to take. Default 100; two parameters converge in a handful. */
+  readonly iterations?: number;
+  /**
+   * Ridge pulling the slope toward 1, per row: the loss adds (l2 / 2) (slope - 1)^2 to the mean
+   * log loss. The intercept is free: the base rate of a battery's truth is the first thing a
+   * few labels measure well. Default 0.05, the research note's. With it a finite minimum exists
+   * whenever both classes are present, separable rows included.
+   */
+  readonly l2?: number;
+  /** Stop when both gradient components are below this. Default 1e-8. */
+  readonly tolerance?: number;
+}
+
+/**
+ * A pool's log-odds as the Platt fit reads it: `logit` keeps p within 1e-6 of 0 and 1, as every
+ * feature in this file is kept, then the research note's +-12. Not the +-7 of
+ * `batteryFeatures`: that clamp reads every pool above 0.99909 as 0.99909, and so caps what the
+ * identity map can state where a strict bar sits.
+ */
+const plattFeature = (p: number): number => clamp(logit(p), -12, 12);
+
+/** The calibrated probability for a pooled probability p. */
+export function predictPlatt(m: PlattModel, p: number): number {
+  return sigmoid(m.slope * plattFeature(p) + m.intercept);
+}
+
+type PlattRow = { readonly u: number; readonly y: boolean };
+
+/** Mean log loss of the map (a, b) plus the slope's ridge toward 1; the intercept is free. */
+function plattLoss(rows: readonly PlattRow[], a: number, b: number, l2: number): number {
+  let total = 0;
+  for (const r of rows) {
+    const z = a * r.u + b;
+    // log(1 + e^z) - y z, computed without overflow.
+    total += Math.max(z, 0) + Math.log1p(Math.exp(-Math.abs(z))) - (r.y ? z : 0);
+  }
+  return total / rows.length + (l2 / 2) * (a - 1) ** 2;
+}
+
+/** The identity map, returned when the rows set no finite map. */
+function identityFit(
+  rows: readonly PlattRow[],
+  l2: number,
+  reason: "one class" | "separable",
+): PlattFit {
+  return {
+    slope: 1,
+    intercept: 0,
+    loss: plattLoss(rows, 1, 0, l2),
+    converged: false,
+    iterations: 0,
+    reason,
+  };
+}
+
+/**
+ * Fit a Platt map to pooled probabilities `p` against the truths `y` by Newton's method with a
+ * backtracking line search, starting from the identity, so every step lowers the penalised
+ * loss. It stops when both gradient components are below `tolerance`, or after `iterations`
+ * steps, and says which, as `fitLogistic` does. Fit on unselected rows (shadow and blind
+ * audits) of the current configuration, as every bar is. Below 30 such rows use the pool as it
+ * is, as the research note does: the ridge keeps a small sample's slope near 1, but nothing
+ * holds its intercept.
+ */
+export function fitPlatt(
+  rows: readonly { readonly p: number; readonly y: boolean }[],
+  opts: PlattOptions = {},
+): PlattFit {
+  const n = rows.length;
+  if (n === 0) throw new Error("fitPlatt needs rows");
+  const cap = opts.iterations ?? 100;
+  const l2 = opts.l2 ?? 0.05;
+  const tolerance = opts.tolerance ?? 1e-8;
+  if (!Number.isSafeInteger(cap) || cap < 0) throw new Error("iterations must be a whole number");
+  if (!(Number.isFinite(l2) && l2 >= 0)) {
+    throw new Error("l2 must be a finite number of at least 0");
+  }
+  const data: PlattRow[] = rows.map((r, i) => {
+    if (!(typeof r.p === "number" && r.p >= 0 && r.p <= 1)) {
+      throw new Error(`fitPlatt: row ${i} has p ${String(r.p)}, not a probability`);
+    }
+    return { u: plattFeature(r.p), y: r.y };
+  });
+  const yes = data.filter((r) => r.y).length;
+  if (yes === 0 || yes === n) return identityFit(data, l2, "one class");
+  let a = 1;
+  let b = 0;
+  let loss = plattLoss(data, a, b, l2);
+  let converged = false;
+  let reason: PlattFit["reason"];
+  let iterations = 0;
+  for (; iterations <= cap; iterations++) {
+    let ga = 0;
+    let gb = 0;
+    let haa = 0;
+    let hab = 0;
+    let hbb = 0;
+    for (const r of data) {
+      const q = sigmoid(a * r.u + b);
+      const err = q - (r.y ? 1 : 0);
+      const s = q * (1 - q);
+      ga += err * r.u;
+      gb += err;
+      haa += s * r.u * r.u;
+      hab += s * r.u;
+      hbb += s;
+    }
+    ga = ga / n + l2 * (a - 1);
+    gb /= n;
+    if (Math.max(Math.abs(ga), Math.abs(gb)) < tolerance) {
+      converged = true;
+      break;
+    }
+    if (iterations === cap) {
+      reason = "iteration cap";
+      break;
+    }
+    // A tiny ridge keeps the step defined when every pool is the same number.
+    const step = solve(
+      [
+        [haa / n + l2 + 1e-12, hab / n],
+        [hab / n, hbb / n + 1e-12],
+      ],
+      [ga, gb],
+    );
+    if (step === undefined) {
+      reason = "no descent";
+      break;
+    }
+    const [da, db] = [step[0] ?? 0, step[1] ?? 0];
+    let t = 1;
+    let next = { a, b };
+    let nextLoss = loss;
+    for (let k = 0; k < 40; k++) {
+      next = { a: a - t * da, b: b - t * db };
+      nextLoss = plattLoss(data, next.a, next.b, l2);
+      if (nextLoss <= loss) break;
+      t /= 2;
+    }
+    if (!(nextLoss <= loss)) {
+      reason = "no descent";
+      break;
+    }
+    ({ a, b } = next);
+    const moved = loss - nextLoss;
+    loss = nextLoss;
+    // A step that no longer moves the loss at all has nothing left to find.
+    if (moved === 0) {
+      converged = true;
+      break;
+    }
+  }
+  // Without the ridge, rows some map orders perfectly have no finite minimum: the gradient
+  // reaches the tolerance only because the loss is nearly 0, at a slope that is a step.
+  if (l2 === 0 && data.every((r) => (r.y ? a * r.u + b > 0 : a * r.u + b < 0))) {
+    return identityFit(data, l2, "separable");
+  }
+  return {
+    slope: a,
+    intercept: b,
+    loss,
+    converged,
+    iterations,
+    ...(!converged && reason !== undefined ? { reason } : {}),
+  };
+}
+
+/**
+ * The pool a Platt combiner calibrates: `any` (noisy-OR) for a disjunction, `all` (the product)
+ * for a conjunction, through `poolJudge`.
+ */
+export interface LogicalPool {
+  readonly method: "any" | "all";
+  /**
+   * Passed to `poolJudge`: it moves `all` from the product up toward the smallest p(yes) and
+   * `any` from noisy-OR down toward the largest. Default 0, and only ever the caller's. In both
+   * of a battery's usual shapes, an all-of whose go side is yes and an any-of whose go side is
+   * no ("act when none applies"), a higher correlation acts more often: it is the permissive
+   * direction, and a default keyed on who the members are (one model asked several questions
+   * about one state, the usual battery) would push it up. What it stands for is the dependence
+   * between the conditions' truths, which sets P(all); the members' error correlation is another
+   * quantity, and the Platt fit is what absorbs it. Never set it from `memberCorrelation`.
+   */
+  readonly correlation?: number;
+}
+
+/**
+ * A battery combiner in the function form `GateSpec.combine` takes, carrying what it computes
+ * (`pool`, `platt`) so a caller can read and record it.
+ */
+export type PlattCombiner = ((verdicts: readonly JudgeVerdict[]) => JudgeVerdict) & {
+  readonly pool: Readonly<Required<LogicalPool>>;
+  readonly platt: Readonly<PlattModel>;
+};
+
+/**
+ * A logical pool followed by a Platt map, as a battery combiner: `poolJudge` by `pool.method`
+ * at `pool.correlation`, then `predictPlatt`. The question id is the first member's; the gate
+ * renames it. Throws here, at construction, on a method other than `any` or `all`, a
+ * correlation outside [0, 1], or a map that is not finite and increasing (a slope at or below 0
+ * would invert or flatten the pool, which is no calibration), so the combiner cannot return a
+ * p(yes) that is not a probability from its own parameters; a member answer it cannot read
+ * makes it throw or return NaN, and either fails the battery open, to review.
+ *
+ * A gate records every function combiner as "function": the map is not part of the gate's
+ * rubric hash. Bump the gate's `evidenceVersion` whenever the fit, the method or the
+ * correlation changes, or the old configuration's labels keep grading the new one.
+ */
+export function plattCombiner(pool: LogicalPool, platt: PlattModel): PlattCombiner {
+  const { method } = pool;
+  if (method !== "any" && method !== "all") {
+    throw new Error(`a Platt combiner pools by "any" or "all", not ${JSON.stringify(method)}`);
+  }
+  const correlation = pool.correlation ?? 0;
+  if (!(Number.isFinite(correlation) && correlation >= 0 && correlation <= 1)) {
+    throw new Error(`correlation must be from 0 to 1, not ${String(correlation)}`);
+  }
+  const { slope, intercept } = platt;
+  if (!(Number.isFinite(slope) && slope > 0)) {
+    throw new Error(
+      `a Platt slope must be a positive number, not ${String(slope)}: a slope at or below 0 inverts or flattens the pool`,
+    );
+  }
+  if (!Number.isFinite(intercept)) {
+    throw new Error(`a Platt intercept must be a finite number, not ${String(intercept)}`);
+  }
+  const model: PlattModel = Object.freeze({ slope, intercept });
+  const combine = (vs: readonly JudgeVerdict[]): JudgeVerdict => {
+    const pooled = poolJudge(vs, { method, correlation });
+    const p = predictPlatt(model, pooled.pYes);
+    return {
+      kind: "judge",
+      questionId: pooled.questionId,
+      pYes: p,
+      confidence: Math.max(p, 1 - p),
+    };
+  };
+  Object.defineProperty(combine, "pool", {
+    value: Object.freeze({ method, correlation }),
+    enumerable: true,
+  });
+  Object.defineProperty(combine, "platt", { value: model, enumerable: true });
+  return combine as PlattCombiner;
+}
+
+/**
+ * Labelled battery requests to a Platt combiner in one call. Each row is one request: its
+ * members' verdicts in battery order (as `batteryFeatures` is fed) and the battery's truth.
+ * Take them from unselected labelled rows of the current configuration (group member rows by
+ * `requestId`), and leave out requests where a member failed open: the battery failed open on
+ * them, and a neutral answer is not the member's. The correlation is the caller's alone, as
+ * `LogicalPool` says. Check `fit.converged` and `fit.reason` before adopting the combiner, and
+ * bump the gate's `evidenceVersion` when you do. Throws when the rows disagree on the member
+ * count, or when the fitted slope is not positive: the pool ranks these rows backwards, so check
+ * the members' polarity and the method rather than invert it.
+ */
+export function fitPlattCombiner(
+  rows: readonly { readonly verdicts: readonly JudgeVerdict[]; readonly y: boolean }[],
+  pool: LogicalPool,
+  opts: PlattOptions = {},
+): { readonly combine: PlattCombiner; readonly fit: PlattFit } {
+  const k = rows[0]?.verdicts.length ?? 0;
+  if (k === 0) throw new Error("fitPlattCombiner needs rows with member verdicts");
+  if (rows.some((r) => r.verdicts.length !== k)) {
+    throw new Error(`fitPlattCombiner: every row needs the same ${k} member verdicts`);
+  }
+  // Checked first, so a bad method or correlation is refused before anything is fitted.
+  const { method, correlation } = plattCombiner(pool, { slope: 1, intercept: 0 }).pool;
+  const fit = fitPlatt(
+    rows.map((r) => ({ p: poolJudge(r.verdicts, { method, correlation }).pYes, y: r.y })),
+    opts,
+  );
+  if (!(fit.slope > 0)) {
+    throw new Error(
+      `the fitted Platt slope is ${String(fit.slope)}: the "${method}" pool ranks these rows backwards; check the members' polarity and the method`,
+    );
+  }
+  return { combine: plattCombiner(pool, fit), fit };
 }

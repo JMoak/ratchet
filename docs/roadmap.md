@@ -1,7 +1,123 @@
 # Roadmap
 
-Reviewed 2026-10-21; the end-to-end evaluation entry added 2026-11-12. Historical milestones
-below describe the existing tree.
+Reviewed 2026-10-21; the end-to-end evaluation and foundations review entries added 2026-11-12.
+Historical milestones below describe the existing tree.
+
+## Foundations review (2026-11-12)
+
+An architectural and statistical review read the engine as a quality-control regime (promotion
+is acceptance sampling, the audit loop a continuous sampling plan, demotion a control chart) and
+backed six findings with research notes ([report](../reports/Foundations%20review%202026-11.md),
+notes in `research_notes/Foundations review 2026-11/`). No test shortens the road to a 98%
+promise: a 99% gate needs 969 labelled acts for 80% power in a fixed plan and about 610 on
+average under the best sequential test. What shortens it is a gate much better than its promise,
+evidence counted in independent units (groups, not rows: a fitted bar broke a 95% promise 17.2%
+of the time at ten rows per group in simulation), and a second model family on the act path.
+The demotion window is harsh on good gates (a healthy 99% gate demoted 68.5% of the time within
+10,000 acts at an audit rate of 0.1), the log-odds pool counts a gate's base rate once per
+member, chains stall on a per-step verifier frailty that two ledger rates predict, and if
+reviewers wrongly mark 2% of right acts wrong, a 98% promise is unverifiable at any sample size.
+
+Built so far, each tested; nothing changes what a gate does unless it opts in, except two fixes:
+a text bypass on a state with untrusted spans must now match the trusted block too, and pool
+options that used to throw on a sequential run or in a cascade now pool:
+
+- The anytime-valid arithmetic (`src/anytime.ts`). `Rollout` reads part of it on request: the
+  Shiryaev-Roberts detector, or a return at the first audited error with its CSP-1 figures, as
+  demotion rules (`RolloutSettings.demotion`), and a running lower bound with a `cannotPass`
+  notice for a sample in progress (`Rollout.progress()`). The promotion e-process and the
+  futility test are read by nothing: promotion is still the planned test, and an early wrong
+  label does not reject a configuration.
+- The exact fixed-sequence act bar over rows or groups (`src/ledger/exact-bar.ts`), printed beside
+  the act bar on request (`ratchet report --exact-bar [--group <tagPrefix>]`).
+- Floors over state entries (`floorOn`, `entryFloor`, `allowOn`), done as the T3-10 item below.
+- Read by nothing yet: beta and Venn-Abers calibrators, and the panel measurements in
+  `src/ledger/dependence.ts`.
+- `PoolOptions.priorYes`; a Platt fit for `any` and `all` batteries; `concur`; the chain frailty
+  model with `runChain`'s candidate keys, attempt pool and second opinion. Pool options now work
+  on every compound path.
+- Label history and adjudication: every row keeps its labels (`DecisionRecord.labels`);
+  `adjudication: "confirm-wrong"` lets the acceptance test count a "wrong" only once a second
+  reviewer confirms it (a perfect gate at a 1.25% false-"wrong" rate passes the 149-act plan
+  95.5% of the time instead of 15.3%, for 3.7 extra reviews; section 16 of
+  [sim-results.md](sim-results.md)); `ratchet review --adjudicate` is the queue; and every
+  enforce-mode act records its audit probability. The default is unchanged (`latest`), and only
+  the acceptance test reads the rule.
+
+Measured and not shipped: pooling weights fitted from the within-class correlation, which lost to
+the phi matrix on T5's real rows. Two keys, tested on T5's act side, was no safer than the pools
+or the cascade and acted on less; the cascade to a second family (the strong-default item below)
+is the best measured way to use one. ([CHANGELOG](../CHANGELOG.md),
+[architecture](architecture.md), [catalogue](idea-catalog.md#foundations-review-2026-11-12).)
+
+Next: no building work is queued. What remains is the owner's open choices and the deferred
+list below.
+
+Open choices, the owner's to make:
+
+- Whether the exact bar replaces the Wilson scan in reports; today it is printed beside it.
+- Whether the detector becomes the default demotion rule; today it is opt-in.
+- Whether demotion should wait for a confirmed "wrong". Today an audit's latest label is read
+  under every demotion rule, so an unconfirmed "wrong" can still return a gate to shadow, the
+  cautious direction.
+- Whether a hash-bound permit belongs in the library; the idea catalogue leaves one-use permits
+  to the application.
+- Whether to drop the matrix-path confidence cap once member strengths are measured. In
+  simulation at 300 rows it would take held-out log loss from 0.061 to 0.058 and from 0.080 to
+  0.069, but it loosens a rule adopted for a verified defect.
+- Which promise the product makes: precision on acts, or the rate at which wrong requests are
+  acted on, which does not move with the base rate.
+- What to do about four things the review found in the existing window rule and left unchanged
+  (line numbers in `src/rollout.ts` as of 2026-11-12):
+  - It reads every audit label, whatever its source. `audits()` (lines 649 to 665) filters only on
+    `r.outcome` (line 651), with no `admits`, so consequence, moment and unregistered labels count
+    toward the window's accuracy, while the enforce grade beside it (line 1020), acceptance and
+    the new demotion rules read only the plan's `sources`. Consequence labels are chosen by
+    outcome (a revert lands on a wrong act, an acceptance on a right one), so they can demote a
+    good gate or keep a bad one enforced.
+  - Its `n` and `accuracy` count different rows (lines 661 and 663, read together at 1022): `n`
+    counts every labelled row tagged `audit`, `accuracy` only those ruled act. A caller-tagged
+    audit row that was not an act counts toward `minAuditRows`, and with no acts the accuracy is
+    0, so the gate demotes. Engine-drawn audits are always acts, so this needs caller-supplied
+    tags.
+  - The audit rate is not part of the scope hash (lines 611 to 626): a restart with a different
+    rate keeps the phase. That is harmless for the window rule, but the first-error CSP figures
+    are stated at the rate in force at promotion.
+  - Neither demotion rule caps audits per session; the plan's `group` applies to the planned
+    sample only, so session correlation weakens the detector's guarantee.
+- What to do about four things `confirm-wrong` leaves open (line numbers as of 2026-11-12):
+  - Grades still read the latest label, so they can disagree with what acceptance read. In
+    shadow, the status `grade` (`src/rollout.ts` lines 793, 936 and 939, through `gradeOf`)
+    counts a disputed act on its latest label while acceptance says `awaiting-labels`
+    (`src/ledger/evidence.ts` line 418). After settling, the latest label can be the losing vote:
+    wrong, wrong, then right from a third reviewer, and acceptance rejects while the estimate
+    reads right. When the sample is accepted, the measured grade's sources and date
+    (`evidence.ts` lines 401 and 402) count and date the latest label. Reports, `check`, `trail`
+    and `Engine.report` build the measured grade with `plan: { target }` (`src/ledger/bars.ts`
+    line 366), so a gate the rollout rejected under `confirm-wrong` could pass
+    `check --require measured`, the same gap that already exists for a non-default `confidence`,
+    `maxErrors`, `group` or `sources`. The smallest fix: in `Rollout.accept` (lines 936 and 939)
+    and the rejected branch (line 793), grade
+    `adjudicateRows(shadowRows, plan.adjudication, { sources: plan.sources, trust: target.trust })`
+    instead of `shadowRows` when `plan.adjudication` is set, and leave `watch` and `detect` (lines
+    1020 and 1066) on the latest label, so the enforce grade still matches what demotion reads.
+  - `ratchet review` takes no `--trust`, so the queue counts votes by the default sources
+    (`src/cli/review.ts` line 79); a plan with custom `sources` or `labelTrust` counts them
+    differently.
+  - Under `latest`, a later label from an untrusted source hides an earlier trusted one: a revert
+    that arrives after a blind review makes the act unlabelled to the test. That is cautious but
+    surprising, and the history now makes reading "the latest admitted label" possible.
+  - The adjudication queue tells a reviewer that the label is disputed, though not whose or which
+    way. Mixing a uniform sample of right-labelled acts into it as decoys would hide that.
+
+Deferred until evidence asks for them: a novelty floor, a Venn-Abers review band, a conformal
+tripwire, verdict-dependent audit rates, the injection study (its protocol is in
+`research_notes/Foundations review 2026-11/information_flow_security.md`), a sequential promotion
+plan (the arithmetic is built; wiring it changes what a rejection means, which is the owner's
+call), one audit per session for the demotion rules, a data form of the Platt combiner in
+`GateSpec` (so that a refit moves the rubric hash and `ratchet review` reads its any / all
+shape), seeded known errors to measure what reviewers miss, and stratified or weighted audits
+that would read `auditProbability`.
 
 ## End-to-end evaluation (2026-11-12)
 
@@ -26,14 +142,19 @@ fixes are wave 2's work packages in the registry. The evaluation added these to 
   nothing demotes before about 150 acts, and 10 wrong acts executed before a demotion in T1. A
   CUSUM or SPRT on audit errors with an explicit false-alarm rate, or a short recent window
   beside the long one; at least print acts-to-first-judgement with every promotion. This is the
-  "guarded rollout" item under 0.4, now with a measured cost.
+  "guarded rollout" item under 0.4, now with a measured cost. (Done 2026-11-12, opt-in:
+  `RolloutSettings.demotion` takes a Shiryaev-Roberts detector or a first-error rule, and a
+  detector promotion states the fewest audited errors that can demote, in acts; see the
+  foundations review entry above.)
 - **Opt-in sampling of auto-mode runs for hook labels** (T1-03). In auto permission mode the
   hook journaled 41,628 events and 4 prompts, so `ratchet hook replay` has nothing to learn from.
   A seeded fraction of runs could keep a scrubbed subject for blind review.
-- **Floors over state entries** (T3-10). `FloorRule` sees only rendered text, so a business floor
-  on an amount parses a rendering that differs between raw and digested states, and a command
-  floor can fire on untrusted tool output (T4-14). Pass the `StateLike` or the builder's entries,
-  or add a `floorOn(field, predicate)` helper.
+- **Floors over state entries** (T3-10; done 2026-11-12). `floorOn` and `entryFloor` read the
+  builder's entries rather than the rendering, fail closed when the entry is missing, and read
+  untrusted spans only on request (T4-14); a digest can keep its raw value for them. Bypasses
+  must match the trusted block as well as the whole text, and `allowOn` reads trusted entries
+  only. Origins beyond trusted and untrusted, placeholders and the two-ask modes in the
+  information-flow notes are not built.
 - **Act-side calibration profiles** (wave 2, package C). Reported bars are now fitted on the act
   side, but judge profiles still bin leading-answer confidence, so a borrowed bar and a fitted
   bar mean the same thing only for gates whose go side is yes. Needs profile format 2 and
@@ -214,7 +335,8 @@ do not replace the tool-gate pilot or establish a production accuracy guarantee.
   live ledger instead of an offline program).
 - Guarded rollout: a sequential test that auto-reverts enforce to shadow when the audited
   error rate exceeds the promised one. (Measured need, 2026-11-12: see the end-to-end entry at
-  the top.)
+  the top. Built 2026-11-12 as an opt-in demotion rule, `RolloutSettings.demotion`; see the
+  foundations review entry.)
 - Drift monitoring: expected accuracy (mean confidence) versus audited accuracy over time,
   per question and per backend.
 - Conformal abstention sets as an alternative to a single bar when costs are hard to state.

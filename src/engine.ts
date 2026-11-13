@@ -360,7 +360,9 @@ export interface BatteryPlan {
 
 /**
  * Wrap a plain string as a state of one trusted field: the text is the string, both hashes
- * are its hash, and nothing is untrusted. Built states pass through unchanged.
+ * are its hash, and nothing is untrusted. It carries no `fields`, so entry floors read it as
+ * having no entries (and fail closed), and no `trustedText`, which means its trusted text is the
+ * string itself, so bypasses read it as before. Built states pass through unchanged.
  */
 export function asStateLike(input: StateInput): StateLike {
   if (typeof input !== "string") return input;
@@ -385,6 +387,8 @@ interface Settled {
   readonly audited: boolean;
   /** The floor the ruling was bounded by, when one applied. */
   readonly floor?: Action;
+  /** On an enforce-mode act, drawn or not: the chance the audit draw sent it to review. */
+  readonly auditProbability?: number;
 }
 
 /** What floors and bypasses settled before any answer is bought. */
@@ -534,12 +538,25 @@ const isCount = (x: unknown): x is number => Number.isSafeInteger(x) && (x as nu
 
 /**
  * Refuse a strategy that no ask could run: an empty member list, a replica count or sample
- * budget that is not a positive integer, a `minMembers` outside 1 to the member count, or a
- * `maxFailedSamples` that is not a whole number (e2e V1). Each of those used to throw on every
- * ask, leaving no ledger row behind.
+ * budget that is not a positive integer, a `minMembers` outside 1 to the member count, a
+ * `maxFailedSamples` that is not a whole number (e2e V1), or, when the question's kind is
+ * given, a `priorYes` on a pick or rate question. Each of those used to throw on every ask,
+ * leaving no ledger row behind.
  */
-export function checkStrategy(spec: StrategySpec | undefined, where: string): void {
-  if (spec === undefined || spec === "single" || "cascade" in spec) return;
+export function checkStrategy(
+  spec: StrategySpec | undefined,
+  where: string,
+  kind?: Question["kind"],
+): void {
+  if (spec === undefined || spec === "single") return;
+  // A base rate of yes means nothing to a pick or rate question: `pool` throws there, on every
+  // ask, so a strategy that carries one is refused where it is declared.
+  const pooled =
+    "cascade" in spec ? spec.cascade.pool : "ensemble" in spec ? spec.ensemble : spec.sequential;
+  if (kind !== undefined && kind !== "judge" && pooled && pooled.priorYes !== undefined) {
+    throw new Error(`${where}: priorYes pools judge verdicts only, and this is a ${kind} question`);
+  }
+  if ("cascade" in spec) return;
   const plan = "ensemble" in spec ? spec.ensemble : spec.sequential;
   const name = "ensemble" in spec ? "ensemble" : "sequential";
   if (plan.members !== undefined && plan.members.length === 0) {
@@ -961,7 +978,11 @@ export class Engine implements Asker {
     // A rule scoped to a question this gate never shows its rules would never fire (e2e T4-08).
     checkRuleScopes(g, { floors: this.floors, bypass: this.bypass });
     // A strategy every ask would throw on, with no ledger row, is refused here instead.
-    checkStrategy(spec.strategy, `gate ${spec.id}`);
+    checkStrategy(
+      spec.strategy,
+      `gate ${spec.id}`,
+      Array.isArray(spec.question) ? "judge" : (spec.question as Question).kind,
+    );
     this.registry.set(spec.id, g);
     const own = g.ownQuestion;
     if (own && !this.byQuestion.has(own.id)) this.byQuestion.set(own.id, g);
@@ -1099,6 +1120,7 @@ export class Engine implements Asker {
         return {
           ...(pool.method !== undefined ? { method: pool.method } : {}),
           ...(weights ? { weights } : {}),
+          ...(pool.priorYes !== undefined ? { priorYes: pool.priorYes } : {}),
         };
       });
     }
@@ -1138,7 +1160,16 @@ export class Engine implements Asker {
     });
     return this.withRho(d, q, pool, rho, votersOf(ms, draws, d.members), () => ({
       ...(pool.method !== undefined ? { method: pool.method } : {}),
-      ...(pool.weights ? { weights: pool.weights } : {}),
+      // As `sequential` pools: a weight belongs to a member, so sample i takes the weight of
+      // member i mod the member count, and a failed sample's is left out.
+      ...(pool.weights
+        ? {
+            weights: d.members.flatMap((m, i) =>
+              m.failedOpen ? [] : [pool.weights?.[i % ms.length] ?? 1],
+            ),
+          }
+        : {}),
+      ...(pool.priorYes !== undefined ? { priorYes: pool.priorYes } : {}),
     }));
   }
 
@@ -1202,16 +1233,20 @@ export class Engine implements Asker {
     return gate.bypass.length === 0 ? this.bypass : [...this.bypass, ...gate.bypass];
   }
 
-  /** Floors first, then bypasses; either can settle a question before any answer is bought. */
+  /**
+   * Floors first, then bypasses; either can settle a question before any answer is bought. Both
+   * get the state itself, not only its text: entry floors read its entries, and a bypass must
+   * match its trusted block as well as its text, so untrusted text cannot grant one.
+   */
   private preempt(state: StateLike, gate: GateContext, q: Question, policy: GatePolicy): Preempted {
     // A floor that throws or answers outside the vocabulary fails closed to review, and says so
     // on the row, rather than aborting the ask with no row or being ignored (e2e T4-13).
-    const { floor, errors } = evaluateFloors(this.floorsOf(gate), state.text, q);
+    const { floor, errors } = evaluateFloors(this.floorsOf(gate), state, q);
     const floorError = errors.length > 0 ? errors.join("; ").slice(0, 160) : undefined;
     const noted = floorError !== undefined ? { floorError } : {};
     const fixed = floor === "refuse" || (floor === "review" && policy.refuseBelow === undefined);
     if (fixed) return { floor, decision: this.floored(q, floorError), ...noted };
-    if (bypassFor(this.bypassOf(gate), state.text, q)) {
+    if (bypassFor(this.bypassOf(gate), state, q)) {
       return { floor, decision: this.bypassed(q, policy.goIsYes ?? true), ...noted };
     }
     return { floor, decision: undefined, ...noted };
@@ -1227,12 +1262,10 @@ export class Engine implements Asker {
     let action: Action = mode === "enforce" ? ruling.action : (opts.baseline ?? "review");
     const tags = [...this.tags, ...gate.tags, ...(opts.tags ?? [])];
     let audited = false;
-    if (
-      mode === "enforce" &&
-      action === "act" &&
-      gate.auditRate > 0 &&
-      this.rand() < gate.auditRate
-    ) {
+    // Every act the draw below may send to review records the chance that it would, drawn or
+    // not, so audited acts can be weighted by their inclusion probability (Horvitz-Thompson).
+    const auditable = mode === "enforce" && action === "act";
+    if (auditable && gate.auditRate > 0 && this.rand() < gate.auditRate) {
       action = "review";
       audited = true;
       tags.push("audit");
@@ -1244,6 +1277,7 @@ export class Engine implements Asker {
       tags,
       audited,
       ...(ruling.floor !== undefined ? { floor: ruling.floor } : {}),
+      ...(auditable ? { auditProbability: gate.auditRate } : {}),
     };
   }
 
@@ -1305,6 +1339,7 @@ export class Engine implements Asker {
       ...(error !== undefined ? { error } : {}),
       ...(typeof d.vendor?.batch === "number" ? { batch: d.vendor.batch } : {}),
       tags: s.tags,
+      ...(s.auditProbability !== undefined ? { auditProbability: s.auditProbability } : {}),
     };
   }
 
@@ -1341,7 +1376,7 @@ export class Engine implements Asker {
       const strategy = p.lane.opts.strategy;
       if (p.decision !== undefined || strategy === undefined || strategy === "single") continue;
       try {
-        checkStrategy(strategy, `question ${p.lane.question.id}`);
+        checkStrategy(strategy, `question ${p.lane.question.id}`, p.lane.question.kind);
       } catch (error) {
         p.decision = this.invalidStrategy(p.lane.question, error);
       }

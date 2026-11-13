@@ -10,13 +10,17 @@ src/
   types.ts            Question / Verdict / Decision / Oracle / Action vocabulary; StateLike
   questions.ts        pick(), rate(), judge() constructors; verdict builders; validation
   policy.ts           GatePolicy, policyFromCosts(), policyWithBand(), rule(): verdict -> act | review | refuse
-  floors.ts           Hard rules: refuseIf, reviewIf, reviewUnless, oneWayDoor, forQuestion; allowIf bypasses
+  floors.ts           Hard rules: refuseIf, reviewIf, reviewUnless, oneWayDoor, forQuestion; entry rules
+                      floorOn, entryFloor; bypasses allowIf, allowOn
   state.ts            State builder: trusted fields, digests, untrusted spans, pairs; hash and trustedHash
   gate.ts             Gate and GateSpec: one decision point (question or battery, policy, floors, mode, promise)
   engine.ts           Engine: gate registry and shared machinery (oracle, ledger, budget, audits);
                       ask / askAll / label / report; the Asker interface
-  rollout.ts          Rollout: shadow -> enforce on evidence, back to shadow on audited drift, per gate
-  acceptance.ts       the planned exact test promotion runs: sample size, sample, one evaluation
+  rollout.ts          Rollout: shadow -> enforce on evidence, back to shadow on audited drift, per gate;
+                      demotion by window, detector or first error; progress()
+  acceptance.ts       the planned exact test promotion runs: sample size, sample, one evaluation;
+                      acceptanceProgress: a sample read while it fills
+  anytime.ts          anytime-valid arithmetic: e-process, demotion detector, CSP-1 (Rollout reads part)
   spend.ts            DailySpend: a per-UTC-day spend cap read from the ledger, with reservations
   math.ts             logit, Condorcet, design effect, cost thresholds, seeded RNG, Beta
   oracles/
@@ -27,19 +31,26 @@ src/
     systemone.ts      SystemOneOracle, jev(), jevViaOpenRouter(): the Jev wire format
   compound/
     aggregate.ts      pool(): logodds / majority / mean / max / min / geomean / any / all; agreement()
-    learned.ts        fitLogistic, poolLearned: a battery's answers as features, weights from labels
+    learned.ts        fitLogistic, poolLearned: a battery's answers as features, weights from labels;
+                      fitPlatt, fitPlattCombiner: an any / all pool calibrated on labels
     compound.ts       CompoundDecision shape shared by all strategies; the Strategy names
     ensemble.ts       parallel members, transforms that manufacture independence
+    concur.ts         concur(): two keys to act, an ensemble pooled by its most cautious member
     sequential.ts     sample until pooled confidence clears a bar (SPRT-shaped)
     cascade.ts        escalate the unsure cases to a stronger tier
     chain.ts          runChain(): verify-then-commit ratchet for multi-step tasks
+    frailty.ts        verifier frailty: predictChain, completionInterval, fitFrailty, escalateAfter
   ledger/
     ledger.ts         DecisionRecord, Ledger, MemoryLedger, JsonlLedger; decisionRows, inheritOutcome
     calibration.ts    brier, ece, reliability, riskCoverage, fitThreshold (accuracy and recall modes),
                       coverageAt, fitThresholdByCost, fitIsotonic, correlation, memberCorrelation
+    calibrators.ts    small-sample maps that never return 0 or 1: fitBeta, fitVennAbers (unused)
+    dependence.ts     a panel's within-class logit correlation and unanimity ceiling (measurements)
     sources.ts        label sources and their trust classes: parseSource, trustOf, DEFAULT_TRUST
+    labels.ts         a row's label under a rule (latest, or confirm-wrong votes): readLabel
     evidence.ts       the evidence grade (measured, estimated, borrowed, none): gradeOf, describeGrade
     bars.ts           a gate's act bar, grade and battery saturation, one reading for every surface
+    exact-bar.ts      the exact fixed-sequence act bar over rows or groups (report --exact-bar)
     profile.ts        calibration profiles: buildProfile, mergeProfiles, borrowedBar, profileMatches
     profile-bins.ts   a profile's per-gate bins as integers, and the cautious-end bar they support
     borrow.ts         parseProfile (a profile as untrusted data) and borrowFor (what a gate borrows)
@@ -65,10 +76,14 @@ tests/                Vitest; statistical tests are seeded and tolerance-bounded
 ## API tiers
 
 - **core**: types, questions, policy, floors, state, engine, gate, ledger, calibration, rollout.
-- **compounding**: aggregate, learned, ensemble, sequential, cascade, chain.
+- **compounding**: aggregate, learned, ensemble, concur, sequential, cascade, chain, frailty.
 - **adapters**: systemone, llm-json, rules, sim.
 - **recipes**: speculate, screen, digest, loop.
 - **utilities**: math.
+- **measurement** (2026-11-12): anytime, exact-bar, calibrators, dependence. `Rollout` reads
+  anytime's detector, CSP-1 arithmetic and running lower bound only when asked, and `ratchet
+  report --exact-bar` prints the exact bar; nothing reads the promotion e-process, the futility
+  test, the calibrators or the panel measurements yet.
 
 Core and adapters are the stable surface. Recipes are expected to change.
 
@@ -177,10 +192,12 @@ edge approaches 1 without reaching it: a bar of 0.95 with a half-width of 0.05 a
 `FloorRule = (state, question) => Action | undefined`. The most cautious matching floor is
 combined with the soft action by `moreCautious`. Floors are evaluated by code in the harness,
 never by the oracle, and they apply in enforce mode and in the recorded recommendation alike.
-They read the State's text. A gate's floors and bypasses are added to the engine's; a floor
+A plain rule reads the State's text; an entry rule (`floorOn`, `entryFloor`) reads its entries.
+A gate's floors and bypasses are added to the engine's; a floor
 that fixes the action (refuse, or review under a policy with no refuse bar) settles the
 question without buying an answer. Bypasses answer judge questions yes without a call and
-never override a floor.
+never override a floor; on a state with untrusted spans a text bypass must match the trusted
+block as well as the whole text (below).
 
 Floors fail closed. `evaluateFloors` runs every rule; one that throws, or answers anything but
 an Action or silence (a typo such as `"deny"`), imposes review and leaves its error on the row,
@@ -196,23 +213,54 @@ floors never see, since they see the combined question under the gate's id (T4-0
 unmatched scope is allowed: an engine rule may be meant for another gate, and a gate's own rule
 may serve questions asked through it as an `Asker`.
 
-A floor reads the whole rendered state, untrusted spans included, so a pattern meant for the
+A plain floor reads the whole rendered state, untrusted spans included, so a pattern meant for the
 command can fire on tool output that only mentions one: in e2e T4 `refuseIf(/rm -rf/)` refused
 `bun test` because its output did (T4-14). That costs availability, a review or refusal the
 action did not deserve, never safety. Cutting the text at the first line that starts with
 `[untrusted ` is safe only for reading something that lowers caution, such as the hook's
 exemption for the harness's own directories: a cut that comes early can only remove the
 exemption. A floor that raises caution should read everything, because a trusted line that
-merely looks like the marker would hide the rest from it. Floors over the builder's typed
-entries, rather than rendered text, are on the roadmap (e2e T3-10).
+merely looks like the marker would hide the rest from it.
+
+An entry floor avoids T4-14. `floorOn(path, predicate, { action, untrusted, optional })` reads
+the value the caller gave the builder for the trusted field, digest or pair at `path` (a pair's
+path is `"left and right"`), not its rendering: a command floor reads the command field, and an
+amount floor reads 1200 whether the state shows `amount: 1200` or a band of it (e2e T3-10). For
+that, a digest keeps its raw value with `digest(name, d, { raw })`, and `fromRecord`'s `digest`
+option keeps it itself. A span of that name is read only with `untrusted: true`; a floor raises
+caution, so it may opt in. `entryFloor((input, q) => ...)` is the general form, where `input`
+has `text`, `trustedText`, `entries` and `get(path)`. Entry rules fail closed like any floor
+(T4-13), imposing review with `floor N threw: ...` on the row for an absent entry (unless
+`optional: true`), a state with no entries (a plain string, or a StateLike without `fields`, even
+when `optional`), two entries on one path, and a predicate that throws or answers anything but a
+boolean or an action. They are `FloorRule`s marked with a registered symbol, as `forQuestion`
+marks its scope, so they share the `floors` arrays, compose with `forQuestion` and pass the
+registration scope check. A raw value is neither rendered nor hashed, so two states that render
+the same band from different raw values share a `stateHash` and can floor differently. Moving a
+gate to entry floors changes rulings where spans used to match: bump its `evidenceVersion`.
+
+A bypass lowers caution, so untrusted text must not grant one: invariant 2 applied to bypasses.
+On a State with untrusted spans, a text bypass is granted only when it matches `trustedText` and
+the whole text (revised 2026-11-12: `allowIf(/git status/)` answered yes without a call when only
+the tool output said `git status`). That removes a grant only untrusted text earned and never
+adds one, because a pattern anchored at the end may match the trusted block alone. A plain
+string, a State without spans, or a StateLike without `trustedText` has one text and behaves as
+before; the hook registers no bypass. `allowOn(path, predicate)` is handed only the trusted block
+and trusted entries, so it cannot read a span by construction, and grants only on an exact
+`true`. New rules can read `trustedText` or use `allowOn` instead of cutting the text.
 
 ### State
 
-`StateLike { text, hash, trustedHash, untrusted }` in `types.ts` is what the engine needs;
-`State` in `state.ts` builds one. Every entry point (`Engine.ask`, `Engine.askAll`,
+`StateLike { text, hash, trustedHash, untrusted, fields?, trustedText? }` in `types.ts` is what
+the engine needs; the optional members carry the builder's entries and its trusted block to
+floors and bypasses, and the oracle is still sent `text`. `State` in `state.ts` builds one.
+Every entry point (`Engine.ask`, `Engine.askAll`,
 `Gate.ask`, `Gate.askMany`, the recipes) takes `string | StateLike`. A string is wrapped as
 one trusted field (`asStateLike`): the text is the string, both hashes are `hashState(text)`,
-nothing is untrusted, so existing callers and their ledger hashes are unchanged.
+nothing is untrusted, so existing callers and their ledger hashes are unchanged. It has no
+entries, so entry floors fail closed on it, and its trusted text is the whole string.
+`State.trustedText` is exactly the text `trustedHash` hashes, and `digest(name, value, { raw })`
+keeps the value a digest was computed from for floors, unrendered and unhashed.
 
 The builder (`State.create().field(...).digest(...).untrusted(...).pair(...).build()`)
 renders trusted fields first and untrusted spans after them under a marker, refuses engine
@@ -237,7 +285,7 @@ interface GateSpec<Q extends Question | readonly JudgeQuestion[]> {
   readonly bypass?: readonly BypassRule[];
   readonly strategy?: StrategySpec;       // single questions only
   readonly promisedAccuracy?: number;     // drives gate.rollout
-  readonly rollout?: RolloutSettings;     // acceptance plan; demotion window and minAuditRows
+  readonly rollout?: RolloutSettings;     // acceptance plan; demotion rule, window and minAuditRows
   readonly mode?: Mode;                   // overrides engine.mode
   readonly auditRate?: number;            // overrides the engine's audit rate
   readonly tags?: readonly string[];
@@ -289,8 +337,21 @@ engine.gates;                              // ReadonlyMap of registered gates
   verdicts sat within 1e-6 of 0 or 1 and the fitted bar was 0.99999991. `combine: "any"` pools a
   disjunction as the probability that at least one member's yes is true (noisy-OR,
   `1 - prod(1 - p)` at independence), and `combine: "all"` a conjunction (`prod(p)`); a stated
-  correlation moves them toward `max` and `min`, their fully correlated cases. A learned
-  combiner fits either shape. The default stays logodds because changing it would move existing
+  correlation moves them toward `max` and `min`, their fully correlated cases. The two pools have
+  the right shape but state their level as if each member were calibrated on its own question
+  and their errors independent, which one model asked several questions about one state is not.
+  `fitPlattCombiner(rows, { method })` follows the pool with a two-parameter Platt map fitted on
+  labelled requests and returns a function combiner: in the research simulation of all-of
+  batteries it was the only combiner calibrated in every configuration (ECE 0.010 to 0.016) at
+  the product's AUC, where the product alone read 0.040 with eight members whose noise
+  correlated at 0.6. The learned combiner on clamped logits is the wrong basis for a
+  conjunction, which no weighted sum of log-odds represents: it ranked below the product in
+  every configuration (AUC 0.686 against 0.925 there). A function combiner is not hashed into the
+  rubric, so bump `evidenceVersion` when adopting or refitting one, and keep the plain pool below
+  30 unselected labelled rows. The pool's `correlation` is the caller's alone (default 0): it
+  stands for dependence between the conditions' truths, and raising it acts more often for an
+  all-of whose go side is yes and an any-of whose go side is no (revised 2026-11-12, foundations
+  review). The default stays logodds because changing it would move existing
   gates' evidence; reports flag a battery whose pooled verdicts saturate (revised 2026-11-12).
 - **Labels.** Label the combined row. `Engine.label` then labels each member (same request,
   same gate, not combined) with the battery's truth, or with the member's own when the outcome
@@ -343,7 +404,13 @@ recommendation), `action` (what happened), `mode`, cost (with `costEstimate` whe
 unknown or invalid and a conservative estimate was charged in its place), latency,
 `failedOpen`, `error` (also a floor's, when one threw or answered outside the vocabulary),
 `batch`, tags (`audit`, `recipe:<name>`, `chain:attempt:<n>`, the caller's), and an optional
-`outcome { correct, truth, note, at, inheritedFrom, source, memberTruths }`. `JsonlLedger`
+`outcome { correct, truth, note, at, inheritedFrom, source, memberTruths }`. `labels` holds
+every outcome attached to the row, oldest first, once there is more than one (`outcome` stays
+the latest; a row labelled once carries none; `labelHistory(row)` reads either; both ledgers
+build it from the outcome lines the file always kept). On an enforce-mode act, drawn or not,
+`auditProbability` is the gate's audit rate when the row was written (0 when audits are off), so
+audited acts could be weighted by their inclusion probability if the rate ever changes; nothing
+reads it yet (both added 2026-11-12). `JsonlLedger`
 reads rows written before gates as their own anonymous requests (`gateId = adhoc:<questionId>`,
 `requestId = id`, `trustedHash = stateHash`, no untrusted spans).
 
@@ -379,6 +446,19 @@ a panel that mixes near-duplicates with an independent model needs the matrix (e
 correlation on a sample where the upper tier answers every item, such as a shadow ensemble of
 the two (e2e T5: -0.08 from the cascade's own fit rows against 0.04 over all held-out items).
 
+`src/ledger/dependence.ts` measures a panel without changing how it pools.
+`withinClassCorrelation` is the correlation of two members' log-odds given the truth, the
+dependence the Gaussian-logit pooling model asks for. It reads every row, and it is undefined,
+not 0, when a member is pinned within a truth. Phi of correctness reads a latent 0.85 as 0.42 to
+0.60 and moves several times as much between samples (section 15 of `sim-results.md`); it stays
+the engine's measure, because weights fitted from the within-class correlation lost to it on
+real rows (`pool()` below). `panelFromLedger` reads a panel's labelled answers by member key,
+selecting rows as `memberCorrelation` does. `panelCeiling` gives the unanimity ceiling: where
+every member is wrong, a combiner that follows the panel is wrong too, so accuracy is at most
+1 - P(all wrong), reported with an exact interval. On e2e T5, jev-1.13 and haiku-5.5 were both
+wrong on 2 of 260 held-out items: ceiling 99.2% (97.2% to 99.9%). The three-member panel's
+ceiling on the judge gates was 98.6%, which the cascade reached.
+
 ### Label sources
 
 `src/ledger/sources.ts` sorts labels by the route they arrived by. `Outcome.source` is
@@ -400,6 +480,18 @@ as `unknown` (T4-09); register a new route with `labelTrust` before writing labe
 acceptance sample is still fixed without reading labels: an act whose only label is untrusted
 stays in it and counts as unlabelled, because dropping it would let a label's route choose the
 sample.
+
+`src/ledger/labels.ts` reads a label under a rule, purely (2026-11-12). `latest` reads `outcome`
+when the filter admits its source, as every reader always has. `confirm-wrong` reads the
+admitted labels as one vote per reviewer. A reviewer is a label's full source string and their
+latest label is their vote; a source with no name part, or no source at all, is one reviewer,
+so an anonymous second review confirms nothing. A vote is right or wrong as `rightToAct` reads
+it. No vote is unlabelled, no wrong vote is right, a lone wrong awaits a second review, a tie
+awaits a tie-break, and otherwise the majority wins, settled by its latest label (`readLabel`).
+`adjudicateRows` gives the rows a reader under the rule sees: the settling label as `outcome`,
+and no `outcome` while awaiting. Only the acceptance test reads the rule, and only under
+`adjudication: "confirm-wrong"`; demotion, fits, grades, reports and `check` read the latest
+label. The reasons and figures are in the [rollout guide](rollout.md#label-noise-and-confirm-wrong).
 
 ### Evidence grades
 
@@ -456,6 +548,34 @@ delivered 91.2% on held-out groups (T1-01); and the engine and the CLI used to d
 different levers, so one ledger graded measured in one and estimated in the other (T3-04). For
 a battery the reading also says how often its pooled verdicts saturate.
 
+`src/ledger/exact-bar.ts` holds an alternative to that scan. `ratchet report --exact-bar
+[--group <prefix>]` prints it as one extra line under each gate's act bar: `exactBarFor` (in
+`bars.ts`) fits it on exactly the rows `fitActBar` fits, read through `actRows` so a tag prefix
+can make groups the unit, counts the rows it had to leave out, and `describeExactBar` renders
+it; `gateEvidence` returns it as `exact` only when asked. It sits beside the reported bar and
+replaces nothing, and `Rollout`, `check` and profiles do not read it (2026-11-12; see
+[cli.md](cli.md)). `fitExactBar(rows, { target })` walks 19 edges fixed in code
+(`EXACT_BAR_EDGES`, 0.95 down to 0.05) with the acceptance test's own mathematics
+(`exactLowerBound` at one-sided 95%, `requiredActs` for the units a tail needs): it starts at the
+highest edge whose tail holds enough units, accepts while the exact lower bound on the tail
+reaches the promise, and stops at the first failure. That is fixed-sequence testing, which
+bounds the chance of a wrong bar at 5% without a multiplicity correction because the order is
+set before any label is read; the Wilson scan keeps the lowest bar that clears, past failures
+above it, which no family-wise argument covers. Rows come from `actRows`, which is
+`scoredForAct` row for row with a group read from a tag prefix. With groups, a group is one unit:
+it acts at an edge when any of its rows reaches it and is wrong when any of its wrong rows does,
+so the promise is about groups. A start chosen from the fit rows' own counts makes the test exact
+for that tail's mix and approximate for the true precision; counts from independent rows
+(`startCounts`) make it exact, and `startFrom` records which. A bar found at its start edge, or
+on fewer than 1.5 times the units it needs, is `provisional`, a heuristic. In simulation at 500
+rows and a 98% promise, 81.6% of the bars the scan found were below the promise, against 1.9% of
+the exact fit's (section 12 of `sim-results.md`). In groups of three at within-group correlation
+0.6, the scan broke a 95% promise 6.2% of the time and the fit on groups never, while still
+finding a bar 23.8% of the time; in groups of ten the scan broke it 17.2% of the time and the
+group fit found no bar, since about 50 groups cannot hold the 59 a 95% bar needs (section 13).
+`stratifiedBound` reads the evidence at a bar for a deployment mix: each stratum's exact bound at
+1 - 0.05/K (Bonferroni), weighted by its deployment acts, with the Kish effective size.
+
 ### Calibration profiles
 
 `src/ledger/profile.ts` makes the borrowed grade's first source. `buildProfile(rows, key, opts)`
@@ -502,9 +622,36 @@ This is the artefact nothing else on the market has; everything the engine learn
   pool is worth at most the members it reads, and never more confident than the same answers at
   rho 0. On T5's mixed panel those weights reached log loss 0.076 and Brier 0.019,
   against 0.095 and 0.027 at rho 0 (e2e T5-02). Ensemble, sequential and cascade pass their
-  member keys. Weights can change which answer wins, so adopting a matrix is a configuration
+  member keys; a cascade passes those of the tiers that answered and narrows a weight per tier
+  to them (revised 2026-11-12: it passed none, and a matrix in a cascade's `pool` threw). Weights
+  can change which answer wins, so adopting a matrix is a configuration
   change: bump the gate's `evidenceVersion`. For `any` and `all`, a correlation moves the pool
   from its independent value toward `max` or `min`.
+
+  `PoolOptions.priorYes` counts the gate's base rate once. A calibrated member's log-odds
+  already contain lambda0 = logit(base rate), so a plain sum counts it once per effective member,
+  always toward the majority class: two members that each answer an 0.8 base rate, which is no
+  information, pool to 0.941 at rho 0, and three to 0.985 (0.951 at the engine's default for two
+  of one family and one other). With the option the pool is lambda0 + k sum w_i (z_i - lambda0),
+  and on the matrix path the cap applies to the evidence part. It applies to judge members
+  pooled in log-odds only (other methods ignore it; it is refused on a pick or rate question);
+  measure the base rate on unselected rows. In simulation at base rate 0.8 it took held-out log
+  loss from 0.062 to 0.051 on the phi matrix (section 14 of `sim-results.md`). It changes nothing
+  at a base rate of one half, and e2e T5's judge gates sat at 0.49, so no real rows have tested
+  it.
+  There is no per-member centre: in the same simulation fitted centres added variance and
+  nothing else (0.049 against 0.048), since a calibrated member's centre is the prior.
+
+  Pooling weights fitted from the within-class logit correlation, as the Gaussian-logit model
+  prescribes, were measured and not shipped. Each correlation was shrunk toward the family prior,
+  each member had a strength, and weights were capped at 1. In simulation they beat the phi
+  matrix (held-out log loss 0.048 against 0.051 at 100 rows, both with the offset; section 14).
+  On e2e T5's judge gates they tied it on accuracy (202 of 208, no discordant item) and lost on
+  log loss (0.095 against 0.087) and ECE (0.035 against 0.016): real confidences shared item
+  difficulty across model families (within-class 0.33 to 0.35) where errors did not (phi
+  -0.04). The estimator and the comparison are `experiments/e2e/t5-compound/fitted-pool.ts` and
+  `pooling-review.ts`; the measurements they rest on ship in `dependence.ts` (Decision record,
+  above).
 - **ensemble** manufactures partial independence with transforms: shuffled option order,
   paraphrased prompts, framed state, different oracles. On Jev the transforms manufacture
   almost none: three framings erred together at phi 0.75 to 0.91 and gained nothing over one
@@ -518,20 +665,43 @@ This is the artefact nothing else on the market has; everything the engine learn
   `detail.rhoSource` records `caller`, `default-replica`, `default-mixed` or
   `default-independent` (and `rhoMatrix` when the caller pooled with a matrix). Explicit members
   used to default to 0 whatever they were, so three framings of one model pooled as three
-  independent votes (ECE 0.099 against 0.042 at the measured rho, e2e T5-01). Strategy
+  independent votes (ECE 0.099 against 0.042 at the measured rho, e2e T5-01). When the models
+  the answers record show voters sharing a model nothing said up front, the default rises and
+  the answers are pooled again at it, keeping the caller's method, weights (per member, for a
+  sequential run) and `priorYes`. Strategy
   parameters (`members`, `k`, `minMembers`, `maxSamples`, `maxFailedSamples`) are checked when
-  the gate is registered (`checkStrategy`), not on every ask. Members that fail open carry no
-  evidence, and an ensemble pools only
+  the gate is registered (`checkStrategy`), not on every ask, and so is a `priorYes` on a pick or
+  rate question (on a single ask that question fails open to review with no call). Members that
+  fail open carry no evidence, and an ensemble pools only
   when at least `minMembers` answered (default: all of them); with fewer it fails open, as a
   battery does, because the member that failed may be the cautious one (e2e T4-04: a failed
   0.30 member left a 0.97 member to act alone).
+- **two keys** (`concur(members, policy)`): an ensemble pooled by its most cautious member,
+  `min` of p(yes) when yes means go and `max` when no means go, so either member can hold and
+  acting needs all of them; a failed member fails the request open (`minMembers` defaults to
+  all). It is one-out-of-two voting on the hold side: a wrong act needs every member wrongly
+  confident at once. Fit the bar on the composite, because the minimum of calibrated
+  probabilities is not calibrated. Judge questions only: on a pick, `min` renormalises the
+  per-option minima (0.6/0.4 and 0.1/0.9 pool to 0.2/0.8), which is not a hold. It is not a
+  recommended default. On e2e T5's judge gates, scored on the act side (208 held-out items, 91
+  of them right to act on, so 43.8% is the most any strategy can act on without a wrong act), two
+  keys of jev-1.13 and haiku-5.5 made no wrong act at fixed bars of 0.7, 0.8 and 0.9, and nor did
+  pooled log-odds at rho 0, the phi-matrix pool or the recorded cascade; two keys acted on 33.2%,
+  26.4% and 18.8%, the pools on 38.0% to 39.9% and the cascade on 39.4% to 41.8%. Against one
+  model it helped: jev-1.13 alone made 6 wrong acts at 0.7, haiku-5.5 alone 2 at every bar. What
+  matters is the second model family; the cascade and the pooled panel reached the same safety
+  at more coverage there. `concur` is the strictest way to combine, for a caller who wants a rule
+  that does not rest on the pool's calibration (`e2e/t5-compound.md`, addendum).
 - **sequential** cycles through members, pools after each, and stops when the pooled
   confidence clears `settleAbove` or `maxSamples` is hit. Its correlation defaults by voter
   identity as an ensemble's does, and a `negated` member's answer is flipped back before
   pooling, as in an ensemble (e2e T4-03: a negated "dangerous 0.95" used to pool as "safe 0.95"
   and act). A sample that fails open fails the run open (`maxFailedSamples`, default 0), for the
   reason an ensemble needs `minMembers`: the failed sample may be the cautious one, and the
-  permissive member must not settle alone. Raise it to sample through a member's outage. This
+  permissive member must not settle alone. Raise it to sample through a member's outage.
+  `weights` holds one weight per member, and a member sampled again keeps its weight; weights of
+  another length are refused before anything is bought (revised 2026-11-12: every sequential run
+  given `weights` threw on its first sample). This
   is an SPRT-shaped stopping heuristic: calibrated scores alone do not establish the
   likelihood-ratio assumptions or error guarantees of an SPRT.
 - **cascade** asks tiers cheapest-first and settles where confidence clears that tier's bar.
@@ -542,14 +712,23 @@ This is the artefact nothing else on the market has; everything the engine learn
   (`live-findings.md`); on e2e T5's rule-application corpus the same model's errors barely
   overlapped jev-1.13's (phi 0.04), and the cascade went from 85.8% to 98.5% held out, the only
   strategy to meet a 98% precision target, at 69% of the upper tier's cost (revised 2026-11-12).
+  Scored on the act side, it covered the most of any strategy at zero wrong acts at fixed bars
+  (41.8% at 0.7, of a possible 43.8%; see two keys, above).
   Measure the tiers' correlation on items both answered before building one (see
   `memberCorrelation` above).
 - **battery** (a gate feature, not a strategy option): different judge questions about one
   state in one request, combined by a pool method or a learned model, with the bar fitted on
   the composite. Pooling softly beats thresholding each sub-question and AND-ing, which lost on
   9 of 10 published benchmarks and by 0.107 AUC in e2e T2. Pick the pool by the battery's shape
-  (see Gate, above): log-odds for members that are evidence for one answer, `any` for any-of,
-  `all` or a learned combiner for all-of. A battery is not automatically better than one
+  (see Gate, above): log-odds or a learned combiner for members that are evidence for one answer,
+  `any` for any-of, `all` for all-of, either followed by a Platt fit (`fitPlattCombiner`) when
+  its level matters (revised 2026-11-12, foundations review). A logistic fit on the members'
+  log-probabilities, which nests the product, is not built: fitted on 200 rows in the simulation
+  it was unstable (ECE 0.050 to 0.099, against 0.010 to 0.016 for the product with a Platt fit,
+  and coverage at a 0.9 bar of 0.0% to 24.7% in four of eight configurations), and the research
+  recommends it only above about 1,000 rows
+  ([pooling_and_deferral.md](../research_notes/Foundations%20review%202026-11/pooling_and_deferral.md)).
+  A battery is not automatically better than one
   well-written question: in T2 eight conjuncts in log-odds lost to the holistic question by
   0.006 AUC, and in T1 a three-member battery did not beat the single question (revised
   2026-11-12).
@@ -564,11 +743,27 @@ This is the artefact nothing else on the market has; everything the engine learn
   with m attempts finishes with `(1 - (1 - a)^m)^n`, but false alarms are not independent
   across retries. After a correct candidate was held back, the next correct one for the same
   step was held back 55.9% of the time against a 15.0% base rate, and chains finished 48% to 62%
-  where that arithmetic predicted 74% to 99.8%; at a strict 0.9 bar none of 200 chains
-  finished, worse than no verifier (16% and 43%). Section 5 of `sim-results.md` now simulates
-  correlated false alarms: commit precision barely moves and completion falls well below the
-  formula. Measure completion and per-step exhaustion
-  from the ledger rather than computing them, and do not give a step verifier a `refuseBelow`
+  where independence at the chains' 15.0% false-alarm rate predicted 76.6% to 97.3% (the
+  evaluation's own 74% to 99.8% took the held-out false-alarm rate and counted the six-attempt
+  arm's replayed candidates as fresh ones); at a strict 0.9 bar none of 200 chains
+  finished, worse than no verifier (16% and 43%). `frailty.ts` models this as a beta frailty on
+  each step instance's false-alarm propensity theta (the Eckhardt-Lee intensity of N-version
+  software): with `E[theta^k] = prod_{j<k} (a + j)/(a + b + j)`, a step exhausts m fresh attempts
+  with probability `sum_k C(m, k) p^k ((1 - p) t)^(m - k) E[theta^k]`, and a chain completes with
+  the product over its steps (`predictChain`). Fitted to the two rates (`frailtyFromRates`:
+  intraclass correlation 0.481, a 0.162, b 0.917), it predicts 49.2, 56.8, 61.2 and 61.5%
+  against 48, 53, 62 and 58% observed, with three distinct correct candidates per step as the
+  live proposer had. The two rates alone bound completion to an interval (`completionInterval`):
+  [45.0%, 52.0%] at three attempts, whose optimistic end is the two-point law section 5 of
+  `sim-results.md` used to show and whose pessimistic end never passes 52.1% however many
+  attempts are allowed, so certifying more needs deeper moments. Exhaustion falls as a power
+  law, about m^-b, not geometrically: doubling the budget roughly halves it, and with b <= 1
+  open-ended retrying has unbounded expected cost. `fitFrailty` fits (a, b) by likelihood on
+  per-instance counts (`frailtyCounts`), valid on retry rows because stopping on an observed
+  ruling is ignorable; `afterHolds` and `escalateAfter` give the next attempt's chance and
+  precision after k holds and a one-step look-ahead escalation rule (revised 2026-11-12,
+  foundations review). Count completion and per-step exhaustion from run summaries
+  (`summarizeChain`), and do not give a step verifier a `refuseBelow`
   unless a confident rejection should end the whole task (T2: completion 43.3% to 6.7%)
   (revised 2026-11-12).
 
@@ -590,6 +785,31 @@ This is the artefact nothing else on the market has; everything the engine learn
   are never unselected evidence: a retry exists only because the attempt before it was held
   back, and reading retries as shadow rows fitted a bar of 0.870 where held-out supported 0.48
   (T2-03). `maxAttempts` must be a finite integer of at least 1 (T2-09).
+
+  Four options act on what the frailty implies, each off by default; without them `runChain`
+  returns exactly what it did. `keyOf`, a key for states given by the caller, tags every
+  verification with the run, the step instance (`<step>@<key of the state before it>`), the
+  candidate's key and the holds before it (`chain:run:`, `chain:instance:`, `chain:candidate:`,
+  `chain:holds:`), the cluster every estimator needs; with it, a proposal that repeats an earlier
+  candidate of its step is not verified again, uses an attempt, counts as neither hold nor pass,
+  and is listed in `StepTrace.duplicates`. `attemptPool` gives the chain one budget: step s of n
+  may use `min(maxAttempts, left - (n - s - 1))` attempts, keeping one for each later step, a
+  reservation that is lossless because a step that dipped into it would leave a later step with
+  nothing. At the same worst-case 24 attempts over eight steps, a pool finished 84.8% of
+  simulated chains against 49.6% at three per step. A step's `secondOpinion`, best a model of
+  another family, is asked only about a candidate the primary held back and is ruled like any
+  verification. By default (`"order"`) its pass commits nothing: if the step exhausts,
+  `ChainResult.held` lists the held candidates best first for a person (simulated: 94.0% of
+  chains finished at 99.94% commit precision with 0.82 reviews a chain, against 93.2% and 0.99
+  reviews with the person alone). `"route"` stops the chain for review as soon as it passes a
+  held candidate (`stopReason: "review"`, `pending`; 87.4%, 1.09 reviews). `"commit"` lets its
+  pass commit, which releases on the second verifier alone: 26 times the wrong commits in
+  simulation (about forty in the research's larger run). It is bound by the chain's floor and
+  the second verifier's own gate floors, and can never release a hold that the primary gate's
+  floor, one-way door, shadow baseline or blind audit made. `keepHeld` keeps held candidates on
+  the trace. The chain never takes a person's verdict itself: the application puts the candidate
+  before them and resumes from the last checkpoint. Nothing here writes a ledger row;
+  `summarizeChain` returns plain data for the application to persist.
 
 ## Recipes
 
@@ -674,8 +894,24 @@ locate(chunks, question, { none, id })                     // the pure builder: 
   descent); the
   gradient descent it replaced stopped early, and the held-out battery it fitted read 101 of
   108 where the converged fit reads 107 (e2e T3-06).
+- **fitPlatt / fitPlattCombiner**: an `any` or `all` battery pool calibrated on labels (see
+  Battery shape). Newton steps with a line search, the slope pulled toward 1 by a ridge of 0.05
+  and the intercept free; it returns the identity on one class, or on separable rows without the
+  ridge, and refuses a fitted slope at or below 0, a pool that ranks the rows backwards.
 - **fitIsotonic / fitThresholdByCost**: recalibration and cost-minimising bars with held-out
-  acceptance.
+  acceptance. `fitIsotonic` returns block means, exactly 0 or 1 for a pure block, which is common
+  on small samples and infinite in log-odds pooling.
+- **fitBeta / fitVennAbers** (`src/ledger/calibrators.ts`, built 2026-11-12 and unused by the
+  engine): calibration maps for 50 to 500 labels that never return exactly 0 or 1. `fitBeta` is
+  beta calibration (logit q = a ln p - b ln(1 - p) + c), fitted by Newton's method with a ridge of
+  0.1 toward the identity and its slopes held at or above 0 so the map stays monotone; it reports
+  `loss`, `converged` and `reason` as `fitLogistic` does. `fitVennAbers` is an inductive
+  Venn-Abers predictor: `p0` and `p1` come from isotonic regression with the query added as wrong
+  and as right; the pair is the calibrated object, and the merge `p1 / (1 - p0 + p1)` is a single
+  estimate without the guarantee. On 50 rows of a simulated miscalibrated judge their log loss was
+  0.29 (beta) and 0.32 (merged), against 0.35 raw and 0.64 for `fitIsotonic`, and the Venn-Abers
+  width near the bars narrowed from about 0.15 at 50 rows to 0.03 at 500
+  (`tests/calibrators.test.ts`). Fit both on unselected rows.
 - **digest helpers**: state the comparison in words, band the number, count in code. The
   largest effect the end-to-end evaluation measured (e2e T2, T3, T4, T5: raw to digested 66.7%
   to 99.1% on approvals, 83.3% to 100% on a two-condition policy check). A window takes
@@ -713,7 +949,11 @@ the first call sets shadow and excludes every row already present. Promotion run
 acceptance test (`acceptance.ts`) on the fresh phase's shadow rows and is decided by the grade
 it yields: the private promotion path takes a `MeasuredGrade` and nothing wider, so promoting
 on an estimate is a compile error, and it refuses any other variant at run time as well. Every
-status carries the phase's `grade`. Only the current enforce phase's blind audits can demote. Each transition moves a
+status carries the phase's `grade`. Only the current enforce phase's blind audits can demote.
+That is the window rule unless `RolloutSettings.demotion` chooses a Shiryaev-Roberts mixture
+e-detector (false demotions at most n/A within n audits, read through the labelled prefix in
+ledger order) or a return at the first audited error (with a zero-error plan, Dodge's CSP-1,
+whose outgoing quality the promotion reason states). Each transition moves a
 ledger-order boundary past all existing target rows, including unlabelled rows. Late labels
 cannot revive a consumed phase. No timestamp comparison decides eligibility.
 
@@ -734,10 +974,19 @@ target. This is not a persistence or distributed-locking layer. The
 
 The acceptance test fixes its sample before reading labels (the first eligible acts in ledger
 order, retries once, an optional cap per group), keeps the result sealed until the sample is
-complete and labelled, and evaluates once by an exact one-sided Clopper-Pearson bound. A pass
+complete and labelled, and evaluates once by an exact one-sided Clopper-Pearson bound; under
+`adjudication: "confirm-wrong"` an act counts as wrong only once a second reviewer confirms it
+(Label sources, above). A pass
 promotes; a failure holds the configuration in shadow, recorded in the checkpoint and
 re-read from the ledger if the checkpoint is lost, until its identity changes. Table 7 of
 `sim-results.md` compares it with the earlier point estimate.
+`acceptanceProgress` reads a planned sample while it fills: the labelled prefix in sample order,
+`cannotPass` once the wrong acts read exceed `maxErrors`, and a lower bound from `anytime.ts`
+that stays valid however often it is read. `Rollout.progress()` returns it, or in enforce what
+the demotion rule has read, without changing anything, and `describeProgress` renders it.
+Neither decides: an early wrong label does not reject a configuration, because reviewer error is
+the size of the error budget, so the sample completes and a disputed label can be adjudicated
+first.
 It is sound under its assumptions (independent acts of a frozen configuration, correct labels),
 not a certification of later traffic. A judge's correct leading answer is not
 necessarily a correct action when the policy acts against that answer. Rollout therefore
@@ -758,11 +1007,38 @@ without them cannot be demoted by evidence, and Rollout says so. They randomly s
 enforced acts, so they monitor that acted population; they do not establish coverage or
 accuracy below the existing action bar. Demotion is slow: at an audit rate of 0.2 and 30 audits
 to judge, nothing can demote before about 150 acts, and in e2e T1 a gate promoted on a weak plan
-executed 10 wrong acts before its 53rd audit demoted it. The current `unselected` fit
+executed 10 wrong acts before its 53rd audit demoted it. The rule, exactly, at a 98% promise: an
+error among the first 29 audits demotes at audit 30; one error is tolerated from audit 50, two from
+100, three from 150, four in the last 200. That is also eager on a healthy gate: in simulation
+a 99% gate audited at 0.1 was demoted 43.9% of the time within 1,000 acts and 68.5% within
+10,000 (47.6% and 83.5% at 0.2), where the Shiryaev-Roberts detector at A = 1,000 demoted it
+0.2% and 4.7% of the time (0.6% and 9.4%). The detector, opt-in as
+`demotion: { kind: "detector" }`, can demote after 4 consecutive audited errors, about 20 acts at
+0.2, but is slower on a mild drop: falling to 95% at an audit rate of 0.2, 31.5 wrong acts ran
+before it demoted, against 7.3 under the window (section 10 of `sim-results.md`), which the audit
+rate pays for. Neither rule
+caps audits per session, and an audit whose label never comes is reported, or demotes, under
+`overdue`; it is never read as an error (revised 2026-11-12, foundations review).
+The current `unselected` fit
 classification combines shadow and audit rows (never a chain's retries), which does not by
 itself make them representative of all traffic.
 Lowering a bar needs representative shadow labels and independent validation. The evidence
 work ahead of broader deployment is listed first in `roadmap.md`.
+
+`anytime.ts` holds the arithmetic for an anytime-valid rollout, pure. `Rollout` reads part of it
+when asked: the detector and the CSP-1 arithmetic through `demotion`, and `anytimeLowerBound`
+through `progress()`. The promotion e-process and the futility test are read by nothing, so
+promotion is still the planned test above. For promotion, a mixture of likelihood-ratio bets
+over twelve error rates below the promise (`logEValue`, `promotes`, `anytimeLowerBound`), valid
+however often it is read by Ville's inequality, with a reverse futility test (`futile`) and an
+exact dynamic programme for its operating characteristic (`exactCrossingProbability`); the
+zero-error plan is its special case of a bet on a perfect gate. For demotion, a Shiryaev-Roberts or CUSUM mixture
+e-detector over audit outcomes (`startDetector`, `stepDetector`) with a stated false-alarm bound
+(`falseAlarmBound`). For the loop as a whole, Dodge's CSP-1 outgoing-quality arithmetic
+(`outgoingQualityLimit`, `worstOutgoingQuality`). What `Rollout` reads of it, it reads through
+a ledger-order prefix, never in the order labels arrive, and recomputes from the ledger at every
+evaluation, so nothing of it is added to a checkpoint. Sections 9 to 11 of `sim-results.md`
+compare it with the planned test and the window rule, and `rollout.md` says what each part buys.
 
 ## CLI
 
@@ -785,8 +1061,9 @@ combined rows as the gate's decisions and its members as their own groups.
 question before the model's answer is shown; on a battery it asks each member's question and
 records `memberTruths`, the battery's truth being their OR for `any`, their AND for `all`, and
 otherwise one more overall question. `--denied` reviews every denial, reading each
-row's label through its own go polarity, and `--audits` reviews the blind-audit queue, the
-labels that can demote an enforcing gate. It used to ask "Approve?" and record yes for
+row's label through its own go polarity, `--audits` reviews the blind-audit queue, the
+labels that can demote an enforcing gate, and `--adjudicate --reviewer <name>` reviews the acts
+whose "wrong" awaits a second review or a tie-break under `confirm-wrong`. It used to ask "Approve?" and record yes for
 whatever the question asked, which inverted every label on a "needs action?" gate (e2e T3-02).
 
 `hook` journals Claude Code and Codex hook events under `~/.ratchet/hooks/<harness>/`;

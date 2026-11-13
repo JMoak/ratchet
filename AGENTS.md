@@ -70,11 +70,24 @@ path; use `bun x`.
   gate: `src/rollout.ts`. CLI: `src/cli/`, `bin/ratchet.ts` (`docs/cli.md`). Design spec for
   all three: `docs/design/gate-and-state.md`.
 - Strategies: `src/compound/`. Oracles: `src/oracles/`. Ledger and calibration: `src/ledger/`.
+  Two keys: `src/compound/concur.ts`; chain frailty: `src/compound/frailty.ts`.
+- Exact fixed-sequence act bar: `src/ledger/exact-bar.ts` (printed by `ratchet report
+  --exact-bar`; Rollout and `check` do not read it). Built, read by nothing yet: small-sample
+  calibrators `src/ledger/calibrators.ts` and panel measurements `src/ledger/dependence.ts` (the
+  fitted pool built on them was measured and not shipped:
+  `experiments/e2e/t5-compound/fitted-pool.ts`).
+- Floors, including entry rules over the builder's entries (`floorOn`, `entryFloor`, `allowOn`):
+  `src/floors.ts`.
+- Label history and label rules (`latest`, `confirm-wrong`; only acceptance reads the rule):
+  `labelHistory` in `src/ledger/ledger.ts`, `src/ledger/labels.ts`; the adjudication queue is
+  `ratchet review --adjudicate` (`src/cli/review.ts`).
 - Recipes take an `Asker` (an `Engine` or a `Gate`), never a raw oracle: `src/recipes/`.
 - Scenario corpus for the gate demo: `examples/tool-gate.ts`. Trail viewer: `examples/trail/`
   (loopback server over `src/cli/trail.ts`; vanilla page, no build step, no dependency).
 - Promotion test: `src/acceptance.ts` (planned exact bound; Rollout promotes only through it).
-  Daily spend cap read from the ledger: `src/spend.ts`.
+  Anytime-valid arithmetic: `src/anytime.ts` (Rollout reads its demotion detector, CSP-1 figures
+  and running lower bound on request; the promotion e-process and futility test are read by
+  nothing). Daily spend cap read from the ledger: `src/spend.ts`.
 - keywork tool gate: `experiments/keywork/` reads keywork's `keywork.tool-decision/1` export
   (`docs/design/keywork-gate.md`). Phases and the freeze: `experiments/keywork/phase.ts` and
   `gate.ts`; the three ledgers live under `experiments/out/keywork/`.
@@ -96,6 +109,8 @@ path; use `bun x`.
   most ideas already map to one, and the "won't" list is deliberate.
 - Research notes by topic: `research_notes/Compounding decisions with Jev/*.md`.
 - Final research report: `reports/Compounding decisions with Jev.md`.
+- Foundations review (2026-11): `reports/Foundations review 2026-11.md`; its research notes are
+  `research_notes/Foundations review 2026-11/*.md`.
 
 ## When adding a backend adapter
 

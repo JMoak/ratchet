@@ -32,7 +32,7 @@ export const HELP = `ratchet: read a decision ledger and say what it shows.
 Usage:
   ratchet report <ledger> [--gate <id>] [--target 0.98] [--min-support 30]
                  [--min-estimated 30] [--trust <prefix>=<class> ...]
-                 [--profile <file> ...] [--json]
+                 [--profile <file> ...] [--exact-bar [--group <tagPrefix>]] [--json]
   ratchet check  <ledger> --gate <id> --promise <p> [--require measured|estimated]
                  [--min-rows 30] [--min-estimated 30] [--max-ece <e>] [--model <id>]
                  [--window 500] [--trust <prefix>=<class> ...]
@@ -40,7 +40,7 @@ Usage:
   ratchet replay <ledger> --gate <id> --act-above <p> [--refuse-below <p>]
                  [--go-is-yes true|false] [--json]
   ratchet review <ledger> --gate <id> [--sample 20] [--seed <n>] [--reviewer <name>]
-                 [--denied | --audits]
+                 [--denied | --audits | --adjudicate]
   ratchet trail  <ledger> [--gate <id>] [--request <id>] [--last 10] [--target 0.98]
                  [--min-estimated 30] [--trust <prefix>=<class> ...]
                  [--profile <file> ...] [--min-support 30] [--json]

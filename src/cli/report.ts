@@ -3,6 +3,9 @@ import {
   type BatteryReadout,
   describeActBar,
   describeBattery,
+  describeExactBar,
+  type ExactBarReading,
+  exactBarFor,
   SATURATION_WARN,
 } from "../ledger/bars.ts";
 import { brier, ece, expectedAccuracy, scoredFromLedger } from "../ledger/calibration.ts";
@@ -20,7 +23,7 @@ import type { DecisionRecord } from "../ledger/ledger.ts";
 import type { CalibrationProfile } from "../ledger/profile.ts";
 import { COUNTED_SOURCES, type TrustClass, trustOf, trustRegistry } from "../ledger/sources.ts";
 import { mean } from "../math.ts";
-import { ledgerPath, numberFlag, parseArgs, trustFlag } from "./args.ts";
+import { CliError, ledgerPath, numberFlag, parseArgs, trustFlag } from "./args.ts";
 import {
   type CommandResult,
   countBy,
@@ -42,7 +45,7 @@ import {
 } from "./common.ts";
 import { type OfferedProfile, offered, offeredLine, readProfiles } from "./profile.ts";
 
-export const REPORT_USAGE = `Usage: ratchet report <ledger> [--gate <id>] [--target 0.98] [--min-support 30] [--min-estimated 30] [--trust <prefix>=<class> ...] [--profile <file> ...] [--json]
+export const REPORT_USAGE = `Usage: ratchet report <ledger> [--gate <id>] [--target 0.98] [--min-support 30] [--min-estimated 30] [--trust <prefix>=<class> ...] [--profile <file> ...] [--exact-bar [--group <tagPrefix>]] [--json]
 
 Per gate: the evidence grade, rows, rows of an older configuration, then for the current
 configuration labelled, unselected, consequence, observed accuracy,
@@ -63,6 +66,14 @@ rests on, one saying where to act, and for a battery how often its verdicts satu
                        bar from until its own labels grade it estimated: the first that
                        matches the model of its newest answered row and its question kind.
                        Repeatable.
+  --exact-bar          One extra line under each gate's act bar: the exact fixed-sequence
+                       bar (19 preset edges, an exact one-sided bound) fitted on the same
+                       rows, shown beside the act bar and not replacing it. "provisional"
+                       marks a bar found at the edge of statistical power. Adds an "exact"
+                       field to each gate in --json.
+  --group <prefix>     With --exact-bar: rows sharing a tag that starts <prefix> (for
+                       example session:) are one observation, so the bound counts groups.
+                       Refused without --exact-bar.
   --json               JSON instead of markdown tables.
 
 The defaults are the ones Gate.report() and Engine.report() use (REPORT_DEFAULTS).
@@ -112,6 +123,8 @@ export interface ReportOptions {
   readonly labelTrust?: Readonly<Record<string, TrustClass>>;
   /** Profiles a gate may borrow from until it grades estimated, as `--profile` gives them. */
   readonly profiles?: readonly CalibrationProfile[];
+  /** Also fit the exact bar beside each gate's act bar (`--exact-bar`), grouped as `--group` says. */
+  readonly exact?: { readonly group?: { readonly tagPrefix: string } };
 }
 
 export interface GateReport extends ActBar {
@@ -163,6 +176,8 @@ export interface GateReport extends ActBar {
   readonly grade: EvidenceGrade;
   /** On a battery gate: how often its combined verdicts saturate. */
   readonly battery?: BatteryReadout;
+  /** Only with `--exact-bar`: the exact bar beside the act bar above, which it does not replace. */
+  readonly exact?: ExactBarReading;
   /**
    * On a gate whose newest request asked one question: other questions whose rows still read
    * as current (a renamed question's old rows) until the evidence version moves.
@@ -226,6 +241,15 @@ export function summariseGate(group: GateGroup, opts: ReportOptions): GateReport
     ...(opts.minEstimated !== undefined ? { minEstimated: opts.minEstimated } : {}),
     ...(opts.profiles !== undefined ? { profiles: opts.profiles } : {}),
   });
+  const exact =
+    opts.exact === undefined
+      ? undefined
+      : exactBarFor(rows, {
+          trust,
+          target: opts.target ?? REPORT_DEFAULTS.target,
+          minSupport: opts.minSupport ?? REPORT_DEFAULTS.minSupport,
+          ...(opts.exact.group !== undefined ? { group: opts.exact.group } : {}),
+        });
   const accuracy = scored.length > 0 ? mean(scored.map((s) => (s.correct ? 1 : 0))) : undefined;
   const expected = scored.length > 0 ? mean(scored.map((s) => s.confidence)) : undefined;
   const expectedAll = expectedAccuracy(current.filter((r) => !isFixed(r)));
@@ -252,6 +276,7 @@ export function summariseGate(group: GateGroup, opts: ReportOptions): GateReport
     ...bar,
     grade,
     ...(battery !== undefined ? { battery } : {}),
+    ...(exact !== undefined ? { exact } : {}),
     ...(strays.length > 0 ? { strays } : {}),
     models: countBy(
       rows.filter((r) => !r.failedOpen && !isFixed(r)),
@@ -376,7 +401,10 @@ export function renderReport(r: LedgerReport): string {
   for (const g of r.gates) out.push(`- ${name(g)}: ${describeGrade(g.grade)}`);
   const levers = { target: r.target, minSupport: r.minSupport, minEstimated: r.minEstimated };
   out.push("", "## Act bars", "");
-  for (const g of r.gates) out.push(`- ${name(g)}: ${describeActBar(g, levers)}`);
+  for (const g of r.gates) {
+    out.push(`- ${name(g)}: ${describeActBar(g, levers)}`);
+    if (g.exact !== undefined) out.push(`  - exact bar: ${describeExactBar(g.exact)}`);
+  }
   const strayed = r.gates.filter((g) => (g.strays?.length ?? 0) > 0);
   if (strayed.length > 0) {
     out.push("", "## Questions not in the newest request", "");
@@ -436,8 +464,8 @@ export function report(argv: readonly string[]): Promise<CommandResult> {
     const p = parseArgs(
       argv,
       {
-        values: ["gate", "target", "min-support", "min-estimated"],
-        booleans: ["json", "help"],
+        values: ["gate", "target", "min-support", "min-estimated", "group"],
+        booleans: ["json", "help", "exact-bar"],
         lists: ["trust", "profile"],
       },
       "report",
@@ -453,6 +481,20 @@ export function report(argv: readonly string[]): Promise<CommandResult> {
       numberFlag(p, "min-estimated", { min: 1, integer: true }, "report") ??
       REPORT_DEFAULTS.minEstimated;
     const gate = p.values.get("gate");
+    const exactBar = p.booleans.has("exact-bar");
+    const group = p.values.get("group");
+    if (group !== undefined && !exactBar) {
+      throw new CliError("--group only applies with --exact-bar", "report");
+    }
+    if (group !== undefined && group.trim() === "") {
+      throw new CliError("--group needs a non-empty tag prefix, for example session:", "report");
+    }
+    if (exactBar && target >= 1) {
+      throw new CliError(
+        "--exact-bar needs a --target below 1: no finite sample bounds 1",
+        "report",
+      );
+    }
     const labelTrust = trustFlag(p, "report");
     const profiles = await readProfiles(p, "report");
     const rows = await loadLedger(path, "report");
@@ -463,6 +505,7 @@ export function report(argv: readonly string[]): Promise<CommandResult> {
       ...(labelTrust !== undefined ? { labelTrust } : {}),
       ...(profiles !== undefined ? { profiles } : {}),
       ...(gate ? { gate } : {}),
+      ...(exactBar ? { exact: group !== undefined ? { group: { tagPrefix: group } } : {} } : {}),
     });
     const output = p.booleans.has("json") ? `${JSON.stringify(r, null, 2)}\n` : renderReport(r);
     return { exitCode: 0, output };

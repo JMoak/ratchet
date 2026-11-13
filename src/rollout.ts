@@ -1,13 +1,28 @@
 import {
   type AcceptancePlan,
+  type AcceptanceProgress,
   type AcceptanceResult,
+  acceptanceProgress,
   earliestAccepted,
   evaluateAcceptance,
   failedWindow,
   isPlannedAct,
   type ResolvedPlan,
   resolvePlan,
+  rightToAct,
 } from "./acceptance.ts";
+import {
+  type DetectorRule,
+  type DetectorSpec,
+  demotionAlternatives,
+  detectorStatistic,
+  falseAlarmBound,
+  fewestAlarmErrors,
+  outgoingQualityLimit,
+  startDetector,
+  stepDetector,
+  worstOutgoingQuality,
+} from "./anytime.ts";
 import type { Engine } from "./engine.ts";
 import type { Gate } from "./gate.ts";
 import { actWasRight, recordedGoIsYes } from "./ledger/calibration.ts";
@@ -25,7 +40,7 @@ import {
   type Mode,
   settledWithoutAnswer,
 } from "./ledger/ledger.ts";
-import type { TrustRegistry } from "./ledger/sources.ts";
+import { admits, type TrustRegistry } from "./ledger/sources.ts";
 import { hashPolicy } from "./policy.ts";
 
 /** Identity of evidence eligible for this deployment, never inferred from old successes. */
@@ -85,6 +100,49 @@ export type RolloutCheckpoint =
       readonly accepted?: AcceptedSample;
     };
 
+/**
+ * When an audited act still without a label the plan reads is overdue, and what follows. Ledger
+ * order decides, never a timestamp: the first such audit is overdue once `after` audited acts
+ * have been recorded after it.
+ */
+export interface OverdueAudits {
+  /** Audited acts recorded after the first unlabelled one that make it overdue: a positive integer. */
+  readonly after: number;
+  /** "report" says so in the status and changes nothing; "demote" returns the gate to shadow. */
+  readonly action: "report" | "demote";
+}
+
+/**
+ * How the current enforce phase's audits return a gate to shadow.
+ *
+ * - `window`, the default: once `minAuditRows` audited rows exist, the last `window` of them
+ *   demote when their accuracy is below the promise. It has no false-alarm control: at an audit
+ *   rate of 0.2 it demotes a healthy 99% gate 47% of the time within 1,000 acts.
+ * - `detector`: a mixture e-detector (`stepDetector`) over the phase's audited acts in ledger
+ *   order, through the labelled prefix. If every audited act, given those before it, is wrong
+ *   with probability at most the promised error rate, it alarms within n audits with
+ *   probability at most n/threshold, and its mean run to a false alarm is at least threshold
+ *   audits. Defaults: threshold 1000, `DEMOTION_SHIFTS`, rule "shiryaev-roberts".
+ * - `first-error`: back to shadow at the first audited act that was wrong. With a zero-error plan
+ *   the loop is Dodge's continuous sampling plan CSP-1, whose outgoing quality has a limit.
+ *
+ * `overdue` (default `{ after: 30, action: "report" }`) handles an audit whose label does not
+ * come: never as an error, which would void the detector's guarantee, but as its own matter.
+ */
+export type DemotionSettings =
+  | { readonly kind: "window" }
+  | {
+      readonly kind: "detector";
+      /** The alarm threshold A, a finite number above 1. Default 1000. */
+      readonly threshold?: number;
+      /** Post-change error rates as multiples of the promised one. Default `DEMOTION_SHIFTS`. */
+      readonly shifts?: readonly number[];
+      /** Default "shiryaev-roberts"; "cusum" alarms no sooner. */
+      readonly rule?: DetectorRule;
+      readonly overdue?: OverdueAudits;
+    }
+  | { readonly kind: "first-error"; readonly overdue?: OverdueAudits };
+
 export interface RolloutSettings {
   readonly questionId?: string;
   /** Acceptance: one-sided confidence of the exact lower bound. Default 0.95. */
@@ -98,10 +156,27 @@ export interface RolloutSettings {
    * Default blind, census and unsourced labels.
    */
   readonly sources?: AcceptancePlan["sources"];
-  /** Demotion: the most recent audited rows of the current enforce phase that are read. */
+  /**
+   * Acceptance: how a planned act's labels are read. Default `latest`, the latest label, as
+   * always. `confirm-wrong` counts an act wrong only once a second blind reviewer confirms the
+   * "wrong" (a third breaks a tie), and holds the sample awaiting labels until then, because a
+   * reviewer's rate of false "wrong" labels can be as large as the promise's whole error budget.
+   * It is part of the plan's identity, so opting in starts a fresh phase. Promotion only:
+   * demotion reads an audit's latest label under every demotion rule, so an unconfirmed "wrong"
+   * audit can still return the gate to shadow, which is the cautious direction. Whether
+   * demotion should wait for confirmation is the owner's decision, not made here.
+   */
+  readonly adjudication?: AcceptancePlan["adjudication"];
+  /** Demotion (window rule): the most recent audited rows of the current enforce phase read. */
   readonly window?: number;
-  /** Demotion: audited rows needed before audits can demote. Default 30. */
+  /** Demotion (window rule): audited rows needed before audits can demote. Default 30. */
   readonly minAuditRows?: number;
+  /**
+   * Demotion: the rule that returns an enforcing gate to shadow. Absent, or `{ kind: "window" }`,
+   * is the window rule, unchanged. Any other kind is part of the evidence configuration, so
+   * opting into it, or changing it, starts a fresh phase.
+   */
+  readonly demotion?: DemotionSettings;
   /** Gates may derive the version from GateSpec.evidenceVersion; engine use is explicit. */
   readonly evidence?: RolloutEvidence;
   /** Validate before restoring mode. An invalid checkpoint starts fresh in shadow. */
@@ -120,6 +195,78 @@ export interface AuditWindow {
   readonly accuracy: number;
 }
 
+/**
+ * What a `detector` or `first-error` demotion read from the current enforce phase. Recomputed
+ * from the ledger at every evaluation; nothing of it is stored in a checkpoint.
+ */
+export interface AuditReadout {
+  /**
+   * Audited acts of the phase, labelled or not, in ledger order: enforce rows tagged "audit"
+   * that the policy ruled act and an oracle answered without failing open.
+   */
+  readonly audited: number;
+  /**
+   * Audited acts the rule read. The detector reads the labelled prefix in ledger order and stops
+   * at an alarm; first-error reads every audited act with a label the plan reads.
+   */
+  readonly read: number;
+  /** Of those read, the acts that were wrong to act on. */
+  readonly wrong: number;
+  /** Audited acts without a label the plan reads: no label, or one only from another source. */
+  readonly pending: number;
+  /** Of those pending, the acts whose only label came from a source the plan does not read. */
+  readonly untrusted: number;
+  /** The first pending audited act, and how many audited acts were recorded after it. */
+  readonly firstPending?: { readonly id: string; readonly later: number };
+  /** True once the first pending audit has at least `overdue.after` audited acts after it. */
+  readonly overdue: boolean;
+}
+
+export interface DetectorReadout extends AuditReadout {
+  readonly kind: "detector";
+  readonly rule: DetectorRule;
+  /** The mean of the per-shift statistics after the audits read (`detectorStatistic`). */
+  readonly statistic: number;
+  readonly threshold: number;
+  /**
+   * `falseAlarmBound(read, threshold)`: for a gate that keeps its promise, the most chance of an
+   * alarm within the audits read. It says nothing once they reach the threshold.
+   */
+  readonly falseAlarmBound: number;
+  /** The statistic reached the threshold; the evaluation that reads this demotes the gate. */
+  readonly alarmed: boolean;
+}
+
+export interface FirstErrorReadout extends AuditReadout {
+  readonly kind: "first-error";
+}
+
+export type DemotionReadout = DetectorReadout | FirstErrorReadout;
+
+/** The window rule's figures for the phase, as `audits` reports them, with its limits. */
+export interface WindowReadout {
+  readonly kind: "window";
+  readonly audits: AuditWindow;
+  readonly window: number;
+  readonly minAuditRows: number;
+}
+
+/**
+ * What `Rollout.progress()` reads of the current phase without changing anything. `none`: there
+ * is no phase to read (before the first evaluation, or one the next evaluation will replace),
+ * with the reason. `rejected`: the configuration is held in shadow. `shadow`: the planned
+ * sample in progress. `enforce`: what the demotion rule has read.
+ */
+export type RolloutProgress = {
+  readonly promisedAccuracy: number;
+  readonly gateId?: string;
+} & (
+  | { readonly phase: "none"; readonly reason: string }
+  | { readonly phase: "rejected"; readonly reason: string }
+  | { readonly phase: "shadow"; readonly acceptance: AcceptanceProgress }
+  | { readonly phase: "enforce"; readonly demotion: DemotionReadout | WindowReadout }
+);
+
 export interface RolloutStatus {
   readonly mode: Mode;
   readonly changed: boolean;
@@ -131,6 +278,11 @@ export interface RolloutStatus {
   readonly acceptance?: AcceptanceResult;
   /** In enforce, the current phase's audited acts, which can demote the gate. */
   readonly audits?: AuditWindow;
+  /**
+   * In enforce under a `detector` or `first-error` demotion, in place of `audits`: what the rule
+   * read. Never present under the window rule.
+   */
+  readonly demotion?: DemotionReadout;
   /**
    * What the current phase's evidence supports (`gradeOf`). In shadow: measured once the
    * planned sample is accepted, which is the only grade that promotes, else estimated from the
@@ -161,6 +313,94 @@ interface Scope {
   readonly plan: ResolvedPlan;
   readonly window: number;
   readonly minAuditRows: number;
+  readonly demotion: ResolvedDemotion;
+}
+
+/** A demotion setting validated, with every default filled. */
+type ResolvedDemotion =
+  | { readonly kind: "window" }
+  | {
+      readonly kind: "detector";
+      readonly spec: DetectorSpec & { readonly threshold: number; readonly rule: DetectorRule };
+      /** The post-change error rates it bets on: what the shifts resolve to at this promise. */
+      readonly alternatives: readonly number[];
+      readonly overdue: OverdueAudits;
+    }
+  | { readonly kind: "first-error"; readonly overdue: OverdueAudits };
+
+type AuditRule = Exclude<ResolvedDemotion, { readonly kind: "window" }>;
+
+const DEMOTION_KEYS: Readonly<Record<ResolvedDemotion["kind"], readonly string[]>> = {
+  window: ["kind"],
+  detector: ["kind", "threshold", "shifts", "rule", "overdue"],
+  "first-error": ["kind", "overdue"],
+};
+
+/** Validate an overdue setting; a string says why it is invalid. */
+function resolveOverdue(value: unknown): OverdueAudits | string {
+  if (value === undefined) return { after: 30, action: "report" };
+  if (typeof value !== "object" || value === null || Array.isArray(value)) {
+    return "overdue must be { after, action }";
+  }
+  const v = value as Record<string, unknown>;
+  const extra = Object.keys(v).find((k) => k !== "after" && k !== "action");
+  if (extra !== undefined) return `overdue takes no "${extra}" setting`;
+  if (!(Number.isSafeInteger(v.after) && (v.after as number) > 0)) {
+    return "overdue after must be a positive integer";
+  }
+  if (v.action !== "report" && v.action !== "demote") {
+    return 'overdue action must be "report" or "demote"';
+  }
+  return { after: v.after as number, action: v.action };
+}
+
+/**
+ * Validate a demotion setting against the promise and fill its defaults; a string says why it
+ * is invalid. Read as untyped, since settings often arrive as parsed JSON: an unknown kind or a
+ * setting the kind does not take is refused rather than ignored, so a misplaced option cannot
+ * look as if it applied. The detector's own checks (`startDetector`) decide its threshold, shifts
+ * and rule.
+ */
+function resolveDemotion(value: unknown, promise: number): ResolvedDemotion | string {
+  if (value === undefined) return { kind: "window" };
+  if (typeof value !== "object" || value === null || Array.isArray(value)) {
+    return "demotion must be an object with a kind";
+  }
+  const v = value as Record<string, unknown>;
+  const kind = v.kind;
+  if (kind !== "window" && kind !== "detector" && kind !== "first-error") {
+    return `unknown kind "${String(kind)}"; use "window", "detector" or "first-error"`;
+  }
+  const extra = Object.keys(v).find((k) => !DEMOTION_KEYS[kind].includes(k));
+  if (extra !== undefined) return `the ${kind} rule takes no "${extra}" setting`;
+  if (kind === "window") return { kind };
+  const overdue = resolveOverdue(v.overdue);
+  if (typeof overdue === "string") return overdue;
+  if (kind === "first-error") return { kind, overdue };
+  const spec = {
+    promise,
+    threshold: (v.threshold === undefined ? 1000 : v.threshold) as number,
+    rule: (v.rule === undefined ? "shiryaev-roberts" : v.rule) as DetectorRule,
+    ...(v.shifts !== undefined ? { shifts: v.shifts as readonly number[] } : {}),
+  };
+  try {
+    startDetector(spec);
+    return { kind, spec, alternatives: demotionAlternatives(promise, spec.shifts), overdue };
+  } catch (err) {
+    return err instanceof Error ? err.message : String(err);
+  }
+}
+
+/**
+ * What a demotion rule adds to the scope hash. The detector is named by the error rates it bets
+ * on rather than by the shifts as written, so a change to the module's defaults is a new
+ * configuration, while writing the defaults out is not.
+ */
+function demotionIdentity(d: AuditRule): Readonly<Record<string, unknown>> {
+  const overdue = { after: d.overdue.after, action: d.overdue.action };
+  if (d.kind === "first-error") return { kind: d.kind, overdue };
+  const { threshold, rule } = d.spec;
+  return { kind: d.kind, threshold, rule, alternatives: [...d.alternatives], overdue };
 }
 
 /**
@@ -175,7 +415,7 @@ type Boundary = (mode: Mode, rejected?: boolean, accepted?: AcceptedSample) => v
 
 type Report = (
   reason: string,
-  evidence: Pick<RolloutStatus, "grade" | "acceptance" | "audits">,
+  evidence: Pick<RolloutStatus, "grade" | "acceptance" | "audits" | "demotion">,
 ) => RolloutStatus;
 
 /** Grade a phase's rows through the target's label trust; the labels date the grade. */
@@ -250,15 +490,20 @@ function upgradeCheckpoint(c: RolloutCheckpoint): State {
  * Evidence-gated rollout. Promotion runs one planned acceptance test (see `acceptance.ts`): the
  * first acts of a fresh shadow phase, fixed before their labels are read, must reach the
  * promised accuracy by an exact one-sided bound. Demotion reads the current enforce phase's
- * blind audits and errs toward caution: once enough audits exist, an observed accuracy below
- * the promise returns the gate to shadow. A gate with no audits cannot be demoted by evidence,
- * and its promotion says so.
+ * blind audits and errs toward caution: by default, once enough audits exist, an observed
+ * accuracy below the promise returns the gate to shadow; `demotion` opts into a change detector
+ * with a stated false-alarm bound, or into a return at the first audited error. A gate with no
+ * audits cannot be demoted by evidence, and its promotion says so.
  *
  * Each transition starts a new phase that consumes everything before it, labelled or not, so
  * old successes and late labels cannot carry over. A rejected configuration stays in shadow
- * until something in its identity changes. Initialize before collecting evidence; persist the
- * checkpoint yourself, since a controller without one warms up again in shadow. One controller
- * owns a target. This is a sound test under its stated assumptions, not a certification.
+ * until something in its identity changes. A gate promoted again after a demotion has passed a
+ * second planned test on fresh evidence: each test can promote a gate that breaks its promise
+ * with probability up to 1 - confidence, so every re-promotion spends that error budget again
+ * (record how many times a gate was promoted, as for configurations tried in turn). Initialize
+ * before collecting evidence; persist the checkpoint yourself, since a controller without one
+ * warms up again in shadow. One controller owns a target. This is a sound test under its stated
+ * assumptions, not a certification.
  */
 export class Rollout {
   readonly history: RolloutStatus[] = [];
@@ -355,10 +600,13 @@ export class Rollout {
         ...(o.maxErrors !== undefined ? { maxErrors: o.maxErrors } : {}),
         ...(o.group !== undefined ? { group: o.group } : {}),
         ...(o.sources !== undefined ? { sources: o.sources } : {}),
+        ...(o.adjudication !== undefined ? { adjudication: o.adjudication } : {}),
       });
     } catch (err) {
       return `invalid acceptance plan: ${err instanceof Error ? err.message : String(err)}`;
     }
+    const demotion = resolveDemotion(o.demotion, o.promisedAccuracy);
+    if (typeof demotion === "string") return `invalid demotion: ${demotion}`;
     return {
       hash: hashState(
         JSON.stringify({
@@ -371,6 +619,9 @@ export class Rollout {
           plan: plan.hash,
           window,
           minAuditRows,
+          // The window rule stays out of the identity, so every checkpoint written before
+          // demotion kinds existed keeps its scope; any other rule is part of it.
+          ...(demotion.kind === "window" ? {} : { demotion: demotionIdentity(demotion) }),
         }),
       ),
       version,
@@ -380,6 +631,7 @@ export class Rollout {
       plan,
       window,
       minAuditRows,
+      demotion,
     };
   }
 
@@ -422,13 +674,34 @@ export class Rollout {
     return result;
   }
 
-  private async evaluateNow(): Promise<RolloutStatus> {
-    const target = this.target();
-    const rows = (await target.ledger.all()).filter(
+  /** The target's rows, in ledger order, labelled or not. */
+  private async targetRows(target: Target): Promise<DecisionRecord[]> {
+    return (await target.ledger.all()).filter(
       (r) =>
         (target.gateId === undefined || r.gateId === target.gateId) &&
         (this.opts.questionId === undefined || r.questionId === this.opts.questionId),
     );
+  }
+
+  /** True when a new answer of the scope's rubric, policy and version recorded another model. */
+  private modelDrifted(fresh: readonly DecisionRecord[], scope: Scope): boolean {
+    return (
+      scope.model !== undefined &&
+      fresh.some(
+        (r) =>
+          r.questionHash === scope.questionHash &&
+          r.policyHash === scope.policyHash &&
+          r.evidenceVersion === scope.version &&
+          !r.failedOpen &&
+          !settledWithoutAnswer(r) &&
+          r.model !== scope.model,
+      )
+    );
+  }
+
+  private async evaluateNow(): Promise<RolloutStatus> {
+    const target = this.target();
+    const rows = await this.targetRows(target);
     const scope = this.scope();
     const before = target.mode();
     const at = (this.opts.now ?? (() => new Date().toISOString()))();
@@ -504,18 +777,7 @@ export class Rollout {
     }
     this.initialized = true;
     const fresh = rows.slice(start);
-    if (
-      scope.model !== undefined &&
-      fresh.some(
-        (r) =>
-          r.questionHash === scope.questionHash &&
-          r.policyHash === scope.policyHash &&
-          r.evidenceVersion === scope.version &&
-          !r.failedOpen &&
-          !settledWithoutAnswer(r) &&
-          r.model !== scope.model,
-      )
-    ) {
+    if (this.modelDrifted(fresh, scope)) {
       boundary("shadow");
       return status("holding shadow: a new answer's recorded model differs from the pinned model", {
         grade: graded([]),
@@ -731,9 +993,10 @@ export class Rollout {
     }
     // The checkpoint carries the sample, so a restore can check the ledger still holds it.
     boundary("enforce", false, { from: phaseStart, sample: [...acceptance.sample] });
+    const rate = target.auditRate();
     const unwatched =
-      target.auditRate() > 0
-        ? ""
+      rate > 0
+        ? watchedBy(scope, rate)
         : "; audits are off, so no evidence can demote this gate: set an audit rate to watch it";
     return status(
       `promoted: ${grade.errors} wrong of ${grade.sampleSize} planned acts; exact ${pct(grade.plan.confidence, 0)} lower bound ${pct(grade.lowerBound, 2)} >= promised ${pct(this.opts.promisedAccuracy)}${unwatched}`,
@@ -750,6 +1013,9 @@ export class Rollout {
     boundary: Boundary,
     graded: Grader,
   ): RolloutStatus {
+    if (scope.demotion.kind !== "window") {
+      return this.detect(fresh, scope, scope.demotion, target, status, boundary, graded);
+    }
     const audits = this.audits(fresh, scope);
     const grade = graded(this.eligible(fresh, scope), { sources: scope.plan.sources });
     const promised = this.opts.promisedAccuracy;
@@ -770,4 +1036,370 @@ export class Rollout {
           : "audits are off, so nothing can demote this gate";
     return status(`live: ${audits.n} current-phase audited rows; ${watching}`, { grade, audits });
   }
+
+  /**
+   * Enforce mode under a detector or first-error rule. The audited acts are the phase's eligible
+   * enforce rows tagged "audit" that the policy ruled act and an oracle answered without failing
+   * open, in ledger order and never cut to a window; a label counts when the plan's sources admit
+   * it through the target's trust registry, as in acceptance.
+   *
+   * The detector steps once per audited act through the contiguous labelled prefix only (wrong:
+   * acting was not right, as acceptance reads it), and never skips an unlabelled audit to read
+   * later ones: when a label's arrival depends on its outcome, reading in arrival order is not
+   * valid. Its state is a pure function of that prefix, so it is recomputed from the ledger at
+   * every evaluation and a restart reproduces it. First-error reads every labelled audited act:
+   * a wrong act anywhere is a wrong act, so a pending audit cannot hide a later one.
+   *
+   * An unlabelled audit is never a step of either rule (as an error it would void the detector's
+   * false-alarm bound); `overdue` reports it, or demotes on it, separately, by ledger order.
+   */
+  private detect(
+    fresh: readonly DecisionRecord[],
+    scope: Scope,
+    rule: AuditRule,
+    target: Target,
+    status: Report,
+    boundary: Boundary,
+    graded: Grader,
+  ): RolloutStatus {
+    const { readout, firstWrong } = this.readDemotion(fresh, scope, rule, target.trust);
+    const grade = graded(this.eligible(fresh, scope), { sources: scope.plan.sources });
+    const evidence = { grade, demotion: readout };
+    const promised = this.opts.promisedAccuracy;
+    if (readout.kind === "detector" && readout.alarmed) {
+      boundary("shadow");
+      return status(
+        `demoted: the ${ruleName(readout.rule)} detector alarmed on ${plural(readout.read, "audited act")} read in ledger order, ${readout.wrong} wrong: statistic ${statistic(readout.statistic)} reached threshold ${readout.threshold}; ${alarmGuarantee(readout, promised)}`,
+        evidence,
+      );
+    }
+    if (firstWrong !== undefined) {
+      boundary("shadow");
+      return status(
+        `demoted: audited act ${firstWrong} was wrong to act on, and the first audited error returns the gate to shadow (${readout.read} labelled of ${plural(readout.audited, "audited act")} read, ${readout.wrong} wrong)`,
+        evidence,
+      );
+    }
+    const first = readout.firstPending;
+    if (readout.overdue && first !== undefined && rule.overdue.action === "demote") {
+      boundary("shadow");
+      return status(
+        `demoted: audit ${first.id} has had no label the plan reads while ${laterAudits(first.later)}, at least the ${rule.overdue.after} allowed; a missing label is never read as an error, so an overdue audit returns the gate to shadow instead`,
+        evidence,
+      );
+    }
+    if (readout.audited === 0 && target.auditRate() <= 0) {
+      return status(
+        "live: 0 current-phase audited acts; audits are off, so nothing can demote this gate",
+        evidence,
+      );
+    }
+    const read =
+      readout.kind === "detector"
+        ? `the ${ruleName(readout.rule)} detector read ${readout.read}, ${readout.wrong} wrong: statistic ${statistic(readout.statistic)} below threshold ${readout.threshold}`
+        : `${readout.read} labelled, none wrong; the first audited error returns the gate to shadow`;
+    const untrusted =
+      readout.untrusted > 0
+        ? ` (${readout.untrusted} labelled only from sources it does not read)`
+        : "";
+    const pending =
+      readout.pending === 0
+        ? ""
+        : `; ${readout.pending} still without a label the plan reads${untrusted}${readout.kind === "detector" ? ", and the detector reads nothing past the first of them" : ""}`;
+    const overdue =
+      readout.overdue && first !== undefined
+        ? `; overdue: audit ${first.id} has had no label the plan reads while ${laterAudits(first.later)}`
+        : "";
+    const off = target.auditRate() > 0 ? "" : "; audits are off now, so no new audit is drawn";
+    return status(
+      `live: ${plural(readout.audited, "current-phase audited act")}; ${read}${pending}${overdue}${off}`,
+      evidence,
+    );
+  }
+
+  /**
+   * What a detector or first-error rule reads from the phase (see `detect`), and for
+   * first-error the first wrong audited act, which demotes.
+   */
+  private readDemotion(
+    fresh: readonly DecisionRecord[],
+    scope: Scope,
+    rule: AuditRule,
+    trust: TrustRegistry,
+  ): { readonly readout: DemotionReadout; readonly firstWrong?: string } {
+    const filter = { sources: scope.plan.sources, trust };
+    const reads = (r: DecisionRecord): boolean =>
+      r.outcome !== undefined && admits(filter, r.outcome.source);
+    const audited = this.eligible(fresh, scope).filter(
+      (r) => r.mode === "enforce" && r.tags.includes("audit") && isPlannedAct(r),
+    );
+    const labelled = audited.filter(reads);
+    const at = audited.findIndex((r) => !reads(r));
+    const first = at < 0 ? undefined : audited[at];
+    const later = audited.length - 1 - at;
+    const counts = {
+      audited: audited.length,
+      pending: audited.length - labelled.length,
+      untrusted: audited.filter((r) => r.outcome !== undefined && !reads(r)).length,
+      ...(first !== undefined ? { firstPending: { id: first.id, later } } : {}),
+      overdue: first !== undefined && later >= rule.overdue.after,
+    };
+    if (rule.kind === "first-error") {
+      const wrong = labelled.filter((r) => !rightToAct(r));
+      const firstWrong = wrong[0]?.id;
+      const { audited: n, ...rest } = counts;
+      return {
+        readout: {
+          kind: "first-error",
+          audited: n,
+          read: labelled.length,
+          wrong: wrong.length,
+          ...rest,
+        },
+        ...(firstWrong !== undefined ? { firstWrong } : {}),
+      };
+    }
+    const spec = rule.spec;
+    let state = startDetector(spec);
+    let wrong = 0;
+    for (const r of audited) {
+      if (state.alarmed || !reads(r)) break;
+      const error = !rightToAct(r);
+      if (error) wrong++;
+      state = stepDetector(spec, state, error);
+    }
+    const { audited: n, ...rest } = counts;
+    return {
+      readout: {
+        kind: "detector",
+        rule: spec.rule,
+        audited: n,
+        read: state.audits,
+        wrong,
+        ...rest,
+        statistic: detectorStatistic(state),
+        threshold: spec.threshold,
+        falseAlarmBound: falseAlarmBound(state.audits, spec.threshold),
+        alarmed: state.alarmed,
+      },
+    };
+  }
+
+  /**
+   * Read the current phase without evaluating it: nothing is promoted, demoted, rejected or
+   * written, `history` is untouched and the checkpoint stays as it was. In shadow it is the
+   * planned sample in progress (`acceptanceProgress` over the phase's shadow rows); in enforce,
+   * what the demotion rule has read (under the window rule, the figures `audits` reports).
+   *
+   * Before the first `evaluate()` it returns phase "none" and reads nothing: that evaluation is
+   * what places the phase boundary after the rows already present, or verifies a restored
+   * checkpoint against the ledger, so until it runs there is no phase, and reading one would
+   * count history the evaluation excludes or show an enforce phase it may refuse. It also
+   * returns "none", with the reason, when the next evaluation would start a fresh phase (the
+   * configuration changed or is invalid, the anchor is gone, the mode was changed outside the
+   * controller, or a new answer came from another model than the pin). It does not search the
+   * ledger for a planned sample that failed before the phase (e2e V1), which the next
+   * evaluation does, so a shadow readout can look healthy for a configuration that evaluation
+   * rejects. Calls queue behind `evaluate()`, so a readout never interleaves with a transition.
+   */
+  progress(): Promise<RolloutProgress> {
+    const result = this.pending.then(() => this.progressNow());
+    this.pending = result.then(
+      () => {},
+      () => {},
+    );
+    return result;
+  }
+
+  private async progressNow(): Promise<RolloutProgress> {
+    const target = this.target();
+    const head = {
+      promisedAccuracy: this.opts.promisedAccuracy,
+      ...(target.gateId !== undefined ? { gateId: target.gateId } : {}),
+    };
+    const none = (reason: string): RolloutProgress => ({ ...head, phase: "none", reason });
+    const fresh = "the next evaluate() starts a fresh shadow phase";
+    if (!this.initialized) {
+      return none(
+        "not evaluated yet: the first evaluate() places the phase boundary, or verifies the checkpoint, so there is no phase to read",
+      );
+    }
+    const scope = this.scope();
+    if (typeof scope === "string") return none(`holding shadow: ${scope}`);
+    const state = this.state;
+    if (!state) return none(`no phase yet; ${fresh}`);
+    if (state.scopeHash !== scope.hash) return none(`the evidence configuration changed; ${fresh}`);
+    if (target.mode() !== state.mode) {
+      return none(`the mode was changed outside this controller; ${fresh}`);
+    }
+    const rows = await this.targetRows(target);
+    let start = 0;
+    if (state.afterId !== null) {
+      const anchor = rows.findIndex((r) => r.id === state.afterId);
+      if (anchor < 0) return none(`the phase's anchor is missing from the ledger; ${fresh}`);
+      start = anchor + 1;
+    }
+    const phase = rows.slice(start);
+    if (this.modelDrifted(phase, scope)) {
+      return none(`a new answer's recorded model differs from the pinned model; ${fresh}`);
+    }
+    if (state.mode === "enforce") {
+      const d = scope.demotion;
+      const demotion: DemotionReadout | WindowReadout =
+        d.kind === "window"
+          ? {
+              kind: "window",
+              audits: this.audits(phase, scope),
+              window: scope.window,
+              minAuditRows: scope.minAuditRows,
+            }
+          : this.readDemotion(phase, scope, d, target.trust).readout;
+      return { ...head, phase: "enforce", demotion };
+    }
+    if (state.rejected) {
+      return {
+        ...head,
+        phase: "rejected",
+        reason:
+          "this configuration was rejected; change its rubric, policy, model, plan or evidence version to test a new one",
+      };
+    }
+    const shadowRows = this.eligible(phase, scope).filter((r) => r.mode === "shadow");
+    return {
+      ...head,
+      phase: "shadow",
+      acceptance: acceptanceProgress(shadowRows, scope.plan, target.trust),
+    };
+  }
+}
+
+const ruleName = (rule: DetectorRule): string => (rule === "cusum" ? "CUSUM" : "Shiryaev-Roberts");
+
+/** A detector statistic rounded down, so a value below its threshold never prints as reaching it. */
+function statistic(x: number): string {
+  return x < 100 ? (Math.floor(x * 100) / 100).toFixed(2) : String(Math.floor(x));
+}
+
+/** A small share to three significant figures. */
+function pct3(x: number): string {
+  const v = 100 * x;
+  return v > 0 && v < 0.001 ? "under 0.001%" : `${v.toPrecision(3)}%`;
+}
+
+/** "1 audited act", "4 audited acts". */
+const plural = (n: number, noun: string): string => `${n} ${noun}${n === 1 ? "" : "s"}`;
+
+const laterAudits = (n: number): string =>
+  n === 1 ? "1 later one was audited" : `${n} later ones were audited`;
+
+/**
+ * The detector's guarantee at the audits it read, in plain words: n/A while it says something
+ * (`falseAlarmBound`), then the mean run to a false alarm.
+ */
+function alarmGuarantee(d: DetectorReadout, promised: number): string {
+  const keeps = `for a gate that keeps its promised ${pct(promised)}`;
+  return d.read < d.threshold
+    ? `${keeps}, an alarm within ${plural(d.read, "audit")} has probability at most ${pct(d.falseAlarmBound, 2)}`
+    : `${keeps}, the mean number of audits to a false alarm is at least ${d.threshold}`;
+}
+
+/**
+ * What a promotion says about the rule that will watch the gate, at its audit rate (above 0).
+ * The window rule adds nothing, as before.
+ *
+ * Detector: the fewest consecutive audited errors that can demote it (`fewestAlarmErrors`), and
+ * the acts that many audits take on average at the audit rate, k / rate.
+ *
+ * First error, with a zero-error plan: the loop is then Dodge's continuous sampling plan CSP-1,
+ * whose clearance is the planned sample (no enforce phase starts until the first `sampleSize`
+ * acts of a shadow phase are all right) and whose sampling fraction is the audit rate, so its
+ * outgoing quality has a limit: at most `outgoingQualityLimit` of act-eligible decisions become
+ * wrong executed acts at any stationary error rate, and at most `worstOutgoingQuality` against
+ * any error sequence that cannot see the audit draw. Both rest on what the controller cannot
+ * check: audit labels are correct and arrive, and are evaluated, before the next act; the audit
+ * draw is unpredictable and independent of whether the act is right; every shadow decision is
+ * made and labelled by a person; and, for the stationary figure, acts are independent at one
+ * error rate. A planned sample that fails keeps the gate in shadow for good, which only lowers
+ * these figures. When the plan allows errors its clearance is not a run of right acts, so no
+ * limit is stated.
+ */
+function watchedBy(scope: Scope, rate: number): string {
+  const d = scope.demotion;
+  if (d.kind === "window") return "";
+  if (d.kind === "detector") {
+    const name = `a ${ruleName(d.spec.rule)} detector at threshold ${d.spec.threshold}`;
+    let fewest: number;
+    try {
+      fewest = fewestAlarmErrors(d.spec);
+    } catch {
+      return `; demotion: ${name}, which no run of fewer than a million audited errors can trip`;
+    }
+    const errors = fewest === 1 ? "a single audited error" : `${fewest} consecutive audited errors`;
+    return `; demotion: ${name}; ${errors} can demote it, about ${plural(Math.round(fewest / rate), "act")} at an audit rate of ${rate}`;
+  }
+  const first = "; demotion: the first audited error returns it to shadow";
+  const plan = scope.plan;
+  if (plan.maxErrors > 0) {
+    return `${first}; no outgoing-quality limit is stated, because the plan allows ${plural(plan.maxErrors, "wrong act")} in its planned sample`;
+  }
+  const limit = outgoingQualityLimit(plan.sampleSize, rate).limit;
+  const worst = worstOutgoingQuality(plan.sampleSize, rate);
+  return `${first}; as a continuous sampling plan with a ${plan.sampleSize}-act clearance, at most ${pct3(limit)} of act-eligible decisions become wrong executed acts at any stationary error rate, and ${pct3(worst)} against any error sequence that cannot see the audit draw, if audit labels are correct and prompt`;
+}
+
+/**
+ * One or two plain sentences for a progress readout (`Rollout.progress()`), for an application
+ * to print or log. Pure: it reads only the value given.
+ */
+export function describeProgress(p: RolloutProgress): string {
+  switch (p.phase) {
+    case "none":
+      return `No phase to read: ${p.reason}.`;
+    case "rejected":
+      return `Holding shadow: ${p.reason}.`;
+    case "shadow":
+      return describeSample(p.acceptance);
+    case "enforce":
+      return describeWatch(p.demotion, p.promisedAccuracy);
+  }
+}
+
+function describeSample(a: AcceptanceProgress): string {
+  const plan = a.plan;
+  const head = `Planned sample: ${a.acts} of ${a.sampleSize} acts collected`;
+  if (a.acts === 0) return `${head}; nothing to read yet.`;
+  const prefix =
+    a.prefix.acts === a.acts
+      ? ""
+      : `; the labelled prefix is ${plural(a.prefix.acts, "act")} long (${a.prefix.wrong} wrong)`;
+  const untrusted =
+    a.untrusted > 0 ? `; ${a.untrusted} labelled only from sources the plan does not read` : "";
+  const doomed = a.cannotPass
+    ? `; with ${a.wrong} wrong, more than the ${plan.maxErrors} the plan allows, the sample cannot pass unless a label is corrected`
+    : "";
+  return `${head}, ${a.labelled} labelled by sources the plan reads (${a.wrong} wrong)${prefix}${untrusted}. Running ${pct(plan.confidence, 0)} lower bound on accuracy ${pct(a.lowerBound, 2)}, valid at every look; it decides nothing, the planned test alone promotes${doomed}.`;
+}
+
+function describeWatch(d: DemotionReadout | WindowReadout, promised: number): string {
+  if (d.kind === "window") {
+    const a = d.audits;
+    return `Window rule: ${plural(a.n, "current-phase audited row")}, ${plural(a.acted, "act")} at ${pct(a.accuracy)} against the promised ${pct(promised)}. It judges the last ${d.window} once ${d.minAuditRows} exist.`;
+  }
+  const first = d.firstPending;
+  const overdue =
+    d.overdue && first !== undefined
+      ? `, the first (${first.id}) overdue with ${plural(first.later, "later audit")}`
+      : "";
+  const pending =
+    d.pending === 0 ? "" : `; ${d.pending} still without a label the plan reads${overdue}`;
+  const audited = plural(d.audited, "current-phase audited act");
+  if (d.kind === "first-error") {
+    const next =
+      d.wrong > 0
+        ? "One was wrong, so the next evaluation returns the gate to shadow."
+        : "The first audited error returns the gate to shadow.";
+    return `First-error rule: ${audited}, ${d.read} labelled (${d.wrong} wrong)${pending}. ${next}`;
+  }
+  const alarmed = d.alarmed ? ", so the next evaluation returns the gate to shadow" : "";
+  return `${ruleName(d.rule)} detector: ${audited}, ${d.read} read through the labelled prefix (${d.wrong} wrong)${pending}. Statistic ${statistic(d.statistic)} against threshold ${d.threshold}${alarmed}; ${alarmGuarantee(d, promised)}.`;
 }

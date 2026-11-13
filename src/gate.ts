@@ -32,8 +32,10 @@ export type GateQuestion = Question | readonly JudgeQuestion[];
 /**
  * How a battery's members become one judge verdict. Log-odds (the default) is for members that
  * are evidence for one answer; a disjunction (any member yes means yes) takes `"any"`, a
- * conjunction (every member must say yes) takes `"all"`; a learned combiner fits either. The
- * log-odds sum inverts a disjunction and saturates a conjunction (e2e T3-01, T2-05).
+ * conjunction (every member must say yes) takes `"all"`; either can be followed by a Platt fit
+ * on labels (`fitPlattCombiner`) to correct its stated level. A learned combiner on logits
+ * suits members that are evidence for one answer, not a conjunction. The log-odds sum inverts a
+ * disjunction and saturates a conjunction (e2e T3-01, T2-05).
  * - a `PoolMethod` ("logodds", "any", "all", "max", "min", ...) or `PoolOptions` goes through
  *   `pool`. Use the options form to state the members' error correlation: decomposed
  *   questions about one state on one model are not independent voters, and the pool shrinks
@@ -88,7 +90,7 @@ export interface GateSpec<Q extends GateQuestion = GateQuestion> {
   readonly strategy?: StrategySpec;
   /** Accuracy promised on acted rows; drives the gate's Rollout. */
   readonly promisedAccuracy?: number;
-  /** Rollout thresholds beyond the promise (window, minimum shadow and audit rows). */
+  /** Rollout settings beyond the promise: acceptance plan, demotion rule, audit limits, evidence, checkpoint. */
   readonly rollout?: RolloutSettings;
   /** Per-gate override of the engine's mode. Unset, the gate follows the engine. */
   readonly mode?: Mode;

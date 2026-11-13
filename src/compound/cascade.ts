@@ -29,6 +29,27 @@ export interface CascadeDecision extends CompoundDecision {
 }
 
 /**
+ * The caller's pool options for the tiers that answered: the member key of each pooled verdict,
+ * so a per-pair matrix (`PoolOptions.correlations`) weighs each answer by the tier that gave it,
+ * and a weight per tier narrowed to the same tiers. Passed through as given, a matrix threw for
+ * want of keys and a weight per tier threw whenever fewer tiers were asked than were listed.
+ */
+function poolOptionsFor(
+  pool: PoolOptions,
+  asked: readonly Decision[],
+  keys: readonly string[],
+): PoolOptions {
+  const answered = (_: unknown, i: number): boolean => asked[i]?.failedOpen !== true;
+  return {
+    ...pool,
+    ...(pool.weights !== undefined
+      ? { weights: asked.map((_, i) => pool.weights?.[i] ?? 1).filter(answered) }
+      : {}),
+    memberKeys: keys.filter(answered),
+  };
+}
+
+/**
  * Ask the cheap oracle first and escalate only when it is unsure. With a calibrated first
  * tier, the fraction of traffic that escalates is roughly the fraction of items whose
  * confidence falls below the bar, so cost and accuracy are both predictable from the ledger.
@@ -57,22 +78,23 @@ export async function cascade(
   const final = settled as Decision;
   const live = members.filter((d) => !d.failedOpen);
   const usePool = opts.pool !== false && opts.pool !== undefined && live.length > 1;
+  // Only the tiers asked are members; a tier's key is the same whether or not it was reached.
+  const keys = members.map((_, i) => {
+    const t = opts.tiers[i] as Tier;
+    return memberKey(t.oracle.id, i, t.label);
+  });
   const verdict = usePool
     ? pool(
         question,
         live.map((d) => d.verdict),
-        opts.pool as PoolOptions,
+        poolOptionsFor(opts.pool as PoolOptions, members, keys),
       )
     : final.verdict;
   const tier = opts.tiers[tierIndex] as Tier;
   const base = compoundOf("cascade", verdict, members, {
     parallel: false,
     oracle: `cascade(${opts.tiers.map((t) => t.label ?? t.oracle.id).join(">")})`,
-    // Only the tiers asked are members; a tier's key is the same whether or not it was reached.
-    memberKeys: members.map((_, i) => {
-      const t = opts.tiers[i] as Tier;
-      return memberKey(t.oracle.id, i, t.label);
-    }),
+    memberKeys: keys,
   });
   const result: CascadeDecision = {
     ...base,

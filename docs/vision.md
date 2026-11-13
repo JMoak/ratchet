@@ -21,8 +21,12 @@ inverts outside it:
   this geometric decay in the wild. A verifier fixes what gets committed, not how often the
   chain finishes: in the end-to-end evaluation every committed step was correct (1,132 of
   1,132), but chains finished 48% to 62% of the time where the independent-retry arithmetic
-  predicted 74% to 99.8%, because a verifier that wrongly rejects one correct answer to a step
-  tends to reject the next one too (revised 2026-11-12, e2e T2).
+  predicted 76.6% to 97.3% (revised 2026-11-12: the evaluation's own 74% to 99.8% took the
+  held-out false-alarm rate and counted replayed candidates as fresh ones), because a verifier
+  that wrongly rejects one correct answer to a step tends to reject the next one too (revised
+  2026-11-12, e2e T2), and a frailty model fitted from
+  two ledger rates reproduces the observed completion (foundations review, 2026-11-12; see
+  [architecture.md](architecture.md#compounding-mechanically)).
 - **Correlation caps everything.** Calling the same model five times is not five voters. With
   pairwise error correlation rho, the effective crowd is n / (1 + (n - 1) rho); at rho = 0.5,
   five calls are worth 1.7. Published LLM-judge panels of nine frontier models deliver about
@@ -122,9 +126,16 @@ feedback loops start.
 **Thresholds come from costs, and the review band comes from the margin.** The bar for acting
 is costWrongAct / (costWrongAct + costWrongHold). A wrong allow that is 50 times costlier than
 a wrong ask means acting only above 0.98. The number is derived, logged, and re-fitted; it is
-never a vibe. Around it sits a review band at least a tenth wide: in the decision-hijacking
-study, attacks flipped 12 of 12 decisions whose margin was 0.1 or less and 1 of 468 others. The
-band must also cover the pinned model's own run-to-run spread, which is measured, not assumed,
+never a vibe. It sets the bar for the marginal act, while a promise such as 98% is an average
+over acts, so a 98% promise is not a 49:1 cost policy: acting on a tail whose precision equals
+the cost ratio costs exactly as much as reviewing everything (revised 2026-11-12,
+[risk_controlled_bars.md](../research_notes/Foundations%20review%202026-11/risk_controlled_bars.md)).
+Around it sits a review band at least a tenth wide: in the decision-hijacking
+study, attacks flipped 12 of 12 decisions whose margin was 0.1 or less and 1 of 468 others.
+That attack was not adaptive, so the band is insurance against run-to-run noise and a filter for
+weak attacks, not an injection control (revised 2026-11-12,
+[information_flow_security.md](../research_notes/Foundations%20review%202026-11/information_flow_security.md)).
+The band must also cover the pinned model's own run-to-run spread, which is measured, not assumed,
 and differs by pin. Over 414 repeated pairs jev-1.13 moved a median 0.01 and at most 0.11 (e2e
 T1); on jev-1.14, 11.4% of 924 repeated requests moved more than 0.12 and 5.5% flipped their
 lean (e2e T2). Revised 2026-11-12: this paragraph used to call Jev near-deterministic.
@@ -137,9 +148,9 @@ several signals of one answer. It is wrong for other shapes. On T2's verificatio
 all-of conditions pooled in log-odds lost to one holistic question (AUC 0.992 against 0.998, ECE
 0.198 against 0.082) and saturated at 0 and 1; on T3 the default log-odds pool inverted an
 any-of moderation battery, which at its bar would have published 51 of the 56 posts that needed
-action. An any-of battery takes the `any` combiner, an all-of battery `all` or a combiner learned
-from labels, and one well-written question is often as good as the battery (revised 2026-11-12,
-e2e T2, T3).
+action. An any-of battery takes the `any` combiner, an all-of battery `all`, either optionally
+followed by a Platt fit on labels (revised 2026-11-12, foundations review), and one well-written
+question is often as good as the battery (revised 2026-11-12, e2e T2, T3).
 
 **Numbers and dates are computed in code, never by the model.** This is the most-confirmed
 result in the project. Four tracks of the end-to-end evaluation measured it live on new corpora:
