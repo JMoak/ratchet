@@ -5,203 +5,97 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Signal Orchard · Ratchet Arcade</title>
   <link rel="stylesheet" href="/common.css">
-  <style>
-    :root{--orchard:#267354;--leaf:#dce9cb}
-    .orchard-layout{display:grid;grid-template-columns:280px 1fr;gap:22px;align-items:start}
-    .controls{display:grid;gap:18px}.controls label{display:grid;gap:7px;font-weight:650}
-    .controls .toggle{display:flex;align-items:start;font-size:.9rem}.toggle input{margin-top:4px}
-    input[type=range]{accent-color:var(--orchard);width:100%}select,input[type=number]{font:inherit;padding:10px;border:1px solid #c8d3c5;border-radius:9px;background:#fffdf7}
-    .trees{display:grid;grid-template-columns:repeat(3,1fr);gap:13px}
-    .tree{display:block;width:100%;background:#f2f6e8;border:1px solid #c9dbba;border-radius:16px;padding:18px 9px;cursor:pointer;color:#162e35;transition:transform .15s,background .15s}
-    .tree:hover:not(:disabled){transform:translateY(-4px);background:#e4efd4}.tree:focus-visible{outline:3px solid #267354;outline-offset:3px}
-    .tree:disabled{cursor:wait;opacity:.6}.tree strong,.tree small{display:block}.tree small{margin-top:5px}
-    .tree svg{width:100%;height:125px;display:block}.tree strong{font-size:1.1rem}
-    .orchard-status{min-height:44px;margin:16px 0 0}.orchard-plots{display:grid;grid-template-columns:1fr 1fr;gap:18px}
-    .scouts{display:flex;gap:8px;align-items:flex-end;min-height:105px}.scout{flex:1;text-align:center;font-size:.8rem}
-    .scout-bar{width:100%;background:#7bac70;border-radius:8px 8px 0 0;min-height:2px}.scout span{display:block;margin-top:6px}
-    .plot-svg{display:block;width:100%;height:auto}.plot-svg text{font-family:inherit;fill:#52616a;font-size:11px}
-    .season{display:flex;gap:5px;margin:15px 0}.day{height:9px;flex:1;border-radius:5px;background:#e3e8df}.day.picked{background:#267354}.day.review{background:#c6a963}.day.spoiled{background:#b56551}
-    .explain{font-size:.85rem;line-height:1.55;color:#53636c}.turn-log{list-style:none;padding:0;margin:0;display:grid;gap:8px}
-    .turn-log li{display:flex;justify-content:space-between;gap:16px;padding:10px 0;border-bottom:1px solid #e5e8df;font-size:.9rem}
-    .orchard-actions{display:flex;flex-wrap:wrap;gap:9px}.orchard-section{margin-top:22px}
-    @media(max-width:800px){.orchard-layout{grid-template-columns:1fr}.controls{grid-template-columns:1fr 1fr}.controls .toggle,.controls .explain{grid-column:1/-1}.orchard-plots{grid-template-columns:1fr}}
-    @media(max-width:480px){.controls{grid-template-columns:1fr}.trees{gap:7px}.tree{padding:12px 5px}.tree svg{height:90px}.tree small{font-size:.7rem}}
-  </style>
 </head>
 <body>
 <main class="page">
-<nav class="topbar"><a href="/">← Ratchet Arcade</a><span class="badge">01 · Choose → judge → harvest</span></nav>
-<header class="hero"><p class="eyebrow">A garden with a mind of its own</p><h1>Signal Orchard</h1><p>Guide Pip through a twelve-day harvest. Fill a basket worth 12 points before the season ends, or let the agent choose its own trees.</p></header>
-<div class="orchard-layout"><aside class="panel"><h2>Field kit</h2><form id="settings" class="controls">
-<label>Fruit<select name="fruit"><option value="apple">Apples</option><option value="pear">Pears</option><option value="plum">Plums</option></select></label>
-<label>Judges<select name="strategy"><option value="ensemble">Five seeded scouts</option><option value="solo">One seeded scout</option></select></label>
-<label>Assumed correlation <output id="rho">0.50</output><input name="correlation" type="range" min="0" max="1" step=".05" value=".5"></label>
-<label>Harvest threshold <output id="bar">80%</output><input name="threshold" type="range" min=".5" max="1" step=".01" value=".8"></label>
-<label>Season seed<input name="seed" type="number" min="0" max="1000000" value="712"></label>
-<p class="explain">Play or Step enables reversible game actions. Before that, the engine stays in shadow. Pause to take over. Five scouts apply only to the seeded simulation; live uses one judge.</p>
-</form></aside><div><section class="panel board"><div class="topbar"><h2 id="board-title">Pip's orchard</h2><span id="day" class="badge">Day 1 / 12</span></div>
-<div id="trees" class="trees"></div><div id="season" class="season"></div>
-<p id="status" class="notice" role="status" aria-live="polite">Loading the orchard…</p>
-<div class="metrics"><div class="metric"><strong id="score">0 / 12</strong><span>basket points</span></div><div class="metric"><strong id="fruit">0</strong><span>ripe fruit</span></div><div class="metric"><strong id="stock">12</strong><span>fruit remaining</span></div></div>
-<div class="orchard-actions"><button type="button" id="run" class="button">Play season</button><button type="button" id="stop" class="button secondary" disabled>Pause / take over</button><button type="button" id="agent" class="button secondary">Step</button><button type="button" id="rest" class="button secondary">Rest a day</button></div>
-<p class="explain">Click a tree to harvest it yourself. Ripe fruit +3, unripe fruit −4. A tree holds four fruits; sunshine ripens them faster than rain. Play runs the entire twelve-day season. A reviewed harvest stays untouched while weather advances the day. Pause any time to take over.</p>
-<div class="orchard-actions"><button type="button" id="reset" class="button secondary">Replay season</button><button type="button" id="new" class="button secondary">New season</button></div></section>
-<section class="panel"><h2>What Pip decided</h2><p id="source" class="explain"></p><div id="scouts" class="scouts"></div><ul id="history" class="turn-log"></ul></section></div></div>
-<details class="panel"><summary>Open the real decision ledger</summary><p class="explain">Choice and harvest are separate gates. World labels are for evaluation only. They never become evidence for a future oracle call.</p><button type="button" id="download" class="button secondary">Download JSONL</button><div id="ledger"></div></details><p id="error" class="error" role="alert"></p>
-</main><script type="module">
-import {downloadLedger, escapeHtml, newWorldSeed, request, setModelControlLocked, setupModelControl, setupPlayback, showLedger} from '/common.js';
+<nav class="topbar"><a href="/">← Ratchet Arcade</a><span class="badge">02 · Many voices</span></nav>
+<header class="hero">
+  <p class="eyebrow">Five scouts who make the same mistakes</p>
+  <h1>Signal Orchard</h1>
+  <p class="claim">Pip picks a fruit when the scouts agree it is ripe, and the orchard promises its buyer 95 ripe in 100. Five scouts who share one sensor are worth about one and a third. Count them as five and the pool claims 99% and delivers 90%. Tell the pool how alike they are and it keeps the promise.</p>
+</header>
 
-const $ = id => document.getElementById(id);
-const form = $('settings');
-const game = {commands: [], result: null, busy: false, running: false, automate: false, generation: 0, timer: null};
-let runToken = 0;
-const playback = setupPlayback({
-  board: $('trees'), controls: $('run').parentElement, pause, isRunning: () => game.running,
-});
+<div class="play">
+<div class="stage">
+<section class="panel duel">
+  <div class="duel-head">
+    <h2>One season, pooled two ways</h2>
+    <div class="duel-actions">
+      <button type="button" id="watch" class="secondary">Watch it happen</button>
+      <button type="button" id="new">New world</button>
+    </div>
+  </div>
+  <p id="world-note" class="muted"></p>
+  <div id="arms"></div>
+  <p id="caption" class="caption" role="status" aria-live="polite"></p>
+  <div class="legend">
+    <span><i class="cell ok"></i>picked, ripe</span>
+    <span><i class="cell bad"></i>picked, not ripe</span>
+    <span><i class="cell skip"></i>left on the tree, was ripe</span>
+    <span><i class="cell empty"></i>left on the tree, not ripe</span>
+  </div>
+</section>
 
-function payload(commands) {
-  const f = form.elements;
-  return {
-    commands, fruit: f.fruit.value, strategy: f.strategy.value,
-    seed: Number(f.seed.value), threshold: Number(f.threshold.value),
-    correlation: Number(f.correlation.value), automate: game.automate,
-  };
-}
+<section class="panel results">
+  <h2 id="batch-title">The same duel in many worlds</h2>
+  <p id="headline" class="headline"></p>
+  <div id="batch"></div>
+</section>
 
-function lock() {
-  const {busy, running, result} = game;
-  playback.sync({ running, busy, done: result?.done });
-  setModelControlLocked(busy || running);
-  form.querySelectorAll('input,select').forEach(e => { e.disabled = busy || running; });
-  document.querySelectorAll('[data-tree]').forEach(e => {
-    e.disabled = busy || running || result?.done || Number(e.dataset.stock) === 0;
-  });
-  for (const id of ['agent', 'rest', 'reset', 'new']) {
-    $(id).disabled = busy || running || (result?.done && ['agent', 'rest'].includes(id));
-  }
-  $('run').disabled = busy || running || result?.done;
-  $('run').textContent = result?.turn ? 'Resume season' : 'Play season';
-  $('stop').disabled = !running;
-}
+<section class="panel results">
+  <h2>The whole trade-off</h2>
+  <p class="muted">What the pool claims against what it delivers, for every correlation you could assume.</p>
+  <button type="button" id="sweep" class="secondary">Sweep the assumed correlation</button>
+  <div id="sweep-chart"></div>
+</section>
+</div>
 
-function render() {
-  const result = game.result;
-  const last = result.history.at(-1);
-  const icon = {apple: '🍎', pear: '🍐', plum: '🟣'}[result.fruit];
-  $('day').textContent = result.done ? 'Season complete' : `Day ${result.turn + 1} / 12 · ${result.weather}`;
-  $('trees').innerHTML = result.trees.map(t => `
-    <button type="button" class="tree" data-tree="${t.tree}" data-stock="${t.remaining}">
-      <span style="font-size:64px;display:block">🌳</span>
-      <span style="font-size:26px;display:block;min-height:40px">${result.position === t.tree ? '🧑‍🌾' : icon.repeat(t.remaining)}</span>
-      <strong>${escapeHtml(t.name)}</strong><small>${escapeHtml(t.clue)} · ${t.colorCoverage}% color</small>
-      <small>${escapeHtml(t.firmness)}</small><small>${t.remaining} fruit · click to harvest</small>
-    </button>`).join('') || `<p style="grid-column:1/-1;font-size:26px">${result.won ? '🧺 Harvest goal reached!' : '🌙 Season over. Try another strategy.'}</p>`;
-  $('season').innerHTML = Array.from({length: 12}, (_, i) => {
-    const turn = result.history[i];
-    const style = turn ? (turn.actual === 'act' ? (turn.truth ? 'picked' : 'spoiled') : 'review') : '';
-    return `<span class="day ${style}" title="Day ${i + 1}"></span>`;
-  }).join('');
-  $('score').textContent = `${result.score} / ${result.goal}`;
-  $('fruit').textContent = result.harvested;
-  $('stock').textContent = result.stock.reduce((a, b) => a + b, 0);
-  $('status').textContent = result.done
-    ? `Season complete: ${result.score} points. ${result.won ? 'Your basket met the goal!' : 'The goal was 12. Replay or try a new season.'}`
-    : last?.event || 'Pip is at the shed. Play starts an automatic season; you can pause and take over.';
-  $('source').textContent = result.judgeSource === 'live'
-    ? 'Live oracle chooses a destination and judges the observed fruit. Code controls actions and weather.'
-    : 'Offline game: the gardener reads visible clues; five simulated scouts share a noisy ripeness sensor.';
-  $('scouts').innerHTML = result.judgeSource === 'live'
-    ? '<p class="muted">See the actual live answer in the ledger.</p>'
-    : last?.votes.length ? last.votes.map((p, i) => `
-      <div class="scout"><div class="scout-bar" style="height:${Math.round(p * 80)}px"></div>
-      <span>${Math.round(p * 100)}%</span><span>Mock scout ${i + 1}</span></div>`).join('')
-    : '<p class="muted">Pip rested; no harvest judgment was needed.</p>';
-  $('history').innerHTML = result.history.slice().reverse().map(t => `
-    <li><span>Day ${t.turn} · ${escapeHtml(t.event)}</span>
-    <span>${t.points > 0 ? '+' : ''}${t.points} · ${t.score} points</span></li>`).join('');
-  showLedger($('ledger'), result.ledger);
-  lock();
-}
+<aside class="side">
+  <section class="panel">
+    <h2>Your levers</h2>
+    <form id="levers" class="levers" data-seed="18">
+      <label>Scouts <output data-for="scouts"></output>
+        <input name="scouts" type="range" min="1" max="7" step="1" value="5">
+        <small>Every scout looks at every fruit, and every look is paid for.</small></label>
+      <label>Families <output data-for="families"></output>
+        <input name="families" type="range" min="1" max="3" step="1" value="1">
+        <small>Scouts of one family share a sensor. Each family has its own.</small></label>
+      <label>Assumed correlation within a family <output data-for="assumed"></output>
+        <input name="assumed" type="range" min="0" max="0.95" step="0.05" value="0.7">
+        <small>What you tell the pool about how alike one family's errors are. The truth here is 0.7.</small></label>
+      <label>Picking bar <output data-for="bar" data-format="pct"></output>
+        <input name="bar" type="range" min="0.5" max="0.99" step="0.01" value="0.95">
+        <small>How sure the pool must be before Pip picks.</small></label>
+    </form>
+  </section>
+  <section class="panel results">
+    <h2>Target</h2>
+    <p id="target-text"></p>
+    <ul id="checks" class="checks"></ul>
+    <p id="target-status" class="target-status" role="status"></p>
+  </section>
+</aside>
+</div>
 
-async function refresh(command) {
-  if (game.busy) return false;
-  const token = game.generation;
-  const commands = command === undefined ? [...game.commands] : [...game.commands, command];
-  game.busy = true;
-  lock();
-  $('error').textContent = '';
-  try {
-    const next = await request('orchard', payload(commands));
-    if (token !== game.generation) return false;
-    game.commands = commands;
-    game.result = next;
-    render();
-    return true;
-  } catch (error) {
-    if (token === game.generation) $('error').textContent = error.message;
-    return false;
-  } finally {
-    game.busy = false;
-    lock();
-  }
-}
+<details class="panel how"><summary>How this world works</summary>
+  <p>Each scout takes one noisy sugar reading and states an honest probability that the fruit is ripe; alone, a scout is right about four times in five. Scouts of one family carry the same sensor, so most of their error is shared: their mistakes correlate at 0.7. Families are independent of each other.</p>
+  <p>Both arms ask the same scouts about the same fruit through a real ensemble gate. The first pools them as independent. The second passes the engine a correlation for each pair, which shrinks the pooled evidence to what is independent; with the true value the pool's stated confidence matches what it delivers.</p>
+  <p>What to look for: more scouts of one family buy almost nothing, a second family buys a lot, and assuming too little correlation picks more fruit while quietly breaking the promise.</p>
+</details>
+<details class="panel"><summary>Open the decision ledger for this world</summary>
+  <p id="source" class="muted"></p>
+  <p><label class="muted">Judge <select id="model"><option value="offline">Seeded simulation</option></select></label>
+  <span id="model-status" class="muted"></span></p>
+  <p class="muted">Each row is one gate decision of the engine's arm, with the world's truth as its label. Truth labels the ledger and never enters a later state.</p>
+  <p><button type="button" id="download" class="secondary">Download JSONL</button></p>
+  <div id="ledger"></div>
+</details>
+<p id="error" class="error" role="alert"></p>
+</main>
+<script type="module">
+import { mount } from "/duel.js";
 
-function pause() {
-  game.running = false;
-  runToken++;
-  clearTimeout(game.timer);
-  game.timer = null;
-  lock();
-}
-
-async function tick(token) {
-  if (!game.running || token !== runToken) return;
-  const advanced = await refresh('agent');
-  if (!game.running || token !== runToken) return;
-  if (!advanced || game.result?.done) {
-    pause();
-    return;
-  }
-  game.timer = setTimeout(() => tick(token), playback.delay());
-}
-
-async function reset(newSeed = false) {
-  pause();
-  game.generation++;
-  game.commands = [];
-  game.result = null;
-  game.automate = false;
-  if (newSeed) form.elements.seed.value = newWorldSeed(Number(form.elements.seed.value));
-  await refresh();
-}
-
-$('trees').onclick = event => {
-  const tree = event.target.closest('[data-tree]');
-  if (tree && !game.busy && !game.running) refresh({tree: Number(tree.dataset.tree), manual: true});
-};
-$('run').onclick = () => {
-  playback.started();
-  game.automate = true;
-  game.running = true;
-  lock();
-  tick(++runToken);
-};
-$('stop').onclick = () => {
-  pause();
-  $('status').textContent = 'Paused. Choose a tree, rest, step, or resume the season.';
-};
-$('agent').onclick = () => { game.automate = true; refresh('agent'); };
-$('rest').onclick = () => refresh('rest');
-$('reset').onclick = () => reset();
-$('new').onclick = () => reset(true);
-form.onsubmit = event => event.preventDefault();
-form.oninput = () => {
-  $('rho').textContent = Number(form.elements.correlation.value).toFixed(2);
-  $('bar').textContent = `${Math.round(Number(form.elements.threshold.value) * 100)}%`;
-};
-form.onchange = () => reset();
-$('download').onclick = () => game.result && downloadLedger(game.result.ledger.rows);
-form.elements.seed.value = newWorldSeed();
-setupModelControl(() => reset());
-refresh();
-</script></body></html>
+mount({ game: "orchard" });
+</script>
+</body>
+</html>

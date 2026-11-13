@@ -10,16 +10,39 @@ const post = (path: string, value: unknown, extra: Record<string, string> = {}) 
   });
 
 describe("local arcade", () => {
-  it("serves all four applets and runs each default game in shadow", async () => {
+  it("serves all four games and answers each with its duel already run", async () => {
     for (const game of ["orchard", "bridge", "parcels", "treasure"]) {
       const page = await handleRequest(new Request(`${local}/${game}`));
       expect(page.status).toBe(200);
       expect(page.headers.get("content-type")).toContain("text/html");
-      expect(await page.text()).toContain('href="/common.css"');
-      const result = await handleRequest(post(`/api/${game}`, {}));
+      const html = await page.text();
+      expect(html).toContain('href="/common.css"');
+      expect(html).toContain(`mount({ game: "${game}" })`);
+      const result = await handleRequest(post(`/api/${game}`, { worlds: 10 }));
       expect(result.status).toBe(200);
-      expect(await result.json()).toMatchObject({ mode: "shadow" });
+      const body = (await result.json()) as {
+        world: { arms: { id: string; cells: unknown[] }[] };
+        batch: { worlds: number; headline: string; rows: unknown[] };
+        target: { checks: unknown[] };
+        ledger: { decisions: unknown[] };
+      };
+      expect(body).toMatchObject({
+        game,
+        judgeSource: "seeded simulation",
+        backend: { kind: "offline" },
+      });
+      expect(body.world.arms.map((arm) => arm.id)).toEqual(["baseline", "engine"]);
+      expect(body.world.arms.every((arm) => arm.cells.length > 0)).toBe(true);
+      expect(body.batch.worlds).toBe(10);
+      expect(body.batch.headline).toContain("→");
+      expect(body.batch.rows.length).toBeGreaterThan(2);
+      expect(body.target.checks.length).toBeGreaterThan(1);
+      expect(body.ledger.decisions.length).toBeGreaterThan(0);
     }
+    const script = await handleRequest(new Request(`${local}/duel.js`));
+    expect(script.status).toBe(200);
+    expect(script.headers.get("content-type")).toContain("text/javascript");
+    expect((await handleRequest(new Request(`${local}/common.js`))).status).toBe(404);
   });
 
   it("only exposes the explicit static routes", async () => {

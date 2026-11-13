@@ -117,59 +117,8 @@ label {
   font-weight: 750;
   color: var(--green);
 }
-.model-control {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 12px 20px;
-  padding: 14px 0;
-  border-bottom: 1px solid var(--line);
-}
-.model-control label {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 14px;
-  font-weight: 650;
-}
 .hero {
   padding: 44px 0 30px;
-}
-.playback-bar {
-  position: sticky;
-  top: 8px;
-  z-index: 5;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 10px 18px;
-  padding: 12px;
-  margin: 12px 0 18px;
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  background: var(--card);
-  box-shadow: 0 4px 14px #203c4510;
-  scroll-margin-top: 8px;
-}
-.playback-bar .playback-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin: 0;
-}
-.playback-options,
-.playback-options label {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-  font-size: 13px;
-}
-.playback-note {
-  flex-basis: 100%;
-  margin: 0;
-  color: var(--muted);
-  font-size: 12px;
 }
 h1 {
   font-size: clamp(34px, 5vw, 64px);
@@ -309,32 +258,6 @@ footer {
 svg {
   max-width: 100%;
 }
-.focus-play .hero,
-.focus-play .game-settings,
-.focus-play .orchard-layout > aside,
-.focus-play .survey-layout > aside {
-  display: none;
-}
-.focus-play .orchard-layout,
-.focus-play .survey-layout {
-  grid-template-columns: 1fr;
-}
-.focus-play .bridge-board svg {
-  max-height: 260px;
-}
-.focus-play .map .site {
-  min-height: 96px;
-  padding: 8px;
-}
-.focus-play .metrics {
-  margin: 12px 0;
-}
-.focus-play .metric {
-  padding: 10px 14px;
-}
-.focus-play .metric strong {
-  font-size: 25px;
-}
 @media (max-width: 600px) {
   .page {
     width: calc(100% - 28px);
@@ -351,10 +274,6 @@ svg {
   .controls {
     align-items: stretch;
   }
-  .playback-bar {
-    /* Keep a wrapped toolbar from covering most of a small game board. */
-    position: static;
-  }
 }
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -366,5 +285,304 @@ svg {
     transition: none !important;
     /* biome-ignore lint/complexity/noImportantStyles: keep reduced-motion scrolling immediate. */
     scroll-behavior: auto !important;
+  }
+}
+
+/* The duel pages: one world run two ways, then five hundred. */
+.claim {
+  font-size: 1.15rem;
+  max-width: 760px;
+  line-height: 1.55;
+}
+.duel-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.duel-head h2 {
+  margin: 0;
+}
+.duel-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.arm {
+  padding: 14px 0;
+  border-top: 1px solid var(--line);
+}
+.arm-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 14px;
+  margin-bottom: 10px;
+}
+.verdict {
+  font-size: 14px;
+  padding: 3px 9px;
+  border-radius: 6px;
+  background: #e8eee8;
+}
+.verdict.good {
+  background: #d9ecd9;
+  color: #1c5a3f;
+}
+.verdict.safe {
+  background: #f1e7c8;
+  color: #6c5413;
+}
+.verdict.bad {
+  background: #f3d9cf;
+  color: #8a3418;
+}
+.strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.cell {
+  display: inline-grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: 2px solid transparent;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fffefa;
+  background: #c9d2cc;
+  transition: opacity 0.12s;
+}
+.strip.dense {
+  gap: 1px;
+}
+.strip.dense .cell {
+  width: 5px;
+  height: 30px;
+  border-radius: 1px;
+  border-width: 0;
+  font-size: 0;
+}
+.cell.hidden {
+  opacity: 0;
+}
+.cell.ok {
+  background: #3f8a63;
+}
+.cell.bad {
+  background: #c2512e;
+}
+.cell.held {
+  background: #d3ad45;
+  color: #3d2f08;
+}
+.cell.alt {
+  background: #8fb0c4;
+}
+.cell.skip {
+  background: #dfe4dd;
+  color: #61757a;
+}
+.cell.empty {
+  background: transparent;
+  border: 2px dashed #c9d2cc;
+}
+.strip.dense .cell.empty {
+  background: #eef1ec;
+}
+.cell.mark {
+  outline: 2px solid var(--ink);
+  outline-offset: 1px;
+}
+.caption {
+  min-height: 3.2em;
+  margin: 12px 0 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 8px;
+}
+.legend .cell {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  margin-right: 6px;
+  vertical-align: -2px;
+  display: inline-block;
+}
+.headline {
+  font-size: 1.6rem;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  margin: 4px 0 16px;
+}
+table.batch th[scope="row"] {
+  font-weight: 500;
+  text-align: left;
+}
+table.batch td {
+  min-width: 150px;
+}
+table.batch .figure {
+  display: inline-block;
+  min-width: 56px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+table.batch .bar {
+  display: block;
+  height: 6px;
+  border-radius: 3px;
+  margin-top: 4px;
+  background: #b9c4be;
+}
+table.batch .bar.eng {
+  background: var(--green);
+}
+table.batch td.won .figure {
+  color: var(--green);
+}
+table.batch td.lost .figure {
+  color: var(--orange);
+}
+.levers {
+  display: grid;
+  gap: 16px;
+}
+.levers label {
+  display: grid;
+  gap: 4px;
+  font-weight: 650;
+}
+.levers label small {
+  font-weight: 400;
+  color: var(--muted);
+  line-height: 1.45;
+}
+.levers label.toggle {
+  grid-template-columns: auto 1fr;
+  align-items: start;
+  column-gap: 10px;
+}
+.levers label.toggle small {
+  grid-column: 2;
+}
+.levers output {
+  font-variant-numeric: tabular-nums;
+  color: var(--green);
+}
+.checks {
+  list-style: none;
+  padding: 0;
+  margin: 12px 0;
+  display: grid;
+  gap: 8px;
+}
+.checks li {
+  display: grid;
+  gap: 2px;
+  padding: 10px 12px;
+  border-radius: 9px;
+  background: #f3ece4;
+  font-variant-numeric: tabular-nums;
+}
+.checks li.met {
+  background: #dfeedd;
+}
+.checks li small {
+  color: var(--muted);
+}
+.target-status {
+  font-size: 14px;
+  color: var(--muted);
+}
+.target-status.met {
+  color: var(--green);
+  font-weight: 650;
+}
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  font-size: 13px;
+  margin: 12px 0 4px;
+}
+.chart-legend i {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  margin-right: 6px;
+  vertical-align: -1px;
+}
+svg.sweep {
+  display: block;
+  width: 100%;
+  max-width: 720px;
+  height: auto;
+}
+svg.sweep text {
+  font-size: 11px;
+  fill: #61757a;
+  font-family: inherit;
+}
+body.busy .duel,
+body.busy .results {
+  opacity: 0.6;
+}
+.how p {
+  line-height: 1.65;
+  max-width: 760px;
+}
+
+.play {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 20px;
+  align-items: start;
+}
+.side {
+  position: sticky;
+  top: 16px;
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
+}
+.side .panel {
+  padding: 20px;
+}
+.side h2 {
+  margin-top: 0;
+  font-size: 1.15rem;
+}
+.levers select {
+  width: 100%;
+}
+.levers input[type="text"] {
+  font: inherit;
+  padding: 9px;
+  border: 1px solid #b8c5c0;
+  border-radius: 8px;
+  background: var(--card);
+  color: var(--ink);
+  width: 100%;
+}
+@media (max-width: 920px) {
+  .play {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .side {
+    position: static;
+    max-height: none;
   }
 }

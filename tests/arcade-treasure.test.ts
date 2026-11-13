@@ -1,243 +1,141 @@
 import { describe, expect, it } from "vitest";
 import { play } from "../examples/arcade/treasure.ts";
-import { judgeVerdictFrom, type Oracle, pickVerdictFrom } from "../src/index.ts";
+import { type Oracle, resolvePlan } from "../src/index.ts";
+
+type Result = Awaited<ReturnType<typeof play>>;
+const row = (r: Result, label: string) => {
+  const found = r.batch.rows.find((x) => x.label === label);
+  if (!found) throw new Error(`no batch row "${label}"`);
+  return found;
+};
+const WORSE = "Scouts worse than the promise that were promoted";
+const GOOD = "Scouts as good as the promise that were promoted";
+const PITS = "Empty pits nobody saw, per expedition";
+const CAUGHT = "Scouts that slipped and were sent back";
+const WRONGLY = "Good Scouts sent back while still good";
+
+/** The first dig Scout made alone in an arm, or -1. */
+const firstAlone = (r: Result, arm: number): number =>
+  (r.world.arms[arm]?.cells ?? []).findIndex((c) => c.kind === "ok" || c.kind === "bad");
+
+const offline: Oracle = {
+  id: "test-offline",
+  decide: async () => {
+    throw new Error("detector offline");
+  },
+};
 
 describe("Treasure Survey", () => {
-  it("starts an interactive expedition with hidden sites and permits manual survey then dig", async () => {
-    const start = await play({ phase: "expedition", commands: [] });
-    expect(start.expedition).toEqual([]);
-    expect(start.map.every((site) => site.truth === null)).toBe(true);
-    const result = await play({
-      phase: "expedition",
-      commands: [
-        { site: 0, move: "survey" },
-        { site: 0, move: "dig" },
-      ],
-    });
-    expect(result.mode).toBe("shadow");
-    expect(result.energy).toBe(20);
-    expect(result.shovels).toBe(5);
-    expect(result.map[0]?.dug).toBe(true);
-    expect(result.map.slice(1).every((site) => site.truth === null)).toBe(true);
-    expect(result.fit).toEqual(start.fit);
+  it("opens on the duel: looking until it looks good promotes the bad Scouts, the planned test does not", async () => {
+    const r = await play({});
+    expect(r.settings).toEqual({ promise: 0.95, allow: 0, audit: 0.2, demotion: "window" });
+    expect(r.plan).toEqual({ sampleSize: 59, maxErrors: 0, confidence: 0.95 });
+    // A point estimate read after every dig promotes almost anything.
+    expect(row(r, WORSE).baseline).toBeGreaterThan(0.9);
+    expect(row(r, GOOD).baseline).toBeGreaterThan(0.95);
+    // One planned exact test holds false promotions near its 5%, and pays for it in power.
+    expect(row(r, WORSE).engine).toBeLessThan(0.08);
+    expect(row(r, GOOD).engine).toBeGreaterThan(0.3);
+    expect(row(r, GOOD).engine).toBeLessThan(0.75);
+    expect(row(r, PITS).engine).toBeLessThan(row(r, PITS).baseline / 5);
+    // Nothing watches the first arm, so nothing is ever sent back.
+    expect(row(r, CAUGHT).baseline).toBe(0);
+    expect(r.batch.worlds).toBe(204);
+    expect(r.target.met).toBe(false);
   });
 
-  it("surveys after a reviewed dig, continues exploration, and lets a human finish it", async () => {
-    const states: string[] = [];
-    const oracle: Oracle = {
-      id: "test-explorer",
-      async decide(state, questions) {
-        states.push(state);
-        return questions.map((q) => ({
-          verdict:
-            q.kind === "pick"
-              ? pickVerdictFrom(
-                  q,
-                  q.options.map((option) => (option === "0" ? 0.88 : 0.01)),
-                )
-              : q.kind === "judge"
-                ? judgeVerdictFrom(q, 0.6)
-                : (() => {
-                    throw new Error("Unexpected rate");
-                  })(),
-          oracle: "test-explorer",
-          at: new Date().toISOString(),
-          cost: 0,
-          latencyMs: 0,
-        }));
-      },
-    };
-    const reviewed = await play(
-      { phase: "expedition", commands: ["agent"], automate: true },
-      oracle,
+  it("shows a bad Scout promoted at dig 20 by the first arm and never by the engine", async () => {
+    const r = await play({ seed: 4, worlds: 12 });
+    expect(r.world.note).toContain("right 91.0% of the time, against a promise of 95%");
+    const [peeked, earned] = r.world.arms;
+    expect(peeked?.cells).toHaveLength(300);
+    expect(earned?.cells).toHaveLength(300);
+    expect(peeked?.summary).toMatch(/^Promoted after dig 20, .* Scout dug 280 alone, \d+ of them/);
+    expect(peeked?.verdict).toBe("bad");
+    expect(earned?.summary).toBe(
+      "Never promoted: the planned sample of 59 digs held too many wrong ones.",
     );
-    expect(reviewed.position).toBe(0);
-    expect(reviewed.paused).toBe(false);
-    expect(reviewed.shovels).toBe(6);
-    expect(reviewed.map[0]).toMatchObject({ visited: true, dug: false, truth: null });
-    const manual = await play(
-      { phase: "expedition", commands: ["agent", { site: 0, move: "dig" }], automate: true },
-      oracle,
-    );
-    expect(manual.map[0]?.dug).toBe(true);
-    expect(manual.shovels).toBe(5);
-    expect(manual.fit).toEqual(reviewed.fit);
-    expect(states.every((state) => !/"truth"|"pYes"|"score"|"probability"/.test(state))).toBe(true);
-    const shadow = await play({ phase: "expedition", commands: ["agent"] }, oracle);
-    expect(shadow.position).toBe(-1);
-    expect(shadow.energy).toBe(24);
+    expect(firstAlone(r, 1)).toBe(-1);
+    // Supervised to the end: every one of the 300 proposals went through the gate in shadow.
+    expect(r.ledger.decisions).toHaveLength(300);
+    expect(r.ledger.decisions.every((d) => d.mode === "shadow" && d.truth !== null)).toBe(true);
+    const again = await play({ seed: 4, worlds: 12 });
+    expect(again.world).toEqual(r.world);
+    expect(again.batch).toEqual(r.batch);
   });
 
-  it.each(["uncertain", "failed"] as const)(
-    "finishes with %s destinations by surveying different sites without digging",
-    async (response) => {
-      const states: string[] = [];
-      const oracle: Oracle = {
-        id: "held-explorer",
-        async decide(state, questions) {
-          if (questions[0]?.kind === "pick") states.push(state);
-          if (response === "failed") throw new Error("unavailable");
-          return questions.map((q) => ({
-            verdict:
-              q.kind === "pick"
-                ? pickVerdictFrom(
-                    q,
-                    q.options.map(() => 1 / q.options.length),
-                  )
-                : q.kind === "judge"
-                  ? judgeVerdictFrom(q, 0.5)
-                  : (() => {
-                      throw new Error("rate");
-                    })(),
-            oracle: "held-explorer",
-            at: "2026-10-20T00:00:00Z",
-            latencyMs: 0,
-            cost: 0,
-          }));
-        },
-      };
-      const result = await play(
-        {
-          phase: "expedition",
-          commands: Array(18).fill("agent"),
-          automate: true,
-        },
-        oracle,
-      );
-      expect(result.done).toBe(true);
-      expect(result.turns).toBeLessThanOrEqual(18);
-      expect(result.paused).toBe(false);
-      expect(result.shovels).toBe(6);
-      expect(result.found + result.empty).toBe(0);
-      expect(result.visited.length).toBeGreaterThan(1);
-      expect(result.map.every((site) => !site.dug && site.truth === null)).toBe(true);
-      expect(result.ledger.decisions.every((row) => row.actual === "review")).toBe(true);
-      expect(result.expedition.every((turn) => turn.actor === "code" && !turn.dug)).toBe(true);
-      expect(new Set(states).size).toBe(states.length);
-      for (let index = 1; index < states.length; index++) {
-        expect(JSON.parse(states[index] ?? "{}").energy).toBeLessThan(
-          JSON.parse(states[index - 1] ?? "{}").energy,
-        );
+  it("never lets Scout dig alone before the planned sample is complete and clean", async () => {
+    for (const allow of [0, 1]) {
+      const size = resolvePlan({ target: 0.95, maxErrors: allow }).sampleSize;
+      for (let seed = 1; seed <= 10; seed++) {
+        const r = await play({ seed, allow, worlds: 12 });
+        const first = firstAlone(r, 1);
+        if (first < 0) continue;
+        expect(first).toBeGreaterThanOrEqual(size);
+        // The planned digs before it held no more wrong ones than the plan allows.
+        const wrong = (r.world.arms[1]?.cells ?? [])
+          .slice(0, size)
+          .filter((c) => c.kind === "held").length;
+        expect(wrong).toBeLessThanOrEqual(allow);
       }
-    },
-  );
-
-  it("finishes different seeded routes and reproduces a partial expedition exactly", async () => {
-    const commands = Array(18).fill("agent");
-    const routes = new Set<string>();
-    for (const seed of [0, 1, 2, 46, 64, 712, 713, 9001]) {
-      const input = { seed, phase: "expedition", commands, automate: true };
-      const first = await play(input);
-      const replay = await play(input);
-      const prefix = await play({ ...input, commands: commands.slice(0, 3) });
-      expect(first.done).toBe(true);
-      expect(first.expedition).toEqual(replay.expedition);
-      expect(first.expedition.slice(0, prefix.expedition.length)).toEqual(prefix.expedition);
-      expect(first.fit).toEqual(prefix.fit);
-      expect(new Set(first.visited).size).toBe(first.visited.length);
-      routes.add(JSON.stringify(first.visited));
-    }
-    expect(routes.size).toBeGreaterThan(1);
-  });
-
-  it("ends on return to camp and does not apply later commands", async () => {
-    const result = await play({
-      phase: "expedition",
-      commands: ["camp", { site: 0, move: "dig" }],
-    });
-    expect(result.done).toBe(true);
-    expect(result.expedition).toEqual([]);
-    expect(result.shovels).toBe(6);
-  });
-  it("collects every practice label in shadow and withholds expedition outcomes", async () => {
-    const result = await play({ automate: true });
-    expect(result.practice).toHaveLength(12);
-    expect(result.expedition).toEqual([]);
-    expect(result.fit.sourceCount).toBe(12);
-    expect(result.fit.sourceModes).toEqual(["shadow"]);
-    expect(result.score).toBe(0);
-    expect(result.ledger.decisions.every((row) => row.actual === "review")).toBe(true);
-    expect(result.ledger.decisions.every((row) => typeof row.truth === "boolean")).toBe(true);
-    expect(result.ledger.rows.every((row) => !row.state?.includes('"truth"'))).toBe(true);
-  });
-
-  it("freezes a practice-only fit before labelling twelve distinct expedition sites", async () => {
-    const practice = await play({ seed: 64 });
-    const expedition = await play({ seed: 64, phase: "expedition" });
-    expect(expedition.fit).toEqual(practice.fit);
-    expect(expedition.practice).toEqual(practice.practice);
-    expect(expedition.expedition).toHaveLength(12);
-    expect(expedition.ledger.decisions).toHaveLength(24);
-    const heldoutRows = expedition.ledger.rows.filter(
-      (row) => row.gateId === "treasure.expedition",
-    );
-    expect(heldoutRows).toHaveLength(12);
-    expect(
-      heldoutRows.every((row) => !expedition.fit.sourceStateHashes.includes(row.stateHash)),
-    ).toBe(true);
-    expect(expedition.score).toBe(0);
-    expect(expedition.expedition.every((site) => site.actual === "review")).toBe(true);
-  });
-
-  it("uses actual gate actions for the reversible toy score and replays deterministically", async () => {
-    const input = { phase: "expedition", automate: true, threshold: 0.5 };
-    const first = await play(input);
-    const replay = await play(input);
-    expect(first.expedition).toEqual(replay.expedition);
-    expect(first.fit).toEqual(replay.fit);
-    expect(first.found + first.empty).toBeGreaterThan(0);
-    expect(first.score).toBe(
-      first.expedition.reduce(
-        (score, site) => score + (site.actual === "act" ? (site.truth ? 5 : -8) : 0),
-        0,
-      ),
-    );
-    expect(first.practice.every((site) => site.actual === "review")).toBe(true);
-  });
-
-  it("changes compass claims without changing world labels", async () => {
-    const honest = await play({});
-    const bold = await play({ compass: "bold" });
-    expect(honest.practice.map((site) => site.truth)).toEqual(
-      bold.practice.map((site) => site.truth),
-    );
-    expect(honest.practice.map((site) => site.probability)).not.toEqual(
-      bold.practice.map((site) => site.probability),
-    );
-    expect(honest.bins.reduce((n, bin) => n + bin.n, 0)).toBe(12);
-  });
-
-  it("reports support and accuracy at the suggested selectable threshold", async () => {
-    for (let seed = 0; seed < 30; seed++) {
-      const result = await play({ seed });
-      const threshold = result.fit.suggestedThreshold;
-      if (threshold === null) continue;
-      const eligible = result.practice.filter((site) => site.probability >= threshold);
-      expect(threshold).toBeGreaterThanOrEqual(0.5);
-      expect(result.fit.support).toBe(eligible.length);
-      expect(result.fit.accuracy).toBe(
-        eligible.filter((site) => site.truth).length / eligible.length,
-      );
-      expect(result.fit.support).toBeGreaterThanOrEqual(3);
-      expect(result.fit.accuracy).toBeGreaterThanOrEqual(result.fit.target);
     }
   });
 
-  it("gives different terrains distinct seeded worlds", async () => {
-    const coast = await play({ terrain: "coast" });
-    const canyon = await play({ terrain: "canyon" });
-    expect(coast.practice).not.toEqual(canyon.practice);
+  it("cannot send a Scout back without audits, and sends back more with more", async () => {
+    const none = await play({ audit: 0, worlds: 102 });
+    expect(row(none, CAUGHT).engine).toBe(0);
+    expect(row(none, WRONGLY).engine).toBe(0);
+    const some = await play({ audit: 0.3, worlds: 102 });
+    expect(row(some, CAUGHT).engine).toBeGreaterThan(0.3);
+    // An audited dig is not a dig alone.
+    expect(row(some, "Digs a good Scout did alone").engine).toBeLessThan(
+      row(none, "Digs a good Scout did alone").engine,
+    );
+    expect(row(some, PITS).engine).toBeLessThan(row(none, PITS).engine);
   });
 
-  it.each([
-    { phase: "training-and-testing-together" },
-    { threshold: 0.4 },
-    { seed: -1 },
-    { seed: 1.5 },
-    { terrain: "moon" },
-    { compass: "magic" },
-    { automate: 1 },
-  ])("rejects invalid controls: %j", async (input) => {
-    await expect(play(input)).rejects.toThrow();
+  it("trades the demotion rules as the engine's tables do", async () => {
+    const run = (demotion: string) => play({ demotion, audit: 0.2, worlds: 102 });
+    const [detector, first] = [await run("detector"), await run("first-error")];
+    // First-error is the most cautious: fewest unseen pits, most good Scouts sent back.
+    expect(row(first, PITS).engine).toBeLessThan(row(detector, PITS).engine);
+    expect(row(first, WRONGLY).engine).toBeGreaterThan(row(detector, WRONGLY).engine + 0.05);
+    // The detector controls false alarms: it sends back almost no Scout that is still good.
+    expect(row(detector, WRONGLY).engine).toBeLessThan(0.03);
+    // The rule never touches promotion.
+    expect(row(first, WORSE).engine).toBe(row(detector, WORSE).engine);
+    expect(row(first, GOOD).engine).toBe(row(detector, GOOD).engine);
+  });
+
+  it("passes more good Scouts when the sample may hold a wrong dig, with a longer sample", async () => {
+    const zero = await play({ worlds: 102 });
+    const one = await play({ allow: 1, worlds: 102 });
+    expect(one.plan.sampleSize).toBeGreaterThan(zero.plan.sampleSize);
+    expect(row(one, GOOD).engine).toBeGreaterThan(row(zero, GOOD).engine + 0.08);
+    expect(row(one, WORSE).engine).toBeLessThan(0.1);
+  });
+
+  it("has a target the defaults miss and a light audit with the first-error rule meets", async () => {
+    expect((await play({})).target.checks.map((c) => c.met)).toEqual([true, false, false]);
+    expect((await play({ demotion: "first-error", audit: 0.1 })).target.met).toBe(true);
+  });
+
+  it("keeps Scout supervised when the judge is unavailable", async () => {
+    const r = await play({ seed: 9, worlds: 12 }, offline);
+    expect(firstAlone(r, 1)).toBe(-1);
+    expect(r.ledger.decisions.every((d) => d.failedOpen && d.mode === "shadow")).toBe(true);
+  });
+
+  it("rejects settings outside the levers' ranges", async () => {
+    for (const input of [
+      { promise: 0.93 },
+      { promise: "0.95" },
+      { allow: 3 },
+      { audit: 0.6 },
+      { demotion: "never" },
+      { sweep: 0 },
+    ]) {
+      await expect(play(input)).rejects.toThrow();
+    }
   });
 });

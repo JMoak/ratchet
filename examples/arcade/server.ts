@@ -20,7 +20,7 @@ const files: Record<string, string> = {
   "/parcels": "parcels.html",
   "/treasure": "treasure.html",
   "/common.css": "common.css",
-  "/common.js": "common.js",
+  "/duel.js": "duel.js",
 };
 const headers = {
   "Cache-Control": "no-store",

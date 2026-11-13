@@ -1,238 +1,102 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Treasure Survey · Ratchet Arcade</title>
   <link rel="stylesheet" href="/common.css">
-  <style>
-    .survey-layout{display:grid;grid-template-columns:285px 1fr;gap:22px;align-items:start}
-    .survey-controls{display:grid;gap:18px}.survey-controls label{display:grid;gap:7px;font-weight:650}
-    .survey-controls .toggle{display:flex;align-items:start;font-size:.9rem}.toggle input{margin-top:4px}
-    .survey-controls input[type=range]{width:100%;accent-color:#71588b}.survey-controls select,.survey-controls input[type=number]{width:100%}
-    .map{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:18px;background:#f0ead9;border-radius:14px;position:relative}
-    .site{border:1px solid #d7c9a8;border-radius:10px;background:#fffcf0;min-height:115px;padding:12px 7px;text-align:center;position:relative}
-    .site.selected{box-shadow:inset 0 0 0 2px #8e76a5;background:#f2ebf6}.site .symbol{font-size:24px;line-height:1.5;color:#8d6935}.site strong,.site small{display:block}
-    .site small{font-size:11px;margin-top:4px;color:#657071}.site.hidden{background:repeating-linear-gradient(45deg,#eee7d5,#eee7d5 8px,#f3eddd 8px,#f3eddd 16px)}
-    .site.hidden .symbol{color:#ae9e7b}.survey-explain{font-size:.85rem;color:#657071;line-height:1.6}
-    .survey-actions{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0}.survey-actions .button{background:#6c527e;border-color:#6c527e}.survey-actions .secondary{background:transparent;color:#6c527e}
-    .survey-bottom{display:grid;grid-template-columns:1fr 1fr;gap:20px}.calibration svg{display:block;width:100%;height:auto}.calibration text{font-family:inherit;font-size:11px;fill:#657071}
-    .map-title{display:flex;justify-content:space-between;align-items:center;gap:12px}.map-title h2{margin-bottom:12px}
-    .survey-guide{padding-left:20px;line-height:1.7}.survey-guide li{margin-bottom:10px}
-    @media(max-width:850px){.survey-layout{grid-template-columns:1fr}.survey-controls{grid-template-columns:1fr 1fr}.survey-controls .toggle,.survey-controls .survey-explain{grid-column:1/-1}}
-    @media(max-width:580px){.survey-controls,.survey-bottom{grid-template-columns:1fr}.map{grid-template-columns:repeat(3,1fr);padding:10px;gap:7px}.site{min-height:106px}.map-title{align-items:start;flex-direction:column}}
-
-.site{cursor:pointer;font:inherit;color:#254039}.site:disabled{cursor:default}.site .traveler{font-size:30px}.site.chosen{outline:3px solid #745384;outline-offset:2px}.site.dug{background:#dfebc9}.trail{max-height:180px;overflow:auto;padding-left:20px}.trail li{padding:7px}.map .site{min-height:145px}.kit-actions{display:flex;flex-wrap:wrap;gap:8px;margin:15px 0}
-</style>
 </head>
-<body><main class="page">
-<nav class="topbar"><a href="/">← Ratchet Arcade</a><span class="badge">04 · Calibrate → navigate → dig</span></nav>
-<header class="hero"><p class="eyebrow">A small island with uncertain riches</p><h1>Treasure Survey</h1><p>Take Scout across a new island with 24 energy and six shovels. Bring home 15 points. Learn what the compass gets wrong before trusting it to choose your route.</p></header>
-<div class="survey-layout"><aside class="panel"><h2>Expedition kit</h2><form id="settings" class="survey-controls"><label>Terrain<select name="terrain"><option value="coast">Sunlit coast</option><option value="canyon">Quiet canyon</option><option value="island">Hidden island</option></select></label><label>Compass<select name="compass"><option value="honest">Measured</option><option value="bold">Overconfident</option></select></label><label>Dig threshold <output id="bar">80%</output><input name="threshold" type="range" min=".5" max="1" step=".01" value=".8"></label><label>Chart seed<input name="seed" type="number" min="0" max="1000000" value="46"></label></form><p id="fit" class="survey-explain"></p><button type="button" id="use-fit" class="button secondary">Use practice suggestion</button><p class="survey-explain">Play or Step freezes this rule and enables reversible game actions. Before then, the engine stays in shadow. Only the twelve practice labels fit the suggested bar; twelve samples cannot guarantee accuracy.</p><div class="kit-actions"><button type="button" id="reset" class="button secondary">Replay island</button><button type="button" id="new" class="button secondary">New island</button></div></aside>
-<div><section class="panel"><div class="map-title"><h2 id="map-title">The sealed island</h2><span id="phase" class="badge">Practice first</span></div><div id="map" class="map"></div><div class="metrics"><div class="metric"><strong id="score">0 / 15</strong><span>treasure points</span></div><div class="metric"><strong id="energy">24</strong><span>energy</span></div><div class="metric"><strong id="shovels">6</strong><span>shovels</span></div></div><p id="status" class="notice" role="status" aria-live="polite">Preparing the practice results…</p><p id="selection" class="survey-explain"></p><div class="kit-actions"><button type="button" id="run" class="button">Play expedition</button><button type="button" id="stop" class="button secondary" disabled>Pause / take over</button><button type="button" id="agent" class="button secondary">Step</button><button type="button" id="launch" class="button secondary">Explore manually</button></div><div class="kit-actions"><button type="button" id="dig" class="button secondary">Dig selected site</button><button type="button" id="survey" class="button secondary">Survey selected site</button><button type="button" id="camp" class="button secondary">Return to camp</button></div><p class="survey-explain">Play runs until Scout returns to camp. A held destination triggers a survey of the nearest unvisited site; a held dig leaves the treasure untouched and Scout keeps exploring. Each grid step costs one energy, surveying one more, digging two and a shovel. Daylight lasts 18 turns. Pause to click a tile and dig yourself. Treasure +5, empty pit −8.</p></section><section class="panel"><h2>Scout's trail</h2><p id="source" class="survey-explain"></p><ol id="history" class="trail"></ol></section></div></div>
-<details class="panel" open><summary>Practice island · known outcomes and calibration</summary><div id="practice" class="map" style="margin-top:16px"></div><p class="survey-explain">Practice outcomes are supplied after judgment. None of these locations are expedition locations. The overconfident simulated compass changes its claims while buried treasure stays fixed.</p><div id="calibration" style="max-width:420px"></div></details>
-<details class="panel"><summary>Open the real decision ledger</summary><p class="survey-explain">Destination and dig judgments are separate decisions. Fit source rows always remain practice-only; expedition outcomes never update the frozen rule.</p><button type="button" id="download" class="button secondary">Download JSONL</button><div id="ledger"></div></details><p id="error" class="error" role="alert"></p>
-</main><script type="module">
-import {downloadLedger, escapeHtml, newWorldSeed, request, setModelControlLocked, setupModelControl, setupPlayback, showLedger} from '/common.js';
+<body>
+<main class="page">
+<nav class="topbar"><a href="/">← Ratchet Arcade</a><span class="badge">04 · Earn your confidence</span></nav>
+<header class="hero">
+  <p class="eyebrow">When do you stop checking?</p>
+  <h1>Treasure Survey</h1>
+  <p class="claim">You dig where Scout says and see whether it was right. Promote Scout the moment its last twenty digs look good, and every Scout gets promoted, the bad ones too. Fix the sample before you look, test it once, and keep auditing a few digs afterwards: bad Scouts stay supervised, and a good one that slips is sent back.</p>
+</header>
 
-const $ = id => document.getElementById(id);
-const form = $('settings');
-const game = {
-  phase: 'practice', commands: [], result: null, selected: 0, automate: false,
-  busy: false, running: false, generation: 0, timer: null,
-};
-let runToken = 0;
-const playback = setupPlayback({
-  board: $('map'), controls: $('run').parentElement, pause, isRunning: () => game.running,
-});
+<div class="play">
+<div class="stage">
+<section class="panel duel">
+  <div class="duel-head">
+    <h2>One expedition, trusted two ways</h2>
+    <div class="duel-actions">
+      <button type="button" id="watch" class="secondary">Watch it happen</button>
+      <button type="button" id="new">New world</button>
+    </div>
+  </div>
+  <p id="world-note" class="muted"></p>
+  <div id="arms"></div>
+  <p id="caption" class="caption" role="status" aria-live="polite"></p>
+  <div class="legend">
+    <span><i class="cell alt"></i>you dug, treasure</span>
+    <span><i class="cell held"></i>a person saw an empty pit</span>
+    <span><i class="cell ok"></i>Scout alone, treasure</span>
+    <span><i class="cell bad"></i>Scout alone, empty pit nobody saw</span>
+    <span><i class="cell skip"></i>audited dig, treasure</span>
+  </div>
+</section>
 
-function payload(commands) {
-  const f = form.elements;
-  return {
-    phase: game.phase, commands, seed: Number(f.seed.value),
-    threshold: Number(f.threshold.value), terrain: f.terrain.value,
-    compass: f.compass.value, automate: game.automate,
-  };
-}
+<section class="panel results">
+  <h2 id="batch-title">The same duel in many worlds</h2>
+  <p id="headline" class="headline"></p>
+  <div id="batch"></div>
+</section>
 
-function distance(target) {
-  const position = game.result?.position ?? -1;
-  return position < 0 ? 1 : Math.abs(position % 4 - target % 4)
-    + Math.abs(Math.floor(position / 4) - Math.floor(target / 4));
-}
+<section class="panel results">
+  <h2>The whole trade-off</h2>
+  <p class="muted">What auditing more or fewer of Scout's digs would do, with your other levers as they are.</p>
+  <button type="button" id="sweep" class="secondary">Sweep the audit share</button>
+  <div id="sweep-chart"></div>
+</section>
+</div>
 
-function lock() {
-  const {busy, running, phase, result, selected} = game;
-  playback.sync({ running, busy, done: result?.done });
-  setModelControlLocked(busy || running);
-  const active = phase === 'expedition' && !result?.done;
-  form.querySelectorAll('input,select').forEach(e => {
-    e.disabled = busy || running || phase === 'expedition';
-  });
-  for (const id of ['new', 'reset']) $(id).disabled = busy || running;
-  $('launch').disabled = busy || phase === 'expedition';
-  $('launch').hidden = phase === 'expedition';
-  $('use-fit').disabled = busy || phase === 'expedition' || result?.fit.suggestedThreshold == null;
-  $('agent').disabled = busy || running || result?.done;
-  $('camp').disabled = busy || running || !active;
-  const tile = result?.map[selected];
-  $('dig').disabled = busy || running || !active || tile?.dug || distance(selected) + 2 > result?.energy;
-  $('survey').disabled = busy || running || !active || tile?.visited || distance(selected) + 1 > result?.energy;
-  $('run').disabled = busy || running || result?.done;
-  $('run').textContent = result?.turns ? 'Resume expedition' : 'Play expedition';
-  $('stop').disabled = !running;
-  document.querySelectorAll('[data-site]').forEach(b => { b.disabled = busy || running || !active; });
-}
+<aside class="side">
+  <section class="panel">
+    <h2>Your levers</h2>
+    <form id="levers" class="levers" data-seed="4">
+      <label>Promise
+        <select name="promise" data-type="number"><option value="0.9">90 in 100 digs right</option><option value="0.95" selected>95 in 100 digs right</option><option value="0.98">98 in 100 digs right</option></select>
+        <small>What Scout must be shown to deliver before digging alone.</small></label>
+      <label>Wrong digs the sample may hold <output data-for="allow"></output>
+        <input name="allow" type="range" min="0" max="2" step="1" value="0">
+        <small>Zero is the shortest sample. Allowing one or two makes it longer and passes more good Scouts.</small></label>
+      <label>Share of Scout's digs audited <output data-for="audit" data-format="pct"></output>
+        <input name="audit" type="range" min="0" max="0.5" step="0.05" value="0.2">
+        <small>After promotion, digs a person still checks. With none, nothing can send Scout back.</small></label>
+      <label>What sends Scout back
+        <select name="demotion"><option value="window" selected>recent audits below the promise</option><option value="detector">a detector with a set false-alarm rate</option><option value="first-error">the first wrong audited dig</option></select>
+        <small>The rule that returns a promoted Scout to supervision.</small></label>
+    </form>
+  </section>
+  <section class="panel results">
+    <h2>Target</h2>
+    <p id="target-text"></p>
+    <ul id="checks" class="checks"></ul>
+    <p id="target-status" class="target-status" role="status"></p>
+  </section>
+</aside>
+</div>
 
-function render() {
-  const {result, selected, phase} = game;
-  const active = phase === 'expedition';
-  $('map-title').textContent = result.done ? 'Expedition complete' : active ? "Scout's island" : 'The sealed island';
-  $('phase').textContent = active
-    ? `${result.daylight} daylight · rule ${Math.round(result.threshold * 100)}%`
-    : 'Practice first';
-  $('map').innerHTML = result.map.map(t => `
-    <button type="button" class="site ${active && selected === t.site ? 'chosen' : ''} ${active && t.dug ? 'dug' : ''} ${!active ? 'hidden' : ''}"
-      data-site="${t.site}" aria-label="Site ${t.site + 1}, ${active ? escapeHtml(t.signal) : 'sealed'}">
-      <span class="traveler">${active && result.position === t.site ? '🧭' : active && t.dug ? (t.truth ? '💎' : '🕳️') : active && t.visited ? '⚑' : '🌴'}</span>
-      <strong>${active ? `Site ${t.site + 1}` : 'Sealed'}</strong>
-      <small>${active ? escapeHtml(t.signal) : 'Unknown terrain'}</small>
-      <small>${active ? (t.dug ? 'DUG' : t.visited ? 'SURVEYED · can dig' : 'UNVISITED') : ''}</small>
-    </button>`).join('');
-  $('score').textContent = `${result.score} / 15`;
-  $('energy').textContent = result.energy;
-  $('shovels').textContent = result.shovels;
-  const last = result.expedition.at(-1);
-  $('status').textContent = result.done
-    ? `${result.endReason} Returned with ${result.score} points. ${result.won ? 'Expedition goal reached!' : 'The goal was 15; try another island.'}`
-    : last?.event || (active ? 'Scout is at camp. Choose a site or play the expedition.' : 'Play freezes the current rule and sends Scout exploring. Pause any time to take over.');
-  $('selection').textContent = active
-    ? `Selected site ${selected + 1}: ${result.map[selected].signal}. Travel ${distance(selected)} energy; dig total ${distance(selected) + 2}.`
-    : '';
-  $('fit').textContent = result.fit.suggestedThreshold === null
-    ? 'No practice bar met the empirical target with at least three examples. The current rule remains yours to choose.'
-    : `Practice suggests ${Math.round(result.fit.suggestedThreshold * 100)}%, supported by ${result.fit.support} sites.`;
-  $('source').textContent = result.judgeSource === 'live'
-    ? 'A live oracle sees feasible destinations, map echoes and supplies. Code handles travel, surveys and return to camp.'
-    : 'Offline game: an explorer reads detector echoes; a seeded compass judges digs. Reviewed actions stay held while code advances exploration.';
-  $('history').innerHTML = result.expedition.slice().reverse().map(t => `
-    <li>${t.site >= 0 ? `Site ${t.site + 1}` : 'Camp'} · ${escapeHtml(t.actor)} · ${escapeHtml(t.event)} · ${t.energy} energy left</li>
-  `).join('') || '<li>No expedition moves yet.</li>';
-  $('practice').innerHTML = result.practice.map((p, i) => `
-    <div class="site ${p.suggested === 'act' ? 'selected' : ''}" style="min-height:90px">
-      <strong>${p.truth ? '◆ Treasure' : '○ Empty'}</strong>
-      <small>Practice ${i + 1}</small><small>${Math.round(p.probability * 100)}% claimed</small>
-    </div>`).join('');
-  const dots = result.bins.map(b => `
-    <circle cx="${35 + b.meanConfidence * 250}" cy="${185 - b.accuracy * 150}" r="${5 + Math.sqrt(b.n) * 2}" fill="#80649a"/>
-    <text x="${35 + b.meanConfidence * 250}" y="${170 - b.accuracy * 150}" text-anchor="middle" font-size="11">n=${b.n}</text>`).join('');
-  $('calibration').innerHTML = `
-    <svg viewBox="0 0 320 225" role="img" aria-label="Practice calibration: predicted probability versus observed treasure share">
-      <path d="M35 35V185H285M35 185L285 35" fill="none" stroke="#bbaa8a"/>${dots}
-      <text x="80" y="215" font-size="12">Claimed probability →</text>
-      <text x="35" y="20" font-size="12">Observed treasure share ↑</text>
-    </svg>`;
-  showLedger($('ledger'), result.ledger);
-  lock();
-}
+<details class="panel how"><summary>How this world works</summary>
+  <p>Each expedition is 300 digs. Scout's true accuracy is one of 86%, 91%, 94%, 97%, 99% and 99.7%, which the crew cannot see, and in some worlds it slips ten points partway through. While Scout is supervised you dig and every proposal is labelled; once promoted, only audited digs are.</p>
+  <p>The first arm looks after every dig and promotes when the last twenty read at the promise. The second is the engine's rollout controller: it fixes the sample before any label is read, evaluates it once by an exact bound, rejects a Scout that fails it, and after promotion reads only the audits. A Scout sent back has to pass a fresh sample.</p>
+  <p>What to look for: looking every time promotes nearly every Scout, the planned test pays for its caution by passing only about half the good ones, and the three demotion rules trade empty pits nobody saw against good Scouts sent back for nothing.</p>
+</details>
+<details class="panel"><summary>Open the decision ledger for this world</summary>
+  <p id="source" class="muted"></p>
+  <p><label class="muted">Judge <select id="model"><option value="offline">Seeded simulation</option></select></label>
+  <span id="model-status" class="muted"></span></p>
+  <p class="muted">Each row is one gate decision of the engine's arm, with the world's truth as its label. Truth labels the ledger and never enters a later state.</p>
+  <p><button type="button" id="download" class="secondary">Download JSONL</button></p>
+  <div id="ledger"></div>
+</details>
+<p id="error" class="error" role="alert"></p>
+</main>
+<script type="module">
+import { mount } from "/duel.js";
 
-async function refresh(command) {
-  if (game.busy) return false;
-  const token = game.generation;
-  const commands = command === undefined ? [...game.commands] : [...game.commands, command];
-  game.busy = true;
-  lock();
-  $('error').textContent = '';
-  try {
-    const next = await request('treasure', payload(commands));
-    if (token !== game.generation) return false;
-    game.commands = commands;
-    game.result = next;
-    if (command === 'agent' && next.position >= 0) game.selected = next.position;
-    render();
-    return true;
-  } catch (error) {
-    if (token === game.generation) $('error').textContent = error.message;
-    return false;
-  } finally {
-    game.busy = false;
-    lock();
-  }
-}
-
-function pause() {
-  game.running = false;
-  runToken++;
-  clearTimeout(game.timer);
-  game.timer = null;
-  lock();
-}
-
-async function tick(token) {
-  if (!game.running || token !== runToken) return;
-  const advanced = await refresh('agent');
-  if (!game.running || token !== runToken) return;
-  if (!advanced || game.result?.done) {
-    pause();
-    return;
-  }
-  game.timer = setTimeout(() => tick(token), playback.delay());
-}
-
-async function reset(newSeed = false) {
-  pause();
-  game.generation++;
-  game.phase = 'practice';
-  game.commands = [];
-  game.selected = 0;
-  game.result = null;
-  game.automate = false;
-  if (newSeed) form.elements.seed.value = newWorldSeed(Number(form.elements.seed.value));
-  await refresh();
-}
-
-$('map').onclick = event => {
-  const site = event.target.closest('[data-site]');
-  if (site && !game.busy && !game.running && game.phase === 'expedition') {
-    game.selected = Number(site.dataset.site);
-    render();
-  }
-};
-$('run').onclick = () => {
-  playback.started();
-  game.phase = 'expedition';
-  game.automate = true;
-  game.running = true;
-  lock();
-  tick(++runToken);
-};
-$('stop').onclick = () => {
-  pause();
-  $('status').textContent = 'Paused. Select a site to survey or dig, step, or resume the expedition.';
-};
-$('agent').onclick = () => {
-  game.phase = 'expedition';
-  game.automate = true;
-  refresh('agent');
-};
-$('launch').onclick = async () => {
-  game.phase = 'expedition';
-  if (!await refresh()) { game.phase = 'practice'; lock(); }
-};
-$('dig').onclick = () => refresh({site: game.selected, move: 'dig'});
-$('survey').onclick = () => refresh({site: game.selected, move: 'survey'});
-$('camp').onclick = () => refresh('camp');
-$('use-fit').onclick = () => {
-  form.elements.threshold.value = game.result.fit.suggestedThreshold;
-  $('bar').textContent = `${Math.round(Number(form.elements.threshold.value) * 100)}%`;
-  refresh();
-};
-$('new').onclick = () => reset(true);
-$('reset').onclick = () => reset();
-form.onsubmit = event => event.preventDefault();
-form.oninput = () => { $('bar').textContent = `${Math.round(Number(form.elements.threshold.value) * 100)}%`; };
-form.onchange = () => reset();
-$('download').onclick = () => game.result && downloadLedger(game.result.ledger.rows);
-form.elements.seed.value = newWorldSeed();
-setupModelControl(() => reset());
-refresh();
-</script></body></html>
+mount({ game: "treasure" });
+</script>
+</body>
+</html>
