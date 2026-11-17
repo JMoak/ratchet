@@ -64,6 +64,9 @@
     "quickstart": "bun examples/quickstart.ts",
     "live": "bun experiments/live/main.ts",
     "pilot": "bun experiments/pilot/main.ts",
+    "tournament": "bun experiments/tournament/main.ts",
+    "decision-packs": "bun experiments/decision-packs/main.ts",
+    "forge": "bun experiments/forge/main.ts",
     "keywork": "bun experiments/keywork/main.ts",
     "ratchet": "bun bin/ratchet.ts",
     "profiles": "bun scripts/profiles.ts"

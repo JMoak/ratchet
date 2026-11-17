@@ -3,6 +3,36 @@
 Reviewed 2026-10-21; the end-to-end evaluation and foundations review entries added 2026-11-12.
 Historical milestones below describe the existing tree.
 
+## Applied decision packs (2026-11-17)
+
+Requested next direction: use stronger reasoning to author reusable rubrics, worked examples,
+counterexamples, and rollout recipes for enterprise, science, finance, and medicine. The first
+four packs and two runnable evaluation harnesses are built; the protocol and evidence limits
+are in [decision-packs.md](decision-packs.md). Teaching material is not a calibration profile:
+the target oracle must be measured, and authored labels cannot promote these gates. The first
+live reports are [decision-pack-results.md](decision-pack-results.md) and
+[tournament-results.md](tournament-results.md).
+
+Project alignment (2026-11-17): [project-alignment.md](project-alignment.md) makes SKUby supplier
+reply verification the first applied pilot, followed by its inventory/financial exception
+drafts. Relly owns the science and medical-literature track. Keywork/Stead's existing campaigns
+provide the later whole-artifact comparison; Ratchet does not add an execution framework.
+
+Next evidence milestone: a SKUby shadow observer over immutable order/reply snapshots, existing
+fixture replay, independent labels from new order families, and a frozen comparison against
+SKUby's deterministic verifier and current second look. Measure unsupported fact acceptance
+and review effort before considering an added hold through SKUby's existing authority controls.
+Generic pack thresholds do not transfer. Keep clinical decisions, financial execution, and
+final study exclusion outside these recipes.
+
+Learning from ordinary use: the proposed [recipe forge](design/recipe-forge.md) connects
+application case snapshots and independent labels to flagship-authored rubrics, examples and
+frozen evaluations. Built: [the explicit forge command](recipe-forge.md), with reviewed case
+imports, ledger-backed teaching, a constrained draft compiler, and a four-arm shadow comparison.
+Next connect SKUby's real case export and review flow. Preference, observed consequences and factual labels remain
+distinct. Existing hooks alone do not capture enough work-quality evidence, and neither teacher
+answers nor targeted hard-case samples can earn a gate's accuracy claim.
+
 ## Foundations review (2026-11-12)
 
 An architectural and statistical review read the engine as a quality-control regime (promotion

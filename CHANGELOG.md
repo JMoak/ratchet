@@ -7,6 +7,31 @@ policy, strategy, state builder or model pin) is called out so you know when to 
 
 ## Unreleased
 
+### Added: minimal recipe forge
+
+- `bun run forge` turns reviewed SKUby-style case exports into a flagship-authored draft
+  rubric with ledger-linked examples, then compares Jev and the flagship on separate source
+  groups. The teacher cannot rewrite example labels or change gate authority. Input controls,
+  floors and shadow mode reuse the existing decision packs; changed teaching changes evidence
+  identity. Authored fixtures remain unregistered evidence and cannot promote a gate.
+- Offline wiring and bounded live modes preserve the exact input, teacher request/response,
+  frozen recipe, observation ledger and billed receipts. The secure credential launcher also
+  supports this command. No automatic collection or production SKUby integration is installed.
+
+### Added: authored decision packs and controlled evaluation
+
+- Four shadow-only example recipes for procurement evidence, scientific claims, financial
+  reconciliation, and medical literature screening. Rubrics and worked examples are authored
+  teaching material; changing them changes the recipe's evidence version. Trusted entry floors
+  keep unverified sources, arithmetic failures, and actions beyond draft annotation in review.
+  Authored curriculum labels cannot promote these recipes.
+- A controlled repair tournament over executable boundary, transformation, and SQL tasks,
+  and a separate teaching-transfer comparison over 48 authored applied cases. Both record
+  frozen fit settings, complete shadow observations, paired comparisons, and billed live-call
+  receipts. These are exploratory pilots, not deployment evidence. See `docs/decision-packs.md`.
+- An optional Windows Credential Manager prompt/launcher for these experiments; it never
+  prints the stored key or writes it into the repository.
+
 Fixes and changes from an end-to-end evaluation: five tracks ran the engine live against Jev
 on new scenarios with every label fixed before the first call, a red team attacked every
 path, each defect found was fixed with a regression test, and independent verifiers attacked
